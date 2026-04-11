@@ -1,3 +1,4 @@
+import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Banner from "./components/Banner";
 import Categories from "./components/Categories";
@@ -6,42 +7,46 @@ import Footer from "./components/Footer";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 
 function App() {
-  // Kiểm tra xem có token trong localStorage không
-  const isLoggedIn = !!localStorage.getItem("token"); 
-  const path = window.location.pathname;
-  if (path === "/faq") {
-    return <FAQ />;
-  }
-  if (path === "/login") {
-    return <Login />;
-  }
-  if (path === "/about") {
-    return <About />;
-  }
-
+  const isLoggedIn = !!localStorage.getItem("token");
 
   return (
-    <>
-      <Header
-        isLoggedIn={isLoggedIn}
-        avatarUrl="/images/avatar.jpg"
-        userName="Nguyễn Lan Anh"
+    <Routes>
+      {/* HOME */}
+      <Route
+        path="/"
+        element={
+          <>
+            <Header
+              isLoggedIn={isLoggedIn}
+              avatarUrl="/images/avatar.jpg"
+              userName="Nguyễn Lan Anh"
+            />
+
+            <Banner />
+
+            <div className="container-fluid px-4 mt-3">
+              <Categories />
+              <Products title="Tất cả bài đăng" />
+              <Products title="Đề xuất sản phẩm" />
+            </div>
+
+            <Footer />
+          </>
+        }
       />
 
-      <div>
-        <Banner />
-      </div>
+      {/* LOGIN */}
+      <Route path="/login" element={<Login />} />
 
-      <div className="container-fluid px-4 mt-3">
-        <Categories />
-        <Products title="Tất cả bài đăng" />
-        <Products title="Đề xuất sản phẩm" />
-      </div>
+      {/* OTHER */}
+      <Route path="/faq" element={<FAQ />} />
+      <Route path="/about" element={<About />} />
 
-      <Footer />
-    </>
+      <Route path="/profile" element={<Profile />} />
+    </Routes>
   );
 }
 

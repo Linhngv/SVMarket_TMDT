@@ -11,6 +11,7 @@ import {
     User
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 type HeaderProps = {
     isLoggedIn: boolean;
@@ -25,6 +26,7 @@ export default function Header({
 }: HeaderProps) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
 
     // đóng popup khi click ngoài
     useEffect(() => {
@@ -42,7 +44,8 @@ export default function Header({
             <div className="container-fluid px-4 d-flex justify-content-between align-items-center py-2">
 
                 {/* LOGO */}
-                <div className="fw-bold fs-5">
+                <div className="fw-bold fs-5" style={{ cursor: "pointer" }}
+                    onClick={() => navigate("/")}>
                     <span style={{ color: "#1B7A4A" }}>SV</span>
                     <span style={{ color: "#D4A017" }}>Marketplace</span>
                 </div>
@@ -50,7 +53,6 @@ export default function Header({
                 {/* RIGHT */}
                 <div className="d-flex align-items-center gap-2">
 
-                    {/* ICON */}
                     <div className="icon-btn">
                         <Heart size={18} />
                     </div>
@@ -59,13 +61,11 @@ export default function Header({
                         <Bell size={18} />
                     </div>
 
-                    {/* LIÊN HỆ */}
                     <button className="contact-btn rounded-pill px-3 d-flex align-items-center gap-2">
                         <MessageCircle size={18} />
                         Liên hệ
                     </button>
 
-                    {/* ĐĂNG TIN */}
                     <button className="btn btn-success rounded-pill px-3">
                         Đăng tin
                     </button>
@@ -94,6 +94,8 @@ export default function Header({
                                 isLoggedIn={isLoggedIn}
                                 avatarUrl={avatarUrl}
                                 userName={userName}
+                                navigate={navigate}
+                                onClose={() => setOpen(false)}
                             />
                         )}
                     </div>
@@ -103,18 +105,20 @@ export default function Header({
     );
 }
 
-// Popup
-
 type PopupProps = {
     isLoggedIn: boolean;
     avatarUrl: string;
     userName: string;
+    navigate: (path: string) => void;
+    onClose: () => void;
 };
 
 function ProfilePopup({
     isLoggedIn,
     avatarUrl,
-    userName
+    userName,
+    navigate,
+    onClose
 }: PopupProps) {
     return (
         <div className="profile-popup">
@@ -124,7 +128,15 @@ function ProfilePopup({
             <div className="text-center">
                 <div className="popup-avatar">
                     <img src={avatarUrl} alt="avatar" />
-                    <div className="edit-icon">✎</div>
+                    <div
+                        className="edit-icon"
+                        onClick={() => {
+                            navigate("/profile");
+                            onClose();
+                        }}
+                    >
+                        ✎
+                    </div>
                 </div>
 
                 <h6 className="mt-2 mb-1 fw-bold popup-name">
@@ -158,7 +170,14 @@ function ProfilePopup({
                     <PopupSection
                         title="Khác"
                         items={[
-                            { label: "Đăng xuất", icon: <LogOut size={16} /> }
+                            {
+                                label: "Đăng xuất",
+                                icon: <LogOut size={16} />,
+                                onClick: () => {
+                                    console.log("logout");
+                                    onClose();
+                                }
+                            }
                         ]}
                         isLogout
                     />
@@ -167,7 +186,14 @@ function ProfilePopup({
                 <PopupSection
                     title="Tài khoản"
                     items={[
-                        { label: "Đăng nhập", icon: <User size={16} /> }
+                        {
+                            label: "Đăng nhập",
+                            icon: <User size={16} />,
+                            onClick: () => {
+                                navigate("/login");
+                                onClose();
+                            }
+                        }
                     ]}
                 />
             )}
@@ -175,11 +201,10 @@ function ProfilePopup({
     );
 }
 
-// Section trong popup
-
 type Item = {
     label: string;
     icon: React.ReactNode;
+    onClick?: () => void;
 };
 
 type SectionProps = {
@@ -198,6 +223,8 @@ function PopupSection({ title, items, isLogout = false }: SectionProps) {
                     <div
                         key={index}
                         className={`popup-row ${isLogout ? "logout" : ""}`}
+                        onClick={item.onClick}
+                        style={{ cursor: item.onClick ? "pointer" : "default" }}
                     >
                         <div className="d-flex align-items-center gap-2">
                             {item.icon}

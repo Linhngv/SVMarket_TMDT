@@ -162,6 +162,8 @@ body {
     align-items: center;
     justify-content: center;
 
+    cursor: pointer;
+
     transform: rotate(85deg);
 }
 
@@ -583,8 +585,9 @@ body {
 /* FOOTER */
 .footer {
     background-color: var(--dark-green);
-    color: white;
+    color: var(--white);
     padding: 30px 0;
+    margin-top: 10px;
 }
 
 /* LOGO */
@@ -660,6 +663,17 @@ body {
     background: #cb1f27;
 }
 
+.footer-bottom {
+    color: var(--primary);
+    text-align: center;
+    padding: 10px 0;
+    font-size: 16px;
+    border-top: 1px solid var(--primary);
+    margin-top: 20px;
+    margin-bottom: -20px;
+    padding-top: 20px;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
     .banner {
@@ -669,4 +683,87 @@ body {
     .product-img {
         height: 120px;
     }
+}
+
+/* PROFILE */
+.sidebar-item {
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border-left: 4px solid #E8F5EE; 
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-primary)
+}
+
+.sidebar-item:hover {
+    background: #f3f4f6;
+}
+
+.sidebar-item.active {
+    background: #E8F5EE;
+    border-left: 4px solid var(--dark-green);
+    color: var(--dark-green);
+    font-weight: 600;
+}
+
+
+.avatar-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-input {
+    display: none;
+}
+
+.avatar-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    transform: translate(-10%, -10%);
+    background: #E8E7E7;
+    color: #1E1E1E;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.profile-section {
+    color: var(--dark);
+    font-weight: 600;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.profile-title {
+    color: var(--dark);
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 32px;
+}
+
+.input-short {
+    max-width: 90%;
+    background: #F9FAFB;
+    border-color: #E5E7EB;
+}
+
+.save-btn {
+    width: 300px;
+    margin-top: 80px;
 }
