@@ -3,9 +3,24 @@ import Banner from "./components/Banner";
 import Categories from "./components/Categories";
 import Products from "./components/Products";
 import Footer from "./components/Footer";
+import FAQ from "./pages/FAQ";
+import About from "./pages/About";
+import Login from "./pages/Login";
 
 function App() {
-  const isLoggedIn = true; // đổi false để test chưa đăng nhập
+  // Kiểm tra xem có token trong localStorage không
+  const isLoggedIn = !!localStorage.getItem("token"); 
+  const path = window.location.pathname;
+  if (path === "/faq") {
+    return <FAQ />;
+  }
+  if (path === "/login") {
+    return <Login />;
+  }
+  if (path === "/about") {
+    return <About />;
+  }
+
 
   return (
     <>
