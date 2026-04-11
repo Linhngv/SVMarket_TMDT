@@ -1,4 +1,4 @@
-import { FaImage, FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaImage, FaHeart, FaRegHeart, FaAngleDown } from "react-icons/fa";
 import { useState } from "react";
 
 type Props = {
@@ -12,13 +12,59 @@ const items = Array(8).fill({
     image: "",
 });
 
+const universityMap: Record<string, string> = {
+    UEH: "ĐH Kinh tế",
+    HCMUS: "ĐH Khoa học Tự nhiên",
+    UIT: "ĐH CNTT",
+    NLU: "ĐH Nông Lâm",
+    HCMUTE: "ĐH Sư phạm Kỹ thuật",
+    HCMUSSH: "ĐH KHXH&NV",
+    HUFLIT: "ĐH Ngoại ngữ - Tin học",
+    HCMUE: "ĐH Mở",
+};
+
+const getUniversityName = (university: string) => {
+    const code = university.split(" • ")[0];
+    return universityMap[code] || code;
+};
+
 export default function Products({ title }: Props) {
     const [likedItems, setLikedItems] = useState<number[]>([]);
+    const [openFilter, setOpenFilter] = useState(false);
+    const [selected, setSelected] = useState("Mới nhất");
     return (
         <div className="product-section mt-4">
 
-            {/* SECTION TITLE */}
-            <h5 className="product-title mb-3">{title}</h5>
+            <div className="product-header">
+                <h5 className="product-title">{title}</h5>
+
+                <div className="filter-wrapper">
+                    <div
+                        className="filter-btn"
+                        onClick={() => setOpenFilter(!openFilter)}
+                    >
+                        {selected}
+                        <FaAngleDown className="filter-icon" />
+                    </div>
+
+                    {openFilter && (
+                        <div className="filter-dropdown">
+                            {["Mới nhất", "Giá thấp → cao", "Giá cao → thấp"].map((option) => (
+                                <div
+                                    key={option}
+                                    className="filter-item"
+                                    onClick={() => {
+                                        setSelected(option);
+                                        setOpenFilter(false);
+                                    }}
+                                >
+                                    {option}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
 
             {/* LIST */}
             <div className="row">
@@ -65,7 +111,7 @@ export default function Products({ title }: Props) {
                             {/* INFO */}
                             <div className="product-info">
                                 <h6 className="product-item-title">
-                                    {item.title}
+                                    {item.title} - {getUniversityName(item.university)}
                                 </h6>
 
                                 <p className="product-price">
