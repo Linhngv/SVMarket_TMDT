@@ -30,8 +30,8 @@ export default function Footer() {
                     {/* HỖ TRỢ */}
                     <div className="col-md-3">
                         <h5 className="footer-title">Hỗ trợ khách hàng</h5>
-                        <a href="/faq" style={{textDecoration: "none"}}><p>Câu hỏi thường gặp</p></a>
-                        <a href="/about" style={{textDecoration: "none"}}><p>Về chúng tôi</p></a>
+                        <a href="/faq" style={{ textDecoration: "none" }}><p>Câu hỏi thường gặp</p></a>
+                        <a href="/about" style={{ textDecoration: "none" }}><p>Về chúng tôi</p></a>
                         <p>Liên hệ với chúng tôi</p>
                     </div>
 
@@ -47,6 +47,10 @@ export default function Footer() {
                     </div>
 
                 </div>
+            </div>
+
+            <div className="footer-bottom">
+                2026 SVMarketplace. Mọi quyền được bảo lưu.
             </div>
         </div>
     );
