@@ -1,4 +1,5 @@
-import { FaImage } from "react-icons/fa";
+import { FaImage, FaHeart, FaRegHeart } from "react-icons/fa";
+import { useState } from "react";
 
 type Props = {
     title: string;
@@ -12,6 +13,7 @@ const items = Array(8).fill({
 });
 
 export default function Products({ title }: Props) {
+    const [likedItems, setLikedItems] = useState<number[]>([]);
     return (
         <div className="product-section mt-4">
 
@@ -23,6 +25,20 @@ export default function Products({ title }: Props) {
                 {items.map((item, index) => (
                     <div className="col-6 col-md-3 mb-3" key={index}>
                         <div className="product-card">
+
+                            {/* HEART ICON */}
+                            <div
+                                className="product-heart"
+                                onClick={() => {
+                                    setLikedItems(prev =>
+                                        prev.includes(index)
+                                            ? prev.filter(i => i !== index)
+                                            : [...prev, index]
+                                    );
+                                }}
+                            >
+                                {likedItems.includes(index) ? <FaHeart /> : <FaRegHeart />}
+                            </div>
 
                             {/* IMAGE */}
                             <div className="product-img-wrapper">
