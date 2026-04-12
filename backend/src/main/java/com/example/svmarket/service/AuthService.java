@@ -1,4 +1,5 @@
 package com.example.svmarket.service;
+
 import java.time.LocalDateTime;
 
 import jakarta.transaction.Transactional;
@@ -21,7 +22,6 @@ import com.example.svmarket.repository.PasswordResetOTPRepository;
 import com.example.svmarket.repository.UserRepository;
 import com.example.svmarket.util.JwtUtil;
 
-
 @Service
 @Transactional
 public class AuthService {
@@ -42,31 +42,63 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    // public LoginResponse login(LoginRequest req) {
+    // System.out.println("INPUT: " + req.getEmailOrPhone());
+    // System.out.println("PASS: " + req.getPassword());
+
+    // // 1. Lấy thông tin user dưới database lên
+    // User user = userRepository.findByEmailOrPhone(req.getEmailOrPhone());
+    // System.out.println("USER = " + user);
+
+    // if (user == null) {
+    // return new LoginResponse(null, "Tài khoản không tồn tại");
+    // }
+
+    // // 2. So sánh mật khẩu đã mã hóa bằng BCrypt, vẫn giữ fallback cho dữ liệu cũ
+    // // chưa encode.
+    // if (!passwordEncoder.matches(req.getPassword(), user.getPassword())
+    // && !user.getPassword().equals(req.getPassword())) {
+    // return new LoginResponse(null, "Sai mật khẩu");
+    // }
+    // System.out.println("DB PASS = " + user.getPassword());
+    // String token = jwtUtil.generateToken(user.getEmail());
+    // System.out.println("REQ PASS=[" + req.getPassword() + "]");
+    // System.out.println("LENGTH=" + req.getPassword().length());
+    // return new LoginResponse(token, "Login success");
+    // }
 
     public LoginResponse login(LoginRequest req) {
-        System.out.println("INPUT: " + req.getEmailOrPhone());
-        System.out.println("PASS: " + req.getPassword());
+        String input = req.getEmailOrPhone() == null ? "" : req.getEmailOrPhone().trim();
+        String password = req.getPassword() == null ? "" : req.getPassword();
 
+        if (input.isEmpty() || password.isEmpty()) {
+            return new LoginResponse(null, "Vui lòng nhập đầy đủ thông tin", null, null);
+        }
 
-
-        // 1. Lấy thông tin user dưới database lên
-        User user = userRepository.findByEmailOrPhone(req.getEmailOrPhone());
-        System.out.println("USER = " + user);
+        // 1. Tìm user
+        User user = userRepository.findByEmailOrPhone(input);
 
         if (user == null) {
-            return new LoginResponse(null, "Tài khoản không tồn tại");
+            return new LoginResponse(null, "Tài khoản không tồn tại", null, null);
         }
 
-        // 2. So sánh mật khẩu đã mã hóa bằng BCrypt, vẫn giữ fallback cho dữ liệu cũ chưa encode.
-        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())
-            && !user.getPassword().equals(req.getPassword())) {
-            return new LoginResponse(null, "Sai mật khẩu");
+        // 2. Kiểm tra mật khẩu (BCrypt + fallback dữ liệu cũ)
+        boolean isMatch = passwordEncoder.matches(password, user.getPassword())
+                || user.getPassword().equals(password);
+
+        if (!isMatch) {
+            return new LoginResponse(null, "Sai mật khẩu", null, null);
         }
-        System.out.println("DB PASS = " + user.getPassword());
+
+        // 3. Tạo token
         String token = jwtUtil.generateToken(user.getEmail());
-        System.out.println("REQ PASS=[" + req.getPassword() + "]");
-        System.out.println("LENGTH=" + req.getPassword().length());
-        return new LoginResponse(token, "Login success");
+
+        // 4. Trả thêm thông tin user
+        return new LoginResponse(
+                token,
+                "Login success",
+                user.getFullName(),
+                user.getAvatar());
     }
 
     public void register(RegisterRequest registerRequest) {
@@ -75,7 +107,8 @@ public class AuthService {
         }
 
         if (!registerRequest.getPassword().matches(PASSWORD_POLICY_REGEX)) {
-            throw new BadRequestException("Mật khẩu phải có chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự");
+            throw new BadRequestException(
+                    "Mật khẩu phải có chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự");
         }
 
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
@@ -91,7 +124,6 @@ public class AuthService {
         emailService.sendOTP(registerRequest.getEmail(), otp, "dang ky tai khoan");
     }
 
-
     public void verifyRegistrationOTP(RegisterOtpRequest request) {
         PasswordResetOTP otpEntity = otpRepository.findByEmailAndOtp(request.getEmail(), request.getOtp())
                 .orElseThrow(() -> new BadRequestException("OTP không hợp lệ"));
@@ -105,7 +137,8 @@ public class AuthService {
         }
 
         if (!request.getPassword().matches(PASSWORD_POLICY_REGEX)) {
-            throw new BadRequestException("Mật khẩu phải có chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự");
+            throw new BadRequestException(
+                    "Mật khẩu phải có chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự");
         }
 
         User user = new User();
@@ -143,7 +176,7 @@ public class AuthService {
         otpEntity.setExpiryTime(LocalDateTime.now().plusMinutes(5));
 
         otpRepository.save(otpEntity);
-        
+
         try {
             emailService.sendOTP(email, otp, "quên mật khẩu");
         } catch (Exception e) {
@@ -190,7 +223,8 @@ public class AuthService {
         }
 
         if (!newPassword.matches(PASSWORD_POLICY_REGEX)) {
-            throw new BadRequestException("Mật khẩu phải có chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự");
+            throw new BadRequestException(
+                    "Mật khẩu phải có chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự");
         }
 
         PasswordResetOTP otpEntity = otpRepository.findByEmailAndOtp(email, otp)

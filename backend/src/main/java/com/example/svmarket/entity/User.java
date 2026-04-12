@@ -50,14 +50,16 @@ public class User {
 
     private String status;
 
+    // @Enumerated(EnumType.STRING)
+    // private Role role;
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.USER;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
 
 }

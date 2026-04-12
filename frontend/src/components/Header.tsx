@@ -15,8 +15,8 @@ import { useNavigate } from "react-router-dom";
 
 type HeaderProps = {
     isLoggedIn: boolean;
-    avatarUrl: string;
-    userName: string;
+    avatarUrl?: string;
+    userName?: string;
 };
 
 export default function Header({
@@ -39,13 +39,22 @@ export default function Header({
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
 
+    // ✅ fallback avatar chuẩn
+    const avatar =
+        avatarUrl && avatarUrl.trim() !== ""
+            ? avatarUrl
+            : "/images/avatar_default.jpg";
+
     return (
         <div className="header shadow-sm">
             <div className="container-fluid px-4 d-flex justify-content-between align-items-center py-2">
 
                 {/* LOGO */}
-                <div className="fw-bold fs-5" style={{ cursor: "pointer" }}
-                    onClick={() => navigate("/")}>
+                <div
+                    className="fw-bold fs-5"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate("/")}
+                >
                     <span style={{ color: "#1B7A4A" }}>SV</span>
                     <span style={{ color: "#D4A017" }}>Marketplace</span>
                 </div>
@@ -77,7 +86,14 @@ export default function Header({
                             onClick={() => setOpen(!open)}
                         >
                             {isLoggedIn ? (
-                                <img src={avatarUrl} alt="avatar" />
+                                <img
+                                    src={avatar}
+                                    alt="avatar"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src =
+                                            "/images/avatar_default.jpg";
+                                    }}
+                                />
                             ) : (
                                 <User size={18} />
                             )}
@@ -92,7 +108,7 @@ export default function Header({
                         {open && (
                             <ProfilePopup
                                 isLoggedIn={isLoggedIn}
-                                avatarUrl={avatarUrl}
+                                avatarUrl={avatar}
                                 userName={userName}
                                 navigate={navigate}
                                 onClose={() => setOpen(false)}
@@ -108,7 +124,7 @@ export default function Header({
 type PopupProps = {
     isLoggedIn: boolean;
     avatarUrl: string;
-    userName: string;
+    userName?: string;
     navigate: (path: string) => void;
     onClose: () => void;
 };
@@ -120,6 +136,17 @@ function ProfilePopup({
     navigate,
     onClose
 }: PopupProps) {
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        onClose();
+
+        // ✅ reload để cập nhật Header
+        window.location.href = "/";
+    };
+
     return (
         <div className="profile-popup">
             <div className="popup-arrow"></div>
@@ -127,16 +154,26 @@ function ProfilePopup({
             {/* USER */}
             <div className="text-center">
                 <div className="popup-avatar">
-                    <img src={avatarUrl} alt="avatar" />
-                    <div
-                        className="edit-icon"
-                        onClick={() => {
-                            navigate("/profile");
-                            onClose();
+                    <img
+                        src={avatarUrl}
+                        alt="avatar"
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                                "/images/avatar_default.jpg";
                         }}
-                    >
-                        ✎
-                    </div>
+                    />
+
+                    {isLoggedIn && (
+                        <div
+                            className="edit-icon"
+                            onClick={() => {
+                                navigate("/profile");
+                                onClose();
+                            }}
+                        >
+                            ✎
+                        </div>
+                    )}
                 </div>
 
                 <h6 className="mt-2 mb-1 fw-bold popup-name">
@@ -144,7 +181,7 @@ function ProfilePopup({
                 </h6>
 
                 <small className="text-muted">
-                    {isLoggedIn ? "user@gmail.com" : "Chưa đăng nhập"}
+                    {isLoggedIn ? "Đã đăng nhập" : "Chưa đăng nhập"}
                 </small>
             </div>
 
@@ -173,10 +210,7 @@ function ProfilePopup({
                             {
                                 label: "Đăng xuất",
                                 icon: <LogOut size={16} />,
-                                onClick: () => {
-                                    console.log("logout");
-                                    onClose();
-                                }
+                                onClick: handleLogout
                             }
                         ]}
                         isLogout
