@@ -22,6 +22,7 @@
 
     /* Gray/Border */
     --border: #bfbfbf;
+    --border-light: #e5e7eb;
     --background: #f9fafb;
     --gray-light: #f0f2f5;
 
@@ -256,7 +257,7 @@ body {
 }
 
 /* INPUT */
-.search-input {
+.search-input-home {
     height: 65px;
     padding-right: 300px;
 }
