@@ -1,61 +1,3 @@
-// package com.example.svmarket.service;
-
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.stereotype.Service;
-
-// import com.example.svmarket.dto.ProfileResponse;
-// import com.example.svmarket.dto.UpdateProfileRequest;
-// import com.example.svmarket.entity.Address;
-// import com.example.svmarket.entity.User;
-// import com.example.svmarket.repository.UserRepository;
-// import org.springframework.web.multipart.MultipartFile;
-
-// @Service
-// public class UserService {
-
-//     @Autowired
-//     private UserRepository userRepository;
-
-//     // GET PROFILE
-//     public ProfileResponse getProfile(String email) {
-//         User user = userRepository.findByEmail(email)
-//                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
-
-//         return new ProfileResponse(
-//                 user.getFullName(),
-//                 user.getAvatar(),
-//                 user.getUniversity(),
-//                 user.getAddress() != null ? user.getAddress().getProvince() : "",
-//                 user.getAddress() != null ? user.getAddress().getAddressDetail() : "");
-//     }
-
-//     // UPDATE PROFILE
-//     public void updateProfile(String email, UpdateProfileRequest req) {
-
-//         User user = userRepository.findByEmail(email)
-//                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
-
-//         // update bảng users
-//         user.setFullName(req.getFullName());
-//         user.setUniversity(req.getUniversity());
-
-//         // update bảng address
-//         Address address = user.getAddress();
-
-//         if (address == null) {
-//             address = new Address();
-//         }
-
-//         address.setProvince(req.getProvince());
-//         address.setAddressDetail(req.getAddressDetail());
-
-//         user.setAddress(address);
-
-//         userRepository.save(user);
-//     }
-// }
-
-
 package com.example.svmarket.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.example.svmarket.dto.ProfileResponse;
 import com.example.svmarket.dto.UpdateProfileRequest;
 import com.example.svmarket.entity.Address;
+import com.example.svmarket.entity.Gender;
 import com.example.svmarket.entity.User;
 import com.example.svmarket.repository.UserRepository;
 import org.springframework.web.multipart.MultipartFile;
@@ -84,7 +27,8 @@ public class UserService {
                 user.getAvatar(),
                 user.getUniversity(),
                 user.getAddress() != null ? user.getAddress().getProvince() : "",
-                user.getAddress() != null ? user.getAddress().getAddressDetail() : "");
+                user.getAddress() != null ? user.getAddress().getAddressDetail() : "",
+                user.getGender() != null ? user.getGender().name() : "OTHER");
     }
 
     // UPDATE PROFILE
@@ -96,6 +40,10 @@ public class UserService {
         // update bảng users
         user.setFullName(req.getFullName());
         user.setUniversity(req.getUniversity());
+
+        if (req.getGender() != null) {
+            user.setGender(Gender.valueOf(req.getGender().toUpperCase()));
+        }
 
         // update bảng address
         Address address = user.getAddress();

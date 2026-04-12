@@ -39,10 +39,10 @@ export default function Header({
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
 
-    // ✅ fallback avatar chuẩn
+    // fallback avatar
     const avatar =
         avatarUrl && avatarUrl.trim() !== ""
-            ? avatarUrl
+            ? `http://localhost:8080/${avatarUrl.replace(/^\/+/, "")}`
             : "/images/avatar_default.jpg";
 
     return (
@@ -53,7 +53,10 @@ export default function Header({
                 <div
                     className="fw-bold fs-5"
                     style={{ cursor: "pointer" }}
-                    onClick={() => navigate("/")}
+                    onClick={() => {
+                        navigate("/");
+                        window.dispatchEvent(new Event("authChanged"));
+                    }}
                 >
                     <span style={{ color: "#1B7A4A" }}>SV</span>
                     <span style={{ color: "#D4A017" }}>Marketplace</span>
@@ -83,7 +86,13 @@ export default function Header({
                     <div className="avatar-wrapper position-relative" ref={ref}>
                         <div
                             className="avatar d-flex align-items-center gap-1"
-                            onClick={() => setOpen(!open)}
+                            onClick={() => {
+                                if (!isLoggedIn) {
+                                    navigate("/login");
+                                    return;
+                                }
+                                setOpen(!open);
+                            }}
                         >
                             {isLoggedIn ? (
                                 <img
@@ -139,12 +148,12 @@ function ProfilePopup({
 
     const handleLogout = () => {
         localStorage.removeItem("token");
-        localStorage.removeItem("user");
+
+        // 🔥 cập nhật App ngay
+        window.dispatchEvent(new Event("storage"));
 
         onClose();
-
-        // ✅ reload để cập nhật Header
-        window.location.href = "/";
+        navigate("/");
     };
 
     return (
