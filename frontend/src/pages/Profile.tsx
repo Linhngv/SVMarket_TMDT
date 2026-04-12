@@ -1,21 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
-
+import axios from "axios";
 
 export default function Profile() {
-    const isLoggedIn = true; // tạm hard-code
-    const avatarUrl = "/images/avatar.jpg";
-    const userName = "Nguyễn Lan Anh";
 
-    const [name, setName] = useState("Nguyễn Lan Anh");
-    const [city, setCity] = useState("Hồ Chí Minh");
-    const [school, setSchool] = useState("Đại học Kinh tế");
-    const [address, setAddress] = useState("282 Nguyễn Hữu Cảnh, Bình Thạnh");
+    const token = localStorage.getItem("token");
+
+    const isLoggedIn = true;
+
+    const [avatarUrl, setAvatarUrl] = useState("/images/avatar_default.jpg");
+    const [userName, setUserName] = useState("");
+
+    const [name, setName] = useState("");
+    const [city, setCity] = useState("");
+    const [school, setSchool] = useState("");
+    const [address, setAddress] = useState("");
     const [gender, setGender] = useState("female");
 
     const [active, setActive] = useState("profile");
+
+    // GỌI API LẤY PROFILE
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const res = await axios.get("http://localhost:8080/api/user/profile", {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                const data = res.data;
+
+                // Mapping đúng theo yêu cầu
+                setName(data.fullName);                // users.full_name
+                setUserName(data.fullName);
+                setAvatarUrl(data.avatar || "/images/avatar_default.jpg"); // users.avatar
+                setCity(data.province);               // address.province
+                setSchool(data.university);           // users.university
+                setAddress(data.addressDetail);       // address.address_detail
+
+            } catch (err) {
+                console.error("Lỗi lấy profile:", err);
+            }
+        };
+
+        if (token) fetchProfile();
+    }, [token]);
 
     return (
         <>
@@ -169,7 +200,12 @@ export default function Profile() {
 
                                 <div className="col-md-12 mb-3">
                                     <label className="profile-section">Địa chỉ cụ thể</label>
-                                    <input className="form-control" style={{ background: "#F9FAFB", borderColor: "#E5E7EB" }} value={address} onChange={(e) => setAddress(e.target.value)} />
+                                    <input
+                                        className="form-control"
+                                        style={{ background: "#F9FAFB", borderColor: "#E5E7EB" }}
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                    />
                                 </div>
                             </div>
 
@@ -185,7 +221,6 @@ export default function Profile() {
                 </div>
             </div>
 
-            {/* FOOTER */}
             <Footer />
         </>
     );
