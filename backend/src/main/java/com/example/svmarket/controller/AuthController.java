@@ -1,5 +1,7 @@
 package com.example.svmarket.controller;
 
+import com.example.svmarket.dto.RegisterOtpRequest;
+import com.example.svmarket.dto.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,5 +25,19 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest req) {
         return authService.login(req);
+    }
+
+    // Gửi OTP
+    @PostMapping("/register")
+    public String register(@RequestBody RegisterRequest request) {
+        authService.register(request);
+        return "OTP đã được gửi về email";
+    }
+
+    // Xác nhận OTP + tạo tài khoản
+    @PostMapping("/register/verify")
+    public String verifyOtp(@RequestBody RegisterOtpRequest request) {
+        authService.verifyRegistrationOTP(request);
+        return "Đăng ký thành công";
     }
 }
