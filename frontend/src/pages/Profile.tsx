@@ -20,6 +20,55 @@ export default function Profile() {
 
     const [active, setActive] = useState("profile");
 
+    const handleSave = async () => {
+        try {
+            await axios.put(
+                "http://localhost:8080/api/user/profile",
+                {
+                    fullName: name,
+                    university: school,
+                    province: city,
+                    addressDetail: address
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            alert("Cập nhật thành công!");
+        } catch (err) {
+            console.error("Lỗi update:", err);
+            alert("Cập nhật thất bại!");
+        }
+    };
+
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await axios.post(
+                "http://localhost:8080/api/user/avatar",
+                formData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setAvatarUrl(res.data);
+
+        } catch (err) {
+            console.error("Upload avatar lỗi:", err);
+        }
+    };
+
     // GỌI API LẤY PROFILE
     useEffect(() => {
         const fetchProfile = async () => {
@@ -97,13 +146,23 @@ export default function Profile() {
                             {/* AVATAR */}
                             <div className="avatar-container">
 
-                                <img
+                                {/* <img
                                     src={avatarUrl}
+                                    alt=""
+                                    className="avatar-img"
+                                /> */}
+
+                                <img
+                                    src={
+                                        avatarUrl
+                                            ? `http://localhost:8080${avatarUrl}`
+                                            : "/images/avatar_default.jpg"
+                                    }
                                     alt=""
                                     className="avatar-img"
                                 />
 
-                                <input
+                                {/* <input
                                     type="file"
                                     id="avatarUpload"
                                     className="avatar-input"
@@ -113,6 +172,13 @@ export default function Profile() {
                                             console.log("Selected file:", file);
                                         }
                                     }}
+                                /> */}
+
+                                <input
+                                    type="file"
+                                    id="avatarUpload"
+                                    className="avatar-input"
+                                    onChange={handleAvatarChange}
                                 />
 
                                 <label htmlFor="avatarUpload" className="avatar-overlay">
@@ -210,7 +276,7 @@ export default function Profile() {
                             </div>
 
                             <div className="d-flex justify-content-end mt-3">
-                                <button className="btn btn-success save-btn">
+                                <button className="btn btn-success save-btn" onClick={handleSave}>
                                     Lưu thay đổi
                                 </button>
                             </div>
