@@ -1,24 +1,29 @@
 package com.example.svmarket.service;
-import com.example.svmarket.dto.RegisterOtpRequest;
-import com.example.svmarket.dto.RegisterRequest;
-import com.example.svmarket.entity.PasswordResetOTP;
-import com.example.svmarket.entity.Role;
-import com.example.svmarket.exception.BadRequestException;
-import com.example.svmarket.repository.PasswordResetOTPRepository;
+import java.time.LocalDateTime;
+
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.svmarket.dto.ForgotPasswordRequest;
 import com.example.svmarket.dto.LoginRequest;
 import com.example.svmarket.dto.LoginResponse;
+import com.example.svmarket.dto.RegisterOtpRequest;
+import com.example.svmarket.dto.RegisterRequest;
+import com.example.svmarket.dto.ResetPasswordRequest;
+import com.example.svmarket.dto.VerifyPasswordOtpRequest;
+import com.example.svmarket.entity.PasswordResetOTP;
+import com.example.svmarket.entity.Role;
 import com.example.svmarket.entity.User;
+import com.example.svmarket.exception.BadRequestException;
+import com.example.svmarket.repository.PasswordResetOTPRepository;
 import com.example.svmarket.repository.UserRepository;
 import com.example.svmarket.util.JwtUtil;
 
-import java.time.LocalDateTime;
-
 
 @Service
+@Transactional
 public class AuthService {
     private static final String PASSWORD_POLICY_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{6,}$";
 
@@ -52,8 +57,9 @@ public class AuthService {
             return new LoginResponse(null, "Tài khoản không tồn tại");
         }
 
-        // 2. So sánh mật khẩu
-        if (!user.getPassword().equals(req.getPassword())) {
+        // 2. So sánh mật khẩu đã mã hóa bằng BCrypt, vẫn giữ fallback cho dữ liệu cũ chưa encode.
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())
+            && !user.getPassword().equals(req.getPassword())) {
             return new LoginResponse(null, "Sai mật khẩu");
         }
         System.out.println("DB PASS = " + user.getPassword());
@@ -109,6 +115,95 @@ public class AuthService {
         user.setStatus("Đang hoạt động");
         user.setRole(Role.USER);
 
+        userRepository.save(user);
+        otpRepository.delete(otpEntity);
+    }
+
+    // Gửi OTP để đổi mật khẩu
+    @Transactional
+    public void requestPasswordResetOtp(ForgotPasswordRequest request) {
+        String email = request.getEmail() == null ? "" : request.getEmail().trim();
+
+        if (email.isEmpty()) {
+            throw new BadRequestException("Vui lòng nhập email");
+        }
+
+        if (!userRepository.existsByEmail(email)) {
+            throw new BadRequestException("Email chưa được đăng ký");
+        }
+
+        String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
+
+        // Xóa OTP cũ của cùng email để tránh người dùng dùng nhầm mã cũ.
+        otpRepository.deleteByEmail(email);
+
+        PasswordResetOTP otpEntity = new PasswordResetOTP();
+        otpEntity.setEmail(email);
+        otpEntity.setOtp(otp);
+        otpEntity.setExpiryTime(LocalDateTime.now().plusMinutes(5));
+
+        otpRepository.save(otpEntity);
+        
+        try {
+            emailService.sendOTP(email, otp, "quên mật khẩu");
+        } catch (Exception e) {
+            System.err.println("Lỗi gửi email OTP: " + e.getMessage());
+            e.printStackTrace();
+            throw new BadRequestException("Không thể gửi email OTP. Vui lòng kiểm tra cấu hình email server.");
+        }
+    }
+
+    // Xác thực OTP quên mật khẩu trước khi cho phép nhập mật khẩu mới.
+    public void verifyPasswordResetOtp(VerifyPasswordOtpRequest request) {
+        String email = request.getEmail() == null ? "" : request.getEmail().trim();
+        String otp = request.getOtp() == null ? "" : request.getOtp().trim();
+
+        if (email.isEmpty() || otp.isEmpty()) {
+            throw new BadRequestException("Vui lòng nhập đầy đủ email và OTP");
+        }
+
+        if (!userRepository.existsByEmail(email)) {
+            throw new BadRequestException("Email chưa được đăng ký");
+        }
+
+        PasswordResetOTP otpEntity = otpRepository.findByEmailAndOtp(email, otp)
+                .orElseThrow(() -> new BadRequestException("OTP không hợp lệ"));
+
+        if (otpEntity.getExpiryTime().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("OTP đã hết hạn");
+        }
+    }
+
+    // Xác nhận OTP + đổi mật khẩu mới
+    public void resetPassword(ResetPasswordRequest request) {
+        String email = request.getEmail() == null ? "" : request.getEmail().trim();
+        String otp = request.getOtp() == null ? "" : request.getOtp().trim();
+        String newPassword = request.getNewPassword() == null ? "" : request.getNewPassword();
+        String confirmPassword = request.getConfirmPassword() == null ? "" : request.getConfirmPassword();
+
+        if (email.isEmpty() || otp.isEmpty()) {
+            throw new BadRequestException("Vui lòng nhập đầy đủ email và OTP");
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            throw new BadRequestException("Mật khẩu nhập lại không khớp");
+        }
+
+        if (!newPassword.matches(PASSWORD_POLICY_REGEX)) {
+            throw new BadRequestException("Mật khẩu phải có chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự");
+        }
+
+        PasswordResetOTP otpEntity = otpRepository.findByEmailAndOtp(email, otp)
+                .orElseThrow(() -> new BadRequestException("OTP không hợp lệ"));
+
+        if (otpEntity.getExpiryTime().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("OTP đã hết hạn");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Email chưa được đăng ký"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         otpRepository.delete(otpEntity);
     }
