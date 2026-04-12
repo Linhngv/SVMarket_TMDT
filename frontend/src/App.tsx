@@ -7,6 +7,8 @@ import Footer from "./components/Footer";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
+import RegisterOTP from "./pages/RegisterOTP";
 import Profile from "./pages/Profile";
 
 function App() {
@@ -40,6 +42,8 @@ function App() {
 
       {/* LOGIN */}
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/verify-otp" element={<RegisterOTP />} />
 
       {/* OTHER */}
       <Route path="/faq" element={<FAQ />} />

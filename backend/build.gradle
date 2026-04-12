@@ -18,29 +18,31 @@ repositories {
 }
 
 dependencies {
-    // 🌐 Spring Web (làm API)
+    // Spring Web (làm API)
     implementation 'org.springframework.boot:spring-boot-starter-web'
     
     //spring security
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
-    // 🗄️ JPA + Hibernate
+    // JPA + Hibernate
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // 🐬 MySQL
+    // MySQL
     runtimeOnly 'com.mysql:mysql-connector-j'
 
-    // ⚡ Lombok (rất quan trọng)
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // 🧪 Test
+    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     //jwt
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 }
 
