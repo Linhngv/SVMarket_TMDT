@@ -53,11 +53,7 @@ function App() {
       <Route
         element={
           <>
-            <Header
-              isLoggedIn={isLoggedIn}
-              avatarUrl="/images/avatar.jpg"
-              userName="Nguyễn Lan Anh"
-            />
+         
             <div className="layout">
               <Sidebar />
               <main className="main">
@@ -65,7 +61,7 @@ function App() {
               </main>
             </div>
 
-            <Footer />
+           
           </>
         }
       >

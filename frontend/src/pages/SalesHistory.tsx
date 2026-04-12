@@ -65,15 +65,15 @@ export default function SalesHistory() {
           ) : (
             filtered.map((row) => (
               <tr key={row.id}>
-                <td className="id-cell">{row.id}</td>
-                <td>{row.buyerName}</td>
-                <td>{row.product}</td>
-                <td>
+                <td className="id-cell" data-label="ID giao dịch">{row.id}</td>
+                <td data-label="Người mua">{row.buyerName}</td>
+                <td data-label="Sản phẩm">{row.product}</td>
+                <td data-label="Trạng thái">
                   <span className={`status-pill ${row.status === 'Hoàn thành' ? 'done' : row.status === 'Chờ xác nhận' ? 'pending' : 'shipping'}`}>
                     {row.status}
                   </span>
                 </td>
-                <td>
+                <td data-label="Hành động">
                   <div className="action-btns">
                     <button className="icon-btn" onClick={() => setSelectedTx(row)} title="Xem chi tiết">
                       <Eye size={16} />

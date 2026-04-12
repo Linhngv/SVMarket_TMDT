@@ -59,7 +59,7 @@
 }
 
 .history-table thead tr {
-  background: var(--light-green);
+  background: transparent;
 }
 
 .history-table th {
@@ -155,6 +155,7 @@
   justify-content: center;
   gap: 16px;
   margin-top: 24px;
+  flex-wrap: wrap;
 }
 
 .page-btn {
@@ -184,4 +185,162 @@
 .page-info {
   font-size: 13px;
   color: var(--text-primary);
+}
+
+@media (max-width: 992px) {
+  .history-container {
+    padding: 20px;
+  }
+
+  .search-bar {
+    max-width: 100%;
+    margin: 0 0 20px 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .history-container {
+    padding: 16px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .history-title {
+    font-size: 20px;
+  }
+
+  .history-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    box-shadow: none;
+    border: none;
+  }
+
+  .history-table thead {
+    display: none;
+  }
+
+  .history-table tr {
+    display: block;
+  }
+
+  .history-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .history-table tr {
+    margin-bottom: 16px;
+    padding: 16px;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    background: var(--white);
+    box-shadow: none;
+  }
+
+  .history-table td {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .history-table td:last-child {
+    border-bottom: none;
+  }
+
+  .history-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--text-primary);
+    width: 40%;
+    flex: 0 0 40%;
+    padding-right: 10px;
+  }
+
+  .action-btns {
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 640px) {
+  .history-container {
+    padding: 10px;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .search-bar {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .history-table tr {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .history-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .history-table td::before {
+    width: 40%;
+    font-size: 12px;
+  }
+
+  .pagination {
+    gap: 10px;
+  }
+
+  .page-btn {
+    padding: 6px 14px;
+  }
+
+  .page-info {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .history-container {
+    padding: 8px;
+  }
+
+  .history-title {
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+
+  .search-bar {
+    padding: 8px;
+  }
+
+  .history-table tr {
+    margin-bottom: 10px;
+    padding: 10px;
+  }
+
+  .history-table td {
+    padding: 8px 8px;
+    font-size: 11px;
+  }
+
+  .history-table td::before {
+    width: 45%;
+  }
+
+  .action-btns {
+    gap: 4px;
+  }
 }

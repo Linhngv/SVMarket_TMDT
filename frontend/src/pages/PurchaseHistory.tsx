@@ -66,11 +66,11 @@ export default function PurchaseHistory() {
           ) : (
             filtered.map((row) => (
               <tr key={row.id}>
-                <td className="id-cell">{row.id}</td>
-                <td>{row.product}</td>
-                <td>{row.price}</td>
-                <td>{row.date}</td>
-                <td>
+                <td className="id-cell" data-label="ID giao dịch">{row.id}</td>
+                <td data-label="Sản phẩm">{row.product}</td>
+                <td data-label="Giá cả">{row.price}</td>
+                <td data-label="Ngày">{row.date}</td>
+                <td data-label="Trạng thái">
                   <span
                     className={`status-pill ${row.status === "Hoàn thành" ? "done" : "shipping"}`}
                   >
