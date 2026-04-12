@@ -12,7 +12,7 @@ export default function Banner() {
       <div className="search-box mt-3">
         <div className="search-wrapper">
           <input
-            className="form-control search-input"
+            className="form-control search-input-home"
             placeholder="Tìm giáo trình, đồ KTX, đồng phục..."
           />
 
