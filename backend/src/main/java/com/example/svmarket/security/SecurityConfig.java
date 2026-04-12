@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/user/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form.disable()) // TẮT LOGIN FORM
                 .httpBasic(basic -> basic.disable()) // TẮT BASIC AUTH
