@@ -8,4 +8,5 @@ public class UpdateProfileRequest {
     private String university;
     private String province;
     private String addressDetail;
+    private String gender;
 }

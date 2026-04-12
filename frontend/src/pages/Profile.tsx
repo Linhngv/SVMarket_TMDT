@@ -28,7 +28,8 @@ export default function Profile() {
                     fullName: name,
                     university: school,
                     province: city,
-                    addressDetail: address
+                    addressDetail: address,
+                    gender: gender.toUpperCase()
                 },
                 {
                     headers: {
@@ -88,7 +89,7 @@ export default function Profile() {
                 setCity(data.province);               // address.province
                 setSchool(data.university);           // users.university
                 setAddress(data.addressDetail);       // address.address_detail
-
+                setGender((data.gender || "OTHER").toLowerCase());
             } catch (err) {
                 console.error("Lỗi lấy profile:", err);
             }

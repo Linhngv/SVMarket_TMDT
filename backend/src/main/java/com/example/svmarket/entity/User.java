@@ -34,6 +34,10 @@ public class User {
     @Column(name = "full_name")
     private String fullName;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+
     private String email;
 
     private String password;
