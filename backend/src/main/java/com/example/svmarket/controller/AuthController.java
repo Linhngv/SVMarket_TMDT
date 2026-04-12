@@ -1,7 +1,5 @@
 package com.example.svmarket.controller;
 
-import com.example.svmarket.dto.RegisterOtpRequest;
-import com.example.svmarket.dto.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,14 +7,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.svmarket.dto.ForgotPasswordRequest;
 import com.example.svmarket.dto.LoginRequest;
 import com.example.svmarket.dto.LoginResponse;
+import com.example.svmarket.dto.RegisterOtpRequest;
+import com.example.svmarket.dto.RegisterRequest;
+import com.example.svmarket.dto.ResetPasswordRequest;
+import com.example.svmarket.dto.VerifyPasswordOtpRequest;
 import com.example.svmarket.service.AuthService;
 
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5174")
 public class AuthController {
 
     @Autowired
@@ -39,5 +42,26 @@ public class AuthController {
     public String verifyOtp(@RequestBody RegisterOtpRequest request) {
         authService.verifyRegistrationOTP(request);
         return "Đăng ký thành công";
+    }
+
+    // Gửi OTP để đổi mật khẩu
+    @PostMapping("/password/otp")
+    public String sendForgotPasswordOtp(@RequestBody ForgotPasswordRequest request) {
+        authService.requestPasswordResetOtp(request);
+        return "OTP đổi mật khẩu đã được gửi về email";
+    }
+
+    // Xác nhận OTP quên mật khẩu (bước riêng trước khi nhập mật khẩu mới)
+    @PostMapping("/password/verify-otp")
+    public String verifyForgotPasswordOtp(@RequestBody VerifyPasswordOtpRequest request) {
+        authService.verifyPasswordResetOtp(request);
+        return "OTP hợp lệ";
+    }
+
+    // Xác nhận OTP + đổi mật khẩu mới
+    @PostMapping("/password/reset")
+    public String resetPassword(@RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return "Đổi mật khẩu thành công";
     }
 }

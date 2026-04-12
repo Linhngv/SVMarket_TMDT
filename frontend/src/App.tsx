@@ -9,7 +9,9 @@ import About from "./pages/About";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RegisterOTP from "./pages/RegisterOTP";
+import ForgotPassword from "./pages/ForgotPassword";
 import Profile from "./pages/Profile";
+import ProductDetail from "./pages/product/ProductDetail";
 
 function App() {
   const isLoggedIn = !!localStorage.getItem("token");
@@ -44,12 +46,14 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/verify-otp" element={<RegisterOTP />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* OTHER */}
       <Route path="/faq" element={<FAQ />} />
       <Route path="/about" element={<About />} />
 
       <Route path="/profile" element={<Profile />} />
+      <Route path="/product/:id" element={<ProductDetail />} />
     </Routes>
   );
 }
