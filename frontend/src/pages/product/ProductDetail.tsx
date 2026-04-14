@@ -5,6 +5,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../../styles/product/ProductDetail.css";
 
+import { useAuth } from "../../context/AuthContext";
+
 type ProductInfo = {
   id: string;
   name: string;
@@ -37,56 +39,58 @@ const mockProduct: ProductInfo = {
 };
 
 export default function ProductDetail() {
-  const isLoggedIn = !!localStorage.getItem("token");
   const navigate = useNavigate();
   const { id } = useParams();
+
+  const { user, isLoggedIn } = useAuth();
+
+  const avatarUrl =
+    user?.avatar || "/images/avatar_default.jpg";
+
+  const userName = user?.fullName || "Khách";
+
+  // UI state
   const [isBuyFormOpen, setIsBuyFormOpen] = useState(false);
   const [buyerNote, setBuyerNote] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState(
-    "Gặp trực tiếp tại trường",
+    "Gặp trực tiếp tại trường"
   );
 
+  // scroll top when id changes
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [id]);
 
+  // lock scroll when modal open
   useEffect(() => {
-    // Khóa cuộn nền khi form đặt mua đang mở để tránh người dùng cuộn ra phía sau modal.
     document.body.style.overflow = isBuyFormOpen ? "hidden" : "";
-
     return () => {
       document.body.style.overflow = "";
     };
   }, [isBuyFormOpen]);
 
-  const openBuyForm = () => {
-    setIsBuyFormOpen(true);
-  };
-
-  const closeBuyForm = () => {
-    setIsBuyFormOpen(false);
-  };
+  const openBuyForm = () => setIsBuyFormOpen(true);
+  const closeBuyForm = () => setIsBuyFormOpen(false);
 
   const handleBuySubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    // Frontend-only: hiện tại chưa gọi backend, nên chỉ đóng form sau khi người dùng xác nhận.
     setIsBuyFormOpen(false);
     window.alert("Đã gửi yêu cầu đặt mua.");
   };
 
-  // demo frontend: chưa có backend nên dùng dữ liệu giả cố định
   const product = { ...mockProduct, id: id ?? mockProduct.id };
 
   return (
     <>
+      {/* HEADER*/}
       <Header
         isLoggedIn={isLoggedIn}
-        avatarUrl="/images/avatar.jpg"
-        userName="Nguyễn Lan Anh"
+        avatarUrl={avatarUrl}
+        userName={userName}
       />
 
       <div className="product-detail-page">
+        {/* BACK */}
         <div className="detail-backbar" onClick={() => navigate(-1)}>
           <div className="container-fluid px-4 d-flex align-items-center gap-2">
             <FaChevronLeft size={25} />
@@ -94,14 +98,13 @@ export default function ProductDetail() {
           </div>
         </div>
 
+        {/* TOP */}
         <div className="container-fluid px-4 mt-2">
           <div className="detail-top-card">
+
+            {/* GALLERY */}
             <div className="detail-gallery">
-              <button
-                className="gallery-arrow left"
-                type="button"
-                aria-label="Ảnh trước"
-              >
+              <button className="gallery-arrow left">
                 <FaChevronLeft />
               </button>
 
@@ -113,25 +116,18 @@ export default function ProductDetail() {
                 />
               </div>
 
-              <button
-                className="gallery-arrow right"
-                type="button"
-                aria-label="Ảnh sau"
-              >
+              <button className="gallery-arrow right">
                 <FaChevronRight />
               </button>
 
               <div className="gallery-count">1/1</div>
             </div>
 
+            {/* INFO */}
             <div className="detail-main-info">
               <div className="detail-title-row">
                 <h1 className="detail-title">{product.name}</h1>
-                <button
-                  className="report-btn"
-                  type="button"
-                  aria-label="Báo cáo sản phẩm"
-                >
+                <button className="report-btn">
                   <FaFlag />
                 </button>
               </div>
@@ -139,7 +135,9 @@ export default function ProductDetail() {
               <p className="detail-price">{product.price}</p>
 
               <div className="seller-row">
-                <div className="seller-avatar">NL</div>
+                <div className="seller-avatar">
+                  {product.seller.slice(0, 2).toUpperCase()}
+                </div>
 
                 <div className="seller-meta">
                   <div className="seller-name-wrap">
@@ -149,41 +147,38 @@ export default function ProductDetail() {
 
                   <div className="seller-rating-wrap">
                     <div className="seller-stars">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <FaStar key={index} />
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <FaStar key={i} />
                       ))}
                     </div>
-                    <span className="seller-rating">{product.rating}</span>
-                    <span className="seller-reviews">{product.reviews}</span>
+                    <span>{product.rating}</span>
+                    <span>{product.reviews}</span>
                   </div>
 
                   <p className="seller-school">{product.schoolYear}</p>
                 </div>
 
-                <button className="seller-page-btn" type="button">
-                  Xem trang
-                </button>
+                <button className="seller-page-btn">Xem trang</button>
               </div>
 
               <div className="detail-action-row">
-                <button className="buy-btn" type="button" onClick={openBuyForm}>
+                <button className="buy-btn" onClick={openBuyForm}>
                   Đặt mua
                 </button>
-                <button className="chat-btn" type="button">
-                  Nhắn tin
-                </button>
+                <button className="chat-btn">Nhắn tin</button>
               </div>
             </div>
           </div>
 
+          {/* BOTTOM */}
           <div className="detail-bottom-grid">
             <div className="detail-block">
-              <h2 className="detail-block-title">Mô tả</h2>
-              <p className="detail-desc">{product.description}</p>
+              <h2>Mô tả</h2>
+              <p>{product.description}</p>
             </div>
 
             <div className="detail-block">
-              <h2 className="detail-block-title">Thông tin chi tiết</h2>
+              <h2>Thông tin chi tiết</h2>
 
               <div className="detail-row-item">
                 <span>Tình trạng:</span>
@@ -196,86 +191,58 @@ export default function ProductDetail() {
               </div>
 
               <div className="detail-row-item no-border">
-                <span>Địa điểm giao:</span>
+                <span>Địa điểm:</span>
                 <span>{product.location}</span>
               </div>
             </div>
           </div>
         </div>
 
+        {/* MODAL */}
         {isBuyFormOpen && (
           <div className="buy-modal-overlay" onClick={closeBuyForm}>
             <div
               className="buy-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="buy-modal-title"
-              onClick={(event) => event.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="buy-modal-header">
-                <h2 id="buy-modal-title">Xác nhận đặt mua</h2>
-                <button
-                  type="button"
-                  className="buy-modal-close"
-                  onClick={closeBuyForm}
-                  aria-label="Đóng form đặt mua"
-                >
-                  ×
-                </button>
+                <h2>Xác nhận đặt mua</h2>
+                <button onClick={closeBuyForm}>×</button>
               </div>
 
               <div className="buy-modal-product">
-                <img
-                  src="/images/detail.png"
-                  alt={product.name}
-                  className="buy-modal-product-image"
-                />
-
-                <div className="buy-modal-product-info">
+                <img src="/images/detail.png" />
+                <div>
                   <h3>{product.name}</h3>
                   <p>{product.price}</p>
                 </div>
               </div>
 
-              <p className="buy-modal-note">
-                Yêu cầu của bạn sẽ được gửi đến{" "}
-                <strong>{product.seller}</strong>. Người bán sẽ xác nhận hoặc từ
-                chối trong vòng 24h.
+              <p>
+                Gửi yêu cầu đến <strong>{product.seller}</strong>
               </p>
 
-              <form className="buy-modal-form" onSubmit={handleBuySubmit}>
-                <label htmlFor="buyer-note">Ghi chú cho người bán</label>
+              <form onSubmit={handleBuySubmit}>
+                <label>Ghi chú</label>
                 <textarea
-                  id="buyer-note"
                   value={buyerNote}
-                  onChange={(event) => setBuyerNote(event.target.value)}
-                  placeholder="VD: Mình ở KTX A, có thể gặp ở cổng trường chiều T5..."
-                  rows={4}
+                  onChange={(e) => setBuyerNote(e.target.value)}
                 />
 
-                <label htmlFor="delivery-method">Hình thức giao nhận</label>
+                <label>Giao nhận</label>
                 <select
-                  id="delivery-method"
                   value={deliveryMethod}
-                  onChange={(event) => setDeliveryMethod(event.target.value)}
+                  onChange={(e) => setDeliveryMethod(e.target.value)}
                 >
                   <option>Gặp trực tiếp tại trường</option>
                   <option>Nhờ ship nội thành</option>
-                  <option>Hẹn giao tại địa điểm khác</option>
+                  <option>Hẹn địa điểm khác</option>
                 </select>
 
-                <div className="buy-modal-actions">
-                  <button type="submit" className="buy-modal-submit">
-                    Gửi yêu cầu đặt mua
-                  </button>
-                  <button
-                    type="button"
-                    className="buy-modal-cancel"
-                    onClick={closeBuyForm}
-                  >
-                    Hủy
-                  </button>
-                </div>
+                <button type="submit">Gửi yêu cầu</button>
+                <button type="button" onClick={closeBuyForm}>
+                  Hủy
+                </button>
               </form>
             </div>
           </div>

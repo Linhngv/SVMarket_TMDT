@@ -4,13 +4,16 @@ import Categories from "../components/Categories";
 import Products from "../components/Products";
 import Footer from "../components/Footer";
 
-type Props = {
-    isLoggedIn: boolean;
-    avatarUrl: string;
-    userName: string;
-};
+import { useAuth } from "../context/AuthContext";
 
-function Home({ isLoggedIn, avatarUrl, userName }: Props) {
+function Home() {
+    const { user, isLoggedIn } = useAuth();
+
+    const avatarUrl =
+        user?.avatar || "/images/avatar_default.jpg";
+
+    const userName = user?.fullName || "Khách";
+
     return (
         <>
             <Header

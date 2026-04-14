@@ -1,12 +1,18 @@
 import type { CSSProperties } from "react";
-import Header from "../components/Header"; 
+import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useAuth } from "../context/AuthContext";
 
 export default function About() {
+  const { isLoggedIn, user } = useAuth();
+
   return (
     <div style={styles.page}>
-      <Header isLoggedIn={false} avatarUrl="" userName="" />
-      
+      <Header
+        isLoggedIn={isLoggedIn}
+        avatarUrl={user?.avatar || ""}
+        userName={user?.fullName || ""}
+      />
       {/* Thêm style để làm animation cho các thẻ Card */}
       <style>
         {`
@@ -51,7 +57,7 @@ export default function About() {
               <p style={styles.cardText}>
                 Sàn giao dịch SVMarketplace được xây dựng với sứ mệnh rõ ràng: làm cho việc trao đổi, mua và bán sản phẩm cũ giữa sinh viên toàn quốc trở nên dễ dàng, an toàn và tiếp cận được. Dù bạn cần tìm giáo trình đã qua sử dụng, đồ dùng ký túc xá, quần áo secondhand hay những món đồ hữu ích cho cuộc sống sinh viên, SVMarketplace giúp kết nối người mua và người bán nhanh chóng, minh bạch và tiết kiệm.
                 <br /><br />Chúng tôi tin rằng đồ cũ không chỉ rẻ hơn mà còn mang theo những câu chuyện và giá trị bền vững. SVMarketplace hướng tới xây dựng một cộng đồng đáng tin cậy, nơi giao dịch được thực hiện với thông tin rõ ràng, đánh giá minh bạch và các công cụ bảo vệ người dùng, để cả người mua lẫn người bán đều giao dịch với sự tự tin.
-                </p>
+              </p>
             </div>
             <div style={styles.imageBlock}>
               <img src="/images/banner_about1.png" alt="img1" style={styles.image} />
@@ -105,7 +111,7 @@ export default function About() {
           </div>
         </div>
       </section>
-       {/* gắn footer */}
+      {/* gắn footer */}
       <Footer />
     </div>
   );
@@ -114,7 +120,7 @@ export default function About() {
 const styles: Record<string, CSSProperties> = {
   page: { minHeight: "100vh", backgroundColor: "#F5F5F5", fontFamily: "sans-serif" },
   heroSection: { backgroundColor: "#1B7A4A", padding: "30px 20px", textAlign: "center" },
-  mainContent: { padding: "40px", margin: "20px auto", maxWidth: "1000px", width: "90%", backgroundColor: "#ffffff", borderRadius: "12px", boxShadow: "0 4px 6px rgba(0,0,0,0.05)", border: "1px solid #eaeaea"},
+  mainContent: { padding: "40px", margin: "20px auto", maxWidth: "1000px", width: "90%", backgroundColor: "#ffffff", borderRadius: "12px", boxShadow: "0 4px 6px rgba(0,0,0,0.05)", border: "1px solid #eaeaea" },
   title: { fontSize: "32px", color: "#ffffff", marginBottom: "16px", fontWeight: "bold" },
   description: { fontSize: "18px", color: "#e2e8f0", lineHeight: "1.5", margin: "0 auto", maxWidth: "800px" },
   cardsContainer: { display: "flex", flexDirection: "column", gap: "40px" },
@@ -124,7 +130,7 @@ const styles: Record<string, CSSProperties> = {
   cardTitle: { fontSize: "20px", fontWeight: "bold", color: "#0F4D2E", marginBottom: "4px" },
   cardText: { fontSize: "15px", color: "#3D3D5C", lineHeight: "1.5", marginTop: "0px", marginBottom: "5px" },
   image: { width: "100%", height: "auto", objectFit: "cover", display: "block" },
-  
+
   // Style cho phần Features
   featuresSection: { padding: "40px 20px", maxWidth: "1000px", width: "90%", margin: "40px auto", backgroundColor: "#ffffff", borderRadius: "12px", boxShadow: "0 4px 6px rgba(0,0,0,0.05)", border: "1px solid #eaeaea" },
   featuresHeader: { textAlign: "center", marginBottom: "40px" },

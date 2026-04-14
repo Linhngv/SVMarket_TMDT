@@ -1,12 +1,18 @@
 import type { CSSProperties } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useAuth } from "../context/AuthContext";
 
 
 export default function FAQ() {
+    const { isLoggedIn, user } = useAuth();
     return (
         <div style={styles.page}>
-            <Header isLoggedIn={false} avatarUrl="" userName="" />
+            <Header
+                isLoggedIn={isLoggedIn}
+                avatarUrl={user?.avatar || ""}
+                userName={user?.fullName || ""}
+            />
             <style>
                 {`
                   @media (max-width: 768px) {
@@ -77,7 +83,7 @@ const styles: Record<string, CSSProperties> = {
         fontFamily: "sans-serif"
     },
     mainContent: {
-        flex: 1, 
+        flex: 1,
         padding: "40px",
         margin: "20px auto",
         maxWidth: "1000px",
@@ -90,7 +96,7 @@ const styles: Record<string, CSSProperties> = {
     heroSection: { backgroundColor: "#1B7A4A", padding: "30px 20px", textAlign: "center" },
     title: { fontSize: "32px", color: "#ffffff", marginBottom: "16px", fontWeight: "bold" },
     description: { fontSize: "18px", color: "#e2e8f0", lineHeight: "1.5", margin: "0 auto", maxWidth: "800px" },
-    faqCard: { display: "flex", flexDirection: "column" }, 
+    faqCard: { display: "flex", flexDirection: "column" },
     faqItem: { display: "flex", flexDirection: "column", gap: "10px", marginBottom: "40px" },
     faqTitle: { borderLeft: "4px solid #1B7A4A", paddingLeft: "20px", fontSize: "18px", fontWeight: "bold", color: "#1A1A2E", margin: 0 },
     faqText: { fontSize: "16px", color: "#3D3D5C", lineHeight: "1.6", margin: 0 }
