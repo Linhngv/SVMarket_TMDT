@@ -2,11 +2,8 @@ import { Routes, Route, Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-import Header from "./components/Header";
-import Banner from "./components/Banner";
-import Categories from "./components/Categories";
-import Products from "./components/Products";
-import Footer from "./components/Footer";
+import Home from "./pages/Home";
+
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Login from "./pages/Login";
@@ -19,27 +16,27 @@ import ProductDetail from "./pages/product/ProductDetail";
 
 import PurchaseHistory from "./pages/PurchaseHistory";
 import SalesHistory from "./pages/SalesHistory";
+
 import Sidebar from "./components/sidebar/user/Sidebar";
 
 function App() {
-  // state token (reactive)
+  // token state
   const [token, setToken] = useState(localStorage.getItem("token"));
 
-  // state user
+  // user state
   const [user, setUser] = useState<any>(null);
 
-  // lắng nghe thay đổi localStorage (login/logout)
+  // listen localStorage change (login/logout)
   useEffect(() => {
     const handleStorage = () => {
       setToken(localStorage.getItem("token"));
     };
 
     window.addEventListener("storage", handleStorage);
-
     return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  // gọi API /me khi token thay đổi
+  // fetch user when token changes
   useEffect(() => {
     if (!token) {
       setUser(null);
@@ -58,7 +55,6 @@ function App() {
       .catch((err) => {
         console.error("Lỗi lấy user:", err);
 
-        // ❗ token sai / hết hạn → logout luôn
         localStorage.removeItem("token");
         setUser(null);
       });
@@ -72,23 +68,11 @@ function App() {
       <Route
         path="/"
         element={
-          <>
-            <Header
-              isLoggedIn={isLoggedIn}
-              avatarUrl={user?.avatar || "/images/avatar_default.jpg"}
-              userName={user?.fullName || "Khách"}
-            />
-
-            <Banner />
-
-            <div className="container-fluid px-4 mt-3">
-              <Categories />
-              <Products title="Tất cả bài đăng" />
-              <Products title="Đề xuất sản phẩm" />
-            </div>
-
-            <Footer />
-          </>
+          <Home
+            isLoggedIn={isLoggedIn}
+            avatarUrl={user?.avatar || "/images/avatar_default.jpg"}
+            userName={user?.fullName || "Khách"}
+          />
         }
       />
 
@@ -98,7 +82,7 @@ function App() {
       <Route path="/verify-otp" element={<RegisterOTP />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
-      {/* OTHER */}
+      {/* OTHER PAGES */}
       <Route path="/faq" element={<FAQ />} />
       <Route path="/about" element={<About />} />
       <Route path="/profile" element={<Profile />} />
