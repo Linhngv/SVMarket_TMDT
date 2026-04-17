@@ -42,6 +42,9 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UniversityService universityService;
+
     // public LoginResponse login(LoginRequest req) {
     // System.out.println("INPUT: " + req.getEmailOrPhone());
     // System.out.println("PASS: " + req.getPassword());
@@ -102,7 +105,16 @@ public class AuthService {
     }
 
     public void register(RegisterRequest registerRequest) {
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+
+        String email = registerRequest.getEmail().trim().toLowerCase();
+
+        if (!email.endsWith(".edu.vn")) {
+            throw new BadRequestException(
+                    "Vui lòng sử dụng email sinh viên của trường (.edu.vn)"
+            );
+        }
+
+        if (userRepository.existsByEmail(email)) {
             throw new BadRequestException("Email đã được đăng ký!");
         }
 
@@ -147,6 +159,11 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setStatus("Đang hoạt động");
         user.setRole(Role.USER);
+
+        String university =
+                universityService.findUniversityByEmail(request.getEmail());
+
+        user.setUniversity(university); // lưu tên trường
 
         userRepository.save(user);
         otpRepository.delete(otpEntity);
