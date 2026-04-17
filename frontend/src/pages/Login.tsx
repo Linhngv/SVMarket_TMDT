@@ -2,9 +2,11 @@ import type { CSSProperties } from "react";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login, refreshUser } = useAuth();
 
   // state
   const [email, setEmail] = useState("");
@@ -22,10 +24,13 @@ export default function Login() {
       console.log("LOGIN RESPONSE:", res.data);
 
       if (res.data.token) {
-        // Lưu token
-        localStorage.setItem("token", res.data.token);
+        // localStorage.setItem("token", res.data.token);
+        // window.dispatchEvent(new Event("storage"));
 
-        window.dispatchEvent(new Event("storage"));
+        login(res.data.token);
+
+        // load user ngay lập tức
+        await refreshUser();
 
         // chuyển trang
         navigate("/");

@@ -1,37 +1,39 @@
 package com.example.svmarket.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Table(name = "address")
+@Table(name = "notifications")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class Address {
+public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private String province;
-    private String district;
-    private String ward;
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String content;
 
-    @Column(name = "address_detail")
-    private String addressDetail;
+    @Enumerated(EnumType.STRING)
+    private NotificationType type;
 
+    @Column(name = "reference_id")
+    private Integer referenceId;
+
+    @Column(name = "is_read")
     @Builder.Default
-    @Column(name = "is_default")
-    private Boolean isDefault = false;
+    private Boolean isRead = false;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -40,4 +42,5 @@ public class Address {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
 }

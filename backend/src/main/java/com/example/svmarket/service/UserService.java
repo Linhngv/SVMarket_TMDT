@@ -2,14 +2,13 @@ package com.example.svmarket.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.example.svmarket.dto.ProfileResponse;
-import com.example.svmarket.dto.UpdateProfileRequest;
-import com.example.svmarket.entity.Address;
-import com.example.svmarket.entity.Gender;
-import com.example.svmarket.entity.User;
-import com.example.svmarket.repository.UserRepository;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.example.svmarket.dto.*;
+import com.example.svmarket.entity.*;
+import com.example.svmarket.repository.*;
+
+import java.nio.file.*;
 
 @Service
 public class UserService {
@@ -19,15 +18,20 @@ public class UserService {
 
     // GET PROFILE
     public ProfileResponse getProfile(String email) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+
+        Address address = user.getAddresses() != null
+                ? user.getAddresses().stream().findFirst().orElse(null)
+                : null;
 
         return new ProfileResponse(
                 user.getFullName(),
                 user.getAvatar(),
                 user.getUniversity(),
-                user.getAddress() != null ? user.getAddress().getProvince() : "",
-                user.getAddress() != null ? user.getAddress().getAddressDetail() : "",
+                address != null ? address.getProvince() : "",
+                address != null ? address.getAddressDetail() : "",
                 user.getGender() != null ? user.getGender().name() : "OTHER");
     }
 
@@ -37,7 +41,6 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
-        // update bảng users
         user.setFullName(req.getFullName());
         user.setUniversity(req.getUniversity());
 
@@ -45,65 +48,65 @@ public class UserService {
             user.setGender(Gender.valueOf(req.getGender().toUpperCase()));
         }
 
-        // update bảng address
-        Address address = user.getAddress();
+        // ADDRESS HANDLING
+        Address address = null;
+
+        if (user.getAddresses() != null && !user.getAddresses().isEmpty()) {
+            address = user.getAddresses().get(0);
+        }
 
         if (address == null) {
             address = new Address();
+            address.setUser(user);
+
+            if (user.getAddresses() != null) {
+                user.getAddresses().add(address);
+            }
         }
 
         address.setProvince(req.getProvince());
         address.setAddressDetail(req.getAddressDetail());
 
-        user.setAddress(address);
-
         userRepository.save(user);
     }
 
+    // UPLOAD AVATAR
     public String uploadAvatar(String email, MultipartFile file) {
 
         try {
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
-            // validate file
             if (file.isEmpty()) {
                 throw new RuntimeException("File rỗng");
             }
 
-            // chỉ cho phép ảnh
             String contentType = file.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
                 throw new RuntimeException("Chỉ được upload ảnh");
             }
 
-            // tạo tên file
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
-            // thư mục upload
             String uploadDir = System.getProperty("user.dir") + "/uploads";
-            java.nio.file.Path uploadPath = java.nio.file.Paths.get(uploadDir);
+            Path uploadPath = Paths.get(uploadDir);
 
-            if (!java.nio.file.Files.exists(uploadPath)) {
-                java.nio.file.Files.createDirectories(uploadPath);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
             }
 
-            // lưu file
-            java.nio.file.Path filePath = uploadPath.resolve(fileName);
-            java.nio.file.Files.copy(
-                    file.getInputStream(),
-                    filePath,
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            Path filePath = uploadPath.resolve(fileName);
 
-            // lưu DB
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
             String avatarUrl = "/uploads/" + fileName;
             user.setAvatar(avatarUrl);
+
             userRepository.save(user);
 
             return avatarUrl;
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Upload avatar thất bại");
         }
     }
