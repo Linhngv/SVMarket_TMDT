@@ -4,23 +4,12 @@ import Categories from "../components/Categories";
 import Products from "../components/Products";
 import Footer from "../components/Footer";
 
-import { useAuth } from "../context/AuthContext";
 
 function Home() {
-    const { user, isLoggedIn } = useAuth();
-
-    const avatarUrl =
-        user?.avatar || "/images/avatar_default.jpg";
-
-    const userName = user?.fullName || "Khách";
 
     return (
         <>
-            <Header
-                isLoggedIn={isLoggedIn}
-                avatarUrl={avatarUrl}
-                userName={userName}
-            />
+            <Header />
 
             <Banner />
 

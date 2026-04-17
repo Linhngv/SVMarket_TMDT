@@ -10,39 +10,34 @@ import {
     LogOut,
     User
 } from "lucide-react";
+
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-type HeaderProps = {
-    isLoggedIn: boolean;
-    avatarUrl?: string;
-    userName?: string;
-};
+export default function Header() {
+    const { isLoggedIn, user, logout } = useAuth();
 
-export default function Header({
-    isLoggedIn,
-    avatarUrl,
-    userName
-}: HeaderProps) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
-    // đóng popup khi click ngoài
+    // click outside close popup
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
             if (ref.current && !ref.current.contains(e.target as Node)) {
                 setOpen(false);
             }
         };
+
         document.addEventListener("mousedown", handleClick);
         return () => document.removeEventListener("mousedown", handleClick);
     }, []);
 
-    // fallback avatar
+    // avatar fallback
     const avatar =
-        avatarUrl && avatarUrl.trim() !== ""
-            ? `http://localhost:8080/${avatarUrl.replace(/^\/+/, "")}`
+        user?.avatar && user.avatar.trim() !== ""
+            ? `http://localhost:8080/${user.avatar.replace(/^\/+/, "")}`
             : "/images/avatar_default.jpg";
 
     return (
@@ -53,10 +48,7 @@ export default function Header({
                 <div
                     className="fw-bold fs-5"
                     style={{ cursor: "pointer" }}
-                    onClick={() => {
-                        navigate("/");
-                        window.dispatchEvent(new Event("authChanged"));
-                    }}
+                    onClick={() => navigate("/")}
                 >
                     <span style={{ color: "#1B7A4A" }}>SV</span>
                     <span style={{ color: "#D4A017" }}>Marketplace</span>
@@ -65,13 +57,8 @@ export default function Header({
                 {/* RIGHT */}
                 <div className="d-flex align-items-center gap-2">
 
-                    <div className="icon-btn">
-                        <Heart size={18} />
-                    </div>
-
-                    <div className="icon-btn">
-                        <Bell size={18} />
-                    </div>
+                    <div className="icon-btn"><Heart size={18} /></div>
+                    <div className="icon-btn"><Bell size={18} /></div>
 
                     <button className="contact-btn rounded-pill px-3 d-flex align-items-center gap-2">
                         <MessageCircle size={18} />
@@ -84,15 +71,10 @@ export default function Header({
 
                     {/* AVATAR */}
                     <div className="avatar-wrapper position-relative" ref={ref}>
+
                         <div
                             className="avatar d-flex align-items-center gap-1"
-                            onClick={() => {
-                                if (!isLoggedIn) {
-                                    navigate("/login");
-                                    return;
-                                }
-                                setOpen(!open);
-                            }}
+                            onClick={() => setOpen(prev => !prev)}
                         >
                             {isLoggedIn ? (
                                 <img
@@ -113,13 +95,13 @@ export default function Header({
                             />
                         </div>
 
-                        {/* POPUP */}
                         {open && (
                             <ProfilePopup
                                 isLoggedIn={isLoggedIn}
                                 avatarUrl={avatar}
-                                userName={userName}
+                                userName={user?.fullName}
                                 navigate={navigate}
+                                logout={logout}
                                 onClose={() => setOpen(false)}
                             />
                         )}
@@ -130,11 +112,13 @@ export default function Header({
     );
 }
 
+
 type PopupProps = {
     isLoggedIn: boolean;
     avatarUrl: string;
     userName?: string;
     navigate: (path: string) => void;
+    logout: () => void;
     onClose: () => void;
 };
 
@@ -143,15 +127,12 @@ function ProfilePopup({
     avatarUrl,
     userName,
     navigate,
+    logout,
     onClose
 }: PopupProps) {
 
     const handleLogout = () => {
-        localStorage.removeItem("token");
-
-        // 🔥 cập nhật App ngay
-        window.dispatchEvent(new Event("storage"));
-
+        logout();
         onClose();
         navigate("/");
     };
@@ -160,7 +141,7 @@ function ProfilePopup({
         <div className="profile-popup">
             <div className="popup-arrow"></div>
 
-            {/* USER */}
+            {/* USER INFO */}
             <div className="text-center">
                 <div className="popup-avatar">
                     <img
@@ -185,7 +166,7 @@ function ProfilePopup({
                     )}
                 </div>
 
-                <h6 className="mt-2 mb-1 fw-bold popup-name">
+                <h6 className="mt-2 mb-1 fw-bold">
                     {isLoggedIn ? userName : "Khách"}
                 </h6>
 
@@ -194,7 +175,7 @@ function ProfilePopup({
                 </small>
             </div>
 
-            {/* Nếu đã login */}
+            {/* MENU */}
             {isLoggedIn ? (
                 <>
                     <PopupSection
@@ -259,7 +240,7 @@ type SectionProps = {
 function PopupSection({ title, items, isLogout = false }: SectionProps) {
     return (
         <div className="popup-section">
-            <p className="section-title popup-title">{title}</p>
+            <p className="section-title">{title}</p>
 
             <div className="popup-box">
                 {items.map((item, index) => (
