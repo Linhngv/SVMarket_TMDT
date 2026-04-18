@@ -1,0 +1,167 @@
+.admin-container {
+    min-height: 100vh;
+    background: #f3f4f6;
+}
+
+/* TOPBAR */
+.admin-topbar {
+    background: #0F4D2E;
+    color: #fff;
+    padding: 12px 20px;
+}
+
+.breadcrumb {
+    font-size: 16px;
+}
+
+.avatar-box {
+    background: #fff;
+    color: #000;
+    padding: 6px;
+    border-radius: 50%;
+}
+
+/* CONTENT */
+.admin-content {
+    padding: 0 20px;
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.page-title {
+    font-weight: 700;
+    color: #1A1A2E;
+}
+
+/* SEARCH */
+.search-input {
+    max-width: 1000px;
+    border: 1px solid #E5E7EB;
+    color: #3D3D5C;
+}
+
+.admin-btn-search {
+    background-color: #1B7A4A;
+    color: #fff;
+    border: none;
+}
+
+.admin-btn-search:hover {
+    background-color: #14532d;
+    color: #fff;
+}
+
+/* TABLE */
+.table th {
+    color: #6B7280;
+    font-size: 16px;
+}
+
+.badge-pending {
+    background-color: #E5E7EB;
+    color: #3D3D5C;
+}
+
+.badge-approved {
+    background-color: #22C55E;
+    color: #fff;
+}
+
+.badge-violation {
+    background-color: #C0392B;
+    color: #fff;
+}
+
+.status-badge {
+    width: 110px;
+    display: inline-block;
+    text-align: center;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+/* APPROVAL PAGE */
+.approval-container {
+    border: 1px solid #E5E7EB;
+    border-radius: 30px;
+}
+
+.post-images::-webkit-scrollbar {
+    height: 6px;
+}
+
+.post-images::-webkit-scrollbar-thumb {
+    background: #E5E7EB;
+    border-radius: 10px;
+}
+
+.post-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #E5E7EB;
+    flex-shrink: 0;
+}
+
+.reject-input {
+    border: 1px solid #E5E7EB;
+    border-radius: 20px;
+    color: #3D3D5C;
+}
+
+.reject-input::placeholder {
+    color: #3D3D5C;
+}
+
+.btn-approve-post {
+    background-color: #1B7A4A;
+    color: #fff;
+    width: 200px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 12px 0;
+    transition: all 0.2s ease;
+}
+
+.btn-approve-post:hover {
+    background-color: #14532d;
+    color: #fff;
+}
+
+.btn-reject-post {
+    background-color: #FDEDEC;
+    color: #C0392B;
+    width: 200px;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 30px;
+    padding: 12px 0;
+    transition: all 0.2s ease;
+}
+
+.btn-reject-post:hover {
+    background-color: #fad2d0;
+    color: #a93226;
+}
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+    .admin-main {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .admin-topbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .search-input {
+        max-width: 100%;
+    }
+}

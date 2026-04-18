@@ -1,0 +1,18 @@
+.approval-title {
+    color: #3D3D5C;
+    font-weight: 600;
+    font-size: 20px;
+}
+
+.approval-author {
+    color: #6B7280;
+}
+
+.approval-desc {
+    color: #3D3D5C;
+    line-height: 1.6;
+}
+
+.approval-content {
+    margin-bottom: 20px;
+}
