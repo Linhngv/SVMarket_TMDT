@@ -126,6 +126,9 @@ public class SecurityConfig {
                         // USER API (tùy bạn, có thể cần login)
                         .requestMatchers("/api/user/**").permitAll()
 
+                        // LISTING API (controller tự xử lý token)
+                        .requestMatchers("/api/listings/**").permitAll()
+
                         // STATIC (đã ignore ở trên, nhưng để đây cũng OK)
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/images/**").permitAll()

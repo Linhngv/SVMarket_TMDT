@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
@@ -10,10 +10,11 @@ import Profile from "./pages/Profile";
 import ProductDetail from "./pages/product/ProductDetail";
 import PurchaseHistory from "./pages/PurchaseHistory";
 import SalesHistory from "./pages/SalesHistory";
-import Sidebar from "./components/sidebar/user/Sidebar";
-import AdminPostList from "./pages/admin/PostManagement/AdminPostList";
-import AdminPostApproval from "./pages/admin/PostManagement/AdminPostApproval";
-import AdminViolationList from "./pages/admin/PostManagement/AdminViolationList";
+import UserAreaLayout from "./components/sidebar/user/UserAreaLayout";
+import CreateListing from "./pages/CreateListing";
+import MyListings from "./pages/MyListings";
+import EditListing from "./pages/EditListing";
+
 function App() {
   return (
     <Routes>
@@ -29,30 +30,13 @@ function App() {
 
       <Route path="/product/:id" element={<ProductDetail />} />
 
-      <Route
-        element={
-          <div className="layout">
-            <Sidebar />
-            <main className="main">
-              <Outlet />
-            </main>
-          </div>
-        }
-      >
-        <Route path="/profile" element={<Profile />} />
+      <Route element={<UserAreaLayout />}>
+        <Route path="/create-listing" element={<CreateListing />} />
+        <Route path="/my-listings" element={<MyListings />} />
+        <Route path="/my-listings/:id/edit" element={<EditListing />} />
         <Route path="/purchase-history" element={<PurchaseHistory />} />
         <Route path="/sales-history" element={<SalesHistory />} />
       </Route>
-
-
-      <Route path="/admin/posts" element={<AdminPostList />} />
-
-      <Route path="/admin/duyet-bai" element={<AdminPostApproval />} />
-
-      <Route path="/admin/vi-pham" element={<AdminViolationList />} />
-
-
-
 
       <Route path="*" element={<div>Trang đang được phát triển.</div>} />
     </Routes>
