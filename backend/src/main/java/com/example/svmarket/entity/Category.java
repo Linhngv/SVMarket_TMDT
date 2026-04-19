@@ -21,6 +21,9 @@ public class Category {
     @Column(length = 150, nullable = false)
     private String name;
 
+    @Column(length = 500)
+    private String image;
+
     @OneToMany(mappedBy = "category")
     private List<Listing> listings;
 }

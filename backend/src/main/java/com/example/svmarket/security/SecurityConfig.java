@@ -126,6 +126,12 @@ public class SecurityConfig {
                         // USER API (tùy bạn, có thể cần login)
                         .requestMatchers("/api/user/**").permitAll()
 
+                        // ORDER API
+                        .requestMatchers("/api/orders/**").permitAll()
+
+                        // NOTIFICATION API
+                        .requestMatchers("/api/notifications/**").permitAll()
+
                         // ADMIN API
                         .requestMatchers("/api/admin/**").permitAll()
 
@@ -135,6 +141,9 @@ public class SecurityConfig {
                         // STATIC (đã ignore ở trên, nhưng để đây cũng OK)
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
+
+                        // Cho phép truy cập /error để không bị lỗi 403 khi gặp 404 hoặc 500
+                        .requestMatchers("/error").permitAll()
 
                         // OPTIONS (fix preflight)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

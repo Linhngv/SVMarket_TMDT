@@ -13,10 +13,7 @@ import {
 export default function ProductDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { user, isLoggedIn } = useAuth();
-
-  const avatarUrl = user?.avatar || "/images/avatar_default.jpg";
-  const userName = user?.fullName || "Khách";
+  const { isLoggedIn } = useAuth();
 
   const [isBuyFormOpen, setIsBuyFormOpen] = useState(false);
   const [buyerNote, setBuyerNote] = useState("");
@@ -67,10 +64,38 @@ export default function ProductDetail() {
   const openBuyForm = () => setIsBuyFormOpen(true);
   const closeBuyForm = () => setIsBuyFormOpen(false);
 
-  const handleBuySubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleBuySubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsBuyFormOpen(false);
-    window.alert("Đã gửi yêu cầu đặt mua.");
+
+    if (!isLoggedIn) {
+      window.alert("Vui lòng đăng nhập để thực hiện đặt mua!");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:8080/api/orders/request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          listingId: product?.id,
+          note: buyerNote,
+          deliveryMethod: deliveryMethod
+        })
+      });
+
+      if (!response.ok) throw new Error("Lỗi khi gửi yêu cầu");
+
+      setIsBuyFormOpen(false);
+      window.alert("Đã gửi yêu cầu đặt mua. Người bán sẽ nhận được thông báo!");
+    } catch (error) {
+      console.error(error);
+      window.alert("Có lỗi xảy ra khi gửi yêu cầu mua hàng.");
+    }
   };
 
   const title = product?.title || "Đang tải...";
@@ -96,7 +121,7 @@ export default function ProductDetail() {
 
   const imageSrc =
     normalizedGalleryImages[
-      Math.min(currentImageIndex, normalizedGalleryImages.length - 1)
+    Math.min(currentImageIndex, normalizedGalleryImages.length - 1)
     ] || "/images/detail.png";
 
   useEffect(() => {
@@ -117,11 +142,7 @@ export default function ProductDetail() {
 
   return (
     <>
-      <Header
-        isLoggedIn={isLoggedIn}
-        avatarUrl={avatarUrl}
-        userName={userName}
-      />
+      <Header />
 
       <div className="product-detail-page">
         <div className="detail-backbar" onClick={() => navigate(-1)}>
@@ -282,7 +303,7 @@ export default function ProductDetail() {
               </div>
 
               <p className="buy-modal-note">
-                Gửi yêu cầu đến <strong>{sellerName}</strong>
+                Yêu cầu của bạn sẽ được gửi đến <strong>{sellerName}</strong> <br /> Người bán sẽ xác nhận hoặc từ chối trong vòng 24h.
               </p>
 
               <form className="buy-modal-form" onSubmit={handleBuySubmit}>
@@ -304,7 +325,7 @@ export default function ProductDetail() {
 
                 <div className="buy-modal-actions">
                   <button type="submit" className="buy-modal-submit">
-                    Gửi yêu cầu
+                    Gửi yêu cầu đặt mua
                   </button>
                   <button
                     type="button"

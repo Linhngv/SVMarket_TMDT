@@ -55,7 +55,7 @@ public class ListingService {
     public List<CategoryOptionResponse> getCategories() {
         return categoryRepository.findAll()
                 .stream()
-                .map(category -> new CategoryOptionResponse(category.getId(), category.getName()))
+                .map(category -> new CategoryOptionResponse(category.getId(), category.getName(), category.getImage()))
                 .toList();
     }
 
