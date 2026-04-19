@@ -73,7 +73,7 @@ public class ListingService {
                 .price(request.getPrice())
                 .deliveryAddress(request.getDeliveryAddress())
                 .conditionLevel(request.getConditionLevel())
-                .status(parseStatus(request.getStatus()))
+                .status(ListingStatus.PENDING) // Bắt buộc chờ duyệt khi đăng mới
                 .stock(1)
                 .build();
 
@@ -292,6 +292,7 @@ public class ListingService {
         response.setStatus(listing.getStatus() != null ? listing.getStatus().name() : ListingStatus.ACTIVE.name());
         response.setThumbnailUrl(thumbnail);
         response.setSellerUniversity(listing.getSeller() != null ? listing.getSeller().getUniversity() : null);
+        response.setSellerName(listing.getSeller() != null ? listing.getSeller().getFullName() : null);
         response.setCreatedAt(listing.getCreatedAt());
         return response;
     }

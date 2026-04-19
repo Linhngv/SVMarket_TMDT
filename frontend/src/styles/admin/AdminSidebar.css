@@ -1,4 +1,4 @@
-.sidebar {
+.admin-sidebar {
     width: 300px;
     min-width: 200px;
     background: #ffffff;
@@ -10,17 +10,17 @@
     border-right: 1px solid #e5e7eb;
 }
 
-.sidebar-logo {
+.admin-sidebar-logo {
     font-size: 28px;
     font-weight: 700;
     padding: 0 20px 16px;
 }
 
-.sidebar-group {
+.admin-sidebar-group {
     margin-bottom: 20px;
 }
 
-.sidebar-group-label {
+.admin-sidebar-group-label {
     font-size: 15px;
     font-weight: 700;
     color: #14532d;
@@ -28,18 +28,18 @@
     margin-bottom: 6px;
 }
 
-.sidebar-menu {
+.admin-sidebar-menu {
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-.sidebar-menu li {
+.admin-sidebar-menu li {
     padding-left: 20px;
     margin-bottom: 6px;
 }
 
-.sidebar-item {
+.admin-sidebar-item {
     position: relative;
     width: calc(100% - 20px);
     display: flex;
@@ -57,17 +57,17 @@
     transition: all 0.2s ease;
 }
 
-.sidebar-item svg {
+.admin-sidebar-item svg {
     width: 24px;
     height: 24px;
     color: #1A1A2E;
 }
 
-.sidebar .sidebar-item:hover {
+.admin-sidebar .admin-sidebar-item:hover {
     background: #E8F5EE;
 }
 
-.sidebar-item::before {
+.admin-sidebar-item::before {
     content: "";
     position: absolute;
     left: -12px;
@@ -78,89 +78,89 @@
     border-radius: 4px;
 }
 
-.sidebar-item.active {
+.admin-sidebar-item.active {
     background: var(--dark-green) !important;
     color: #F9FAFB !important;
 }
 
-.sidebar-item.active span {
+.admin-sidebar-item.active span {
     font-weight: 500;
 }
 
-.sidebar-item.active svg {
+.admin-sidebar-item.active svg {
     color: #F9FAFB;
 }
 
-.sidebar-item.active::before {
+.admin-sidebar-item.active::before {
     background: #14532d;
     width: 4px;
 }
 
-.sidebar-logout {
+.admin-sidebar-logout {
     padding: 10px 20px;
     margin-top: 10px;
 }
 
-.sidebar-logout .sidebar-item {
+.admin-sidebar-logout .admin-sidebar-item {
     background: transparent;
     color: #dc2626;
 }
 
-.sidebar-logout .sidebar-item svg {
+.admin-sidebar-logout .admin-sidebar-item svg {
     color: #dc2626;
 }
 
-.sidebar-logout .sidebar-item::before {
+.admin-sidebar-logout .admin-sidebar-item::before {
     display: none;
 }
 
-.sidebar-logout .sidebar-item:hover {
+.admin-sidebar-logout .admin-sidebar-item:hover {
     background: #fee2e2;
 }
 
 @media (max-width: 992px) {
-    .sidebar {
+    .admin-sidebar {
         width: 100%;
         min-height: auto;
         padding: 16px;
     }
 
-    .sidebar-menu li {
+    .admin-sidebar-menu li {
         padding-left: 0;
     }
 
-    .sidebar-item {
+    .admin-sidebar-item {
         width: 100%;
     }
 
-    .sidebar-item::before {
+    .admin-sidebar-item::before {
         display: none;
     }
 }
 
 /* Tùy chỉnh thanh cuộn cho Sidebar */
-.sidebar::-webkit-scrollbar {
+.admin-sidebar::-webkit-scrollbar {
     width: 6px;
 }
 
-.sidebar::-webkit-scrollbar-thumb {
+.admin-sidebar::-webkit-scrollbar-thumb {
     background: #e5e7eb;
     border-radius: 10px;
 }
 
 @media (max-width: 640px) {
-    .sidebar-group-label {
+    .admin-sidebar-group-label {
         font-size: 13px;
     }
 
-    .sidebar-item {
+    .admin-sidebar-item {
         font-size: 14px;
         padding: 10px 14px;
     }
 }
 
 @media (max-width: 480px) {
-    .sidebar-group-label {
+    .admin-sidebar-group-label {
         display: none;
     }
 }

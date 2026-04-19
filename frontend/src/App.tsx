@@ -14,6 +14,10 @@ import UserAreaLayout from "./components/sidebar/user/UserAreaLayout";
 import CreateListing from "./pages/CreateListing";
 import MyListings from "./pages/MyListings";
 import EditListing from "./pages/EditListing";
+import AdminPostList from "./pages/admin/PostManagement/AdminPostList";
+import AdminPostApproval from "./pages/admin/PostManagement/AdminPostApproval";
+import AdminViolationList from "./pages/admin/PostManagement/AdminViolationList";
+
 
 function App() {
   return (
@@ -37,6 +41,10 @@ function App() {
         <Route path="/purchase-history" element={<PurchaseHistory />} />
         <Route path="/sales-history" element={<SalesHistory />} />
       </Route>
+
+      <Route path="/admin/posts" element={<AdminPostList />} />
+      <Route path="/admin/duyet-bai" element={<AdminPostApproval />} />
+      <Route path="/admin/vi-pham" element={<AdminViolationList />} />
 
       <Route path="*" element={<div>Trang đang được phát triển.</div>} />
     </Routes>

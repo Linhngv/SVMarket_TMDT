@@ -10,6 +10,7 @@ public class ListingSummaryResponse {
     private String status;
     private String thumbnailUrl;
     private String sellerUniversity;
+    private String sellerName;
     private LocalDateTime createdAt;
 
     public ListingSummaryResponse() {
@@ -61,6 +62,14 @@ public class ListingSummaryResponse {
 
     public void setSellerUniversity(String sellerUniversity) {
         this.sellerUniversity = sellerUniversity;
+    }
+
+    public String getSellerName() {
+        return sellerName;
+    }
+
+    public void setSellerName(String sellerName) {
+        this.sellerName = sellerName;
     }
 
     public LocalDateTime getCreatedAt() {

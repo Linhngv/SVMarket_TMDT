@@ -265,19 +265,19 @@ export default function AdminSidebar() {
   const navigate = useNavigate();
 
   return (
-    <aside className="sidebar">
+    <aside className="admin-sidebar">
 
       {/* LOGO */}
-      <div className="sidebar-logo">
+      <div className="admin-sidebar-logo">
         <span style={{ color: "#1B7A4A" }}>SV</span>
         <span style={{ color: "#D4A017" }}>Marketplace</span>
       </div>
 
       {menuGroups.map((group) => (
-        <div key={group.label} className="sidebar-group">
-          <p className="sidebar-group-label">{group.label}</p>
+        <div key={group.label} className="admin-sidebar-group">
+          <p className="admin-sidebar-group-label">{group.label}</p>
 
-          <ul className="sidebar-menu">
+          <ul className="admin-sidebar-menu">
             {group.items.map((item) => {
               const isActive = item.id === "admin"
                 ? location.pathname === "/admin" || location.pathname === "/admin/"
@@ -286,7 +286,7 @@ export default function AdminSidebar() {
               return (
                 <li key={item.id}>
                   <button
-                    className={`sidebar-item ${isActive ? "active" : ""}`}
+                    className={`admin-sidebar-item ${isActive ? "active" : ""}`}
                     onClick={() => navigate(`/${item.id}`)}
                   >
                     {item.icon}
@@ -300,8 +300,8 @@ export default function AdminSidebar() {
       ))}
 
       {/* LOGOUT */}
-      <div className="sidebar-logout">
-        <button className="sidebar-item d-flex align-items-center gap-2">
+      <div className="admin-sidebar-logout">
+        <button className="admin-sidebar-item d-flex align-items-center gap-2">
           <LogOut size={24} />
           <span>Đăng xuất</span>
         </button>
