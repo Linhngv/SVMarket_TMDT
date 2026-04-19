@@ -13,5 +13,7 @@ public class NotificationResponse {
     private Integer id;
     private String content;
     private Boolean isRead;
+    private String type;
+    private Integer referenceId;
     private LocalDateTime createdAt;
 }

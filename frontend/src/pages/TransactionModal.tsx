@@ -46,6 +46,7 @@ export default function TransactionModal({
           <span className="buyer-name">{transaction.buyerName}</span>
           <span
             className={`status-badge ${transaction.status === "Chờ xác nhận" ? "pending" : "done"}`}
+            style={{ width: "fit-content", whiteSpace: "nowrap" }}
           >
             {transaction.status}
           </span>

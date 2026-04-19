@@ -31,16 +31,13 @@
   flex-shrink: 0;
 }
 
-.search-input {
+.search-bar input {
   border: none;
   outline: none;
+  box-shadow: none;
   font-size: 13px;
-  flex: 1;
-  background: transparent;
-}
-
-.search-input::placeholder {
   color: var(--text-secondary);
+  background: transparent;
 }
 
 .history-table {
@@ -55,7 +52,7 @@
 
 .history-table th,
 .history-table td {
-  border: 1px solid var(--border-light); 
+  border: 1px solid var(--border-light);
 }
 
 .history-table thead tr {
