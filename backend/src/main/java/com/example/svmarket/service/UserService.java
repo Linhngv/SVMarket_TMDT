@@ -8,13 +8,14 @@ import com.example.svmarket.dto.*;
 import com.example.svmarket.entity.*;
 import com.example.svmarket.repository.*;
 
-import java.nio.file.*;
-
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     // GET PROFILE
     public ProfileResponse getProfile(String email) {
@@ -86,20 +87,9 @@ public class UserService {
                 throw new RuntimeException("Chỉ được upload ảnh");
             }
 
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            CloudinaryService.UploadedImage uploadedImage = cloudinaryService.uploadAvatarImage(file);
+            String avatarUrl = uploadedImage.secureUrl();
 
-            String uploadDir = System.getProperty("user.dir") + "/uploads";
-            Path uploadPath = Paths.get(uploadDir);
-
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            Path filePath = uploadPath.resolve(fileName);
-
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            String avatarUrl = "/uploads/" + fileName;
             user.setAvatar(avatarUrl);
 
             userRepository.save(user);
@@ -107,7 +97,7 @@ public class UserService {
             return avatarUrl;
 
         } catch (Exception e) {
-            throw new RuntimeException("Upload avatar thất bại");
+            throw new RuntimeException("Upload avatar thất bại: " + e.getMessage());
         }
     }
 }

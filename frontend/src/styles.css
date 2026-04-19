@@ -84,7 +84,7 @@ body {
   top: calc(100% + 11px);
   left: 50%;
   transform: translateX(-50%);
-  width: 320px;
+  min-width: 340px;
   background-color: var(--white);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
