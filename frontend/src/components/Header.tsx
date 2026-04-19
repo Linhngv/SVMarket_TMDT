@@ -35,6 +35,8 @@ export default function Header({
 
   const [open, setOpen] = useState(false);
   const [openFavorites, setOpenFavorites] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [favoriteListings, setFavoriteListings] = useState<ListingSummary[]>(
     [],
   );
@@ -59,13 +61,61 @@ export default function Header({
   // avatar fallback
   const resolvedIsLoggedIn = isLoggedInProp ?? isLoggedIn;
 
-  const avatar =
-    avatarUrl ||
-    (user?.avatar && user.avatar.trim() !== ""
-      ? `http://localhost:8080/${user.avatar.replace(/^\/+/, "")}`
-      : "/images/avatar_default.jpg");
+  useEffect(() => {
+    if (resolvedIsLoggedIn) {
+      const fetchNotifications = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) return;
+          const res = await fetch("http://localhost:8080/api/notifications/my", {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setNotifications(data);
+          }
+        } catch (error) {
+          console.error("Lỗi lấy thông báo:", error);
+        }
+      };
+      fetchNotifications();
+    } else {
+      setNotifications([]);
+    }
+  }, [resolvedIsLoggedIn]);
+
+  const rawAvatar = avatarUrl || user?.avatar;
+  const avatar = rawAvatar && rawAvatar.trim() !== ""
+    ? (rawAvatar.startsWith("/images/") || rawAvatar.startsWith("http")
+      ? rawAvatar
+      : `http://localhost:8080/${rawAvatar.replace(/^\/+/, "")}`)
+    : "/images/avatar_default.jpg";
 
   const resolvedUserName = userName || user?.fullName;
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  // Hàm gọi API đánh dấu tất cả là đã đọc
+  const handleMarkAllAsRead = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const res = await fetch("http://localhost:8080/api/notifications/mark-read", {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        // Cập nhật lại UI ngay lập tức
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      }
+    } catch (error) {
+      console.error("Lỗi đánh dấu đã đọc:", error);
+    }
+  };
 
   // Tai danh sach bai dang da luu de hien thi trong popup icon tim.
   const loadFavoriteListings = useCallback(async () => {
@@ -145,6 +195,33 @@ export default function Header({
     navigate("/create-listing");
   };
 
+  // Hàm tính toán và hiển thị thời gian trôi qua
+  const formatTimeAgo = (dateValue: any) => {
+    if (!dateValue) return "";
+    let date: Date;
+
+    // Trường hợp trả về thời gian dạng mảng số nguyên
+    if (Array.isArray(dateValue)) {
+      date = new Date(dateValue[0], dateValue[1] - 1, dateValue[2], dateValue[3] || 0, dateValue[4] || 0, dateValue[5] || 0);
+    } else {
+      date = new Date(dateValue);
+    }
+
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "Vừa xong";
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} giờ trước`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays} ngày trước`;
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) return `${diffInMonths} tháng trước`;
+    return `${Math.floor(diffInDays / 365)} năm trước`;
+  };
+
   return (
     <div className="header shadow-sm">
       <div className="container-fluid px-4 d-flex justify-content-between align-items-center py-2">
@@ -180,8 +257,64 @@ export default function Header({
               />
             )}
           </div>
-          <div className="icon-btn">
-            <Bell size={18} />
+
+          {/* KHU VỰC CHUÔNG THÔNG BÁO */}
+          <div style={{ position: "relative" }}>
+            <div
+              className="icon-btn"
+              onClick={() => setShowNotifications(!showNotifications)}
+            >
+              <Bell size={18} />
+
+              {/* CHẤM ĐỎ */}
+              {unreadCount > 0 && (
+                <span className="notification-dot"></span>
+              )}
+            </div>
+
+            {/* DROPDOWN HIỂN THỊ THÔNG BÁO */}
+            {showNotifications && (
+              <div className="notification-dropdown">
+                {/* Dấu nhọn chỉa lên */}
+                <div className="notification-arrow"></div>
+
+                <div className="notification-item">
+                  <h6>Thông báo</h6>
+                  {unreadCount > 0 && (
+                    <span
+                      onClick={handleMarkAllAsRead}
+                    >
+                      Đánh dấu là đã đọc
+                    </span>
+                  )}
+                </div>
+
+                {notifications.length === 0 ? (
+                  <p className="text-muted text-center m-0">Không có thông báo nào</p>
+                ) : (
+                  notifications.map(note => (
+                    <div key={note.id} className="notification-note" style={{ backgroundColor: note.isRead ? "transparent" : "#E8F5EE" }}>
+                      {/* Nút tròn màu xanh lá */}
+                      <div className="dot-green" style={{ backgroundColor: note.isRead ? "transparent" : "#1B7A4A" }}></div>
+
+                      {/* Nội dung thông báo */}
+                      <div className="notification-content">
+                        {note.content.includes(" muốn mua ") ? (
+                          <>
+                            <strong>{note.content.substring(0, note.content.indexOf(" muốn mua "))}</strong> muốn mua <strong>{note.content.substring(note.content.indexOf(" muốn mua ") + 10)}</strong>
+                          </>
+                        ) : (
+                          note.content
+                        )}
+                        <div className="notification-time">
+                          {formatTimeAgo(note.createdAt)}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           <button className="contact-btn rounded-pill px-3 d-flex align-items-center gap-2">

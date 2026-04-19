@@ -10,4 +10,5 @@ import lombok.Setter;
 public class CategoryOptionResponse {
     private Integer id;
     private String name;
+    private String image;
 }

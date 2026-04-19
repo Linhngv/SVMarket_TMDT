@@ -14,14 +14,14 @@ type SidebarGroup = {
 
 const menuGroups: SidebarGroup[] = [
   {
-    label: "Quản lí hồ sơ",
+    label: "Quản lý hồ sơ",
     items: [
       { id: "thong-tin", label: "Thông tin cá nhân", path: "/profile" },
       { id: "mat-khau", label: "Thay đổi mật khẩu", path: "/change-password" },
     ],
   },
   {
-    label: "Quản lí bài đăng",
+    label: "Quản lý bài đăng",
     items: [
       { id: "create-listing", label: "Thêm bài đăng", path: "/create-listing" },
       {
@@ -32,21 +32,21 @@ const menuGroups: SidebarGroup[] = [
     ],
   },
   {
-    label: "Quản lí giao dịch",
+    label: "Quản lý giao dịch",
     items: [
       { id: "purchase-history", label: "Mua hàng", path: "/purchase-history" },
       { id: "sales-history", label: "Bán hàng", path: "/sales-history" },
     ],
   },
   {
-    label: "Quản lí đánh giá",
+    label: "Quản lý đánh giá",
     items: [
       { id: "nguoi-ban", label: "Người bán", path: "/reviews/seller" },
       { id: "nguoi-mua", label: "Người mua", path: "/reviews/buyer" },
     ],
   },
   {
-    label: "Quản lí gói tin",
+    label: "Quản lý gói tin",
     items: [
       { id: "goi-tin", label: "Gói tin sử dụng", path: "/packages" },
       { id: "thong-ke", label: "Thống kê hoạt động", path: "/statistics" },

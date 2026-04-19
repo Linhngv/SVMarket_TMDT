@@ -128,12 +128,12 @@ export default function Profile() {
 
                             {/* AVATAR */}
                             <div className="avatar-container">
-
-
                                 <img
                                     src={
                                         avatarUrl
-                                            ? `http://localhost:8080${avatarUrl}`
+                                            ? (avatarUrl.startsWith("/images/") || avatarUrl.startsWith("http")
+                                                ? avatarUrl
+                                                : `http://localhost:8080${avatarUrl}`)
                                             : "/images/avatar_default.jpg"
                                     }
                                     alt=""

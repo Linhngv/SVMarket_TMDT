@@ -15,29 +15,6 @@ type Props = {
   title: string;
 };
 
-const featuredItems = Array(8).fill({
-  title: "Giáo trình Kinh tế vi mô",
-  price: "35.000đ",
-  university: "UEH • 30 phút trước",
-  image: "",
-});
-
-const universityMap: Record<string, string> = {
-  UEH: "ĐH Kinh tế",
-  HCMUS: "ĐH Khoa học Tự nhiên",
-  UIT: "ĐH CNTT",
-  NLU: "ĐH Nông Lâm",
-  HCMUTE: "ĐH Sư phạm Kỹ thuật",
-  HCMUSSH: "ĐH KHXH&NV",
-  HUFLIT: "ĐH Ngoại ngữ - Tin học",
-  HCMUE: "ĐH Mở",
-};
-
-const getUniversityName = (university: string) => {
-  const code = university.split(" • ")[0];
-  return universityMap[code] || code;
-};
-
 function formatRelativeTime(value?: string) {
   if (!value) {
     return "Mới đăng";
@@ -85,7 +62,6 @@ type CardItem = {
 };
 
 export default function Products({ title }: Props) {
-  const [likedItems, setLikedItems] = useState<number[]>([]);
   const [openFilter, setOpenFilter] = useState(false);
   const [selected, setSelected] = useState("Mới nhất");
   const [activeListings, setActiveListings] = useState<ListingSummary[]>([]);
@@ -93,27 +69,22 @@ export default function Products({ title }: Props) {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  const showActiveListings = title === "Tất cả bài đăng";
-
   useEffect(() => {
-    if (!showActiveListings) {
-      return;
-    }
-
     const loadActiveListings = async () => {
       try {
         const data = await fetchActiveListings();
-        setActiveListings(data);
+        // Nếu là Đề xuất sản phẩm, ta đảo ngược mảng để giao diện trông khác Tất cả bài đăng một chút
+        setActiveListings(title === "Đề xuất sản phẩm" ? [...data].reverse().slice(0, 4) : data);
       } catch (error) {
         console.error("Khong the tai danh sach bai dang hoat dong", error);
       }
     };
 
     loadActiveListings();
-  }, [showActiveListings]);
+  }, [title]);
 
   useEffect(() => {
-    if (!showActiveListings || !isLoggedIn) {
+    if (!isLoggedIn) {
       setFavoriteIds([]);
       return;
     }
@@ -128,49 +99,33 @@ export default function Products({ title }: Props) {
     };
 
     loadMyFavoriteIds();
-  }, [showActiveListings, isLoggedIn]);
+  }, [isLoggedIn]);
 
-  const items: CardItem[] = showActiveListings
-    ? activeListings.map((listing) => ({
-        key: listing.id,
-        id: listing.id,
-        title: listing.title,
-        price: formatCurrency(listing.price),
-        university: `${listing.sellerUniversity || "SV Market"} • ${formatRelativeTime(listing.createdAt)}`,
-        image: listing.thumbnailUrl
-          ? listing.thumbnailUrl.startsWith("http")
-            ? listing.thumbnailUrl
-            : `http://localhost:8080${listing.thumbnailUrl}`
-          : "",
-      }))
-    : featuredItems.map((item, index) => ({
-        key: index,
-        title: item.title,
-        price: item.price,
-        university: item.university,
-        image: item.image,
-      }));
+  const items: CardItem[] = activeListings.map((listing) => ({
+    key: listing.id,
+    id: listing.id,
+    title: listing.title,
+    price: formatCurrency(listing.price),
+    university: `${listing.sellerUniversity || "SV Market"} • ${formatRelativeTime(listing.createdAt)}`,
+    image: listing.thumbnailUrl
+      ? listing.thumbnailUrl.startsWith("http")
+        ? listing.thumbnailUrl
+        : `http://localhost:8080${listing.thumbnailUrl}`
+      : "",
+  }));
 
   const handleFavoriteClick = async (
     event: React.MouseEvent<HTMLDivElement>,
-    item: CardItem,
-    index: number,
+    item: CardItem
   ) => {
     event.stopPropagation();
-
-    if (!showActiveListings || !item.id) {
-      setLikedItems((prev) =>
-        prev.includes(index)
-          ? prev.filter((i) => i !== index)
-          : [...prev, index],
-      );
-      return;
-    }
 
     if (!isLoggedIn) {
       navigate("/login");
       return;
     }
+
+    if (!item.id) return;
 
     try {
       const result = await toggleFavoriteListing(item.id);
@@ -221,18 +176,18 @@ export default function Products({ title }: Props) {
 
       {/* LIST */}
       <div className="row">
-        {items.map((item, index) => (
+        {items.map((item) => (
           <div className="col-6 col-md-3 mb-3" key={item.key}>
             <div
               className="product-card"
-              onClick={() => navigate(`/product/${item.id ?? index + 1}`)}
+              onClick={() => navigate(`/product/${item.id}`)}
             >
               {/* HEART ICON */}
               <div
                 className="product-heart"
-                onClick={(event) => handleFavoriteClick(event, item, index)}
+                onClick={(event) => handleFavoriteClick(event, item)}
               >
-                {(item.id ? favoriteIds.includes(item.id) : likedItems.includes(index)) ? (
+                {(item.id && favoriteIds.includes(item.id)) ? (
                   <FaHeart />
                 ) : (
                   <FaRegHeart />

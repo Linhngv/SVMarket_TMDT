@@ -260,7 +260,7 @@
 
 .buy-modal {
   width: min(460px, 100%);
-  min-height: 540px;
+  min-height: 490px;
   background: #ffffff;
   border-radius: 14px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
@@ -269,14 +269,16 @@
 
 .buy-modal-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: flex-start;
+  position: relative;
   margin-bottom: 18px;
 }
 
 .buy-modal-header h2 {
-  margin: 0;
+  margin: 0 auto;
+  text-align: center;
+  width: 100%;
+  padding-right: 34px;
   font-size: 22px;
   font-weight: 700;
   color: #1f2937;
@@ -288,6 +290,9 @@
   border: none;
   border-radius: 999px;
   background: #f3f4f6;
+  position: absolute;
+  right: 0;
+  top: -4px;
   color: #374151;
   font-size: 22px;
   line-height: 1;
@@ -365,9 +370,8 @@
 }
 
 .buy-modal-actions {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
+  display: flex;
+  gap: 20px;
   margin-top: 6px;
 }
 
@@ -382,11 +386,13 @@
 }
 
 .buy-modal-submit {
+  flex: 2;
   background: #1b7a4a;
   color: #ffffff;
 }
 
 .buy-modal-cancel {
+  flex: 1;
   background: #ffffff;
   color: #374151;
   border: 1px solid #e5e7eb;
@@ -602,6 +608,7 @@
   }
 
   .buy-modal-actions {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    gap: 10px;
   }
 }
