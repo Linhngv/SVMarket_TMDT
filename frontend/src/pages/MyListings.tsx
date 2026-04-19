@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Pencil, Search, Trash2 } from "lucide-react";
+import { ChevronDown, Pencil, Search, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   deleteListing,
   fetchMyListings,
+  fetchMyListingById,
+  updateListing,
   ListingSummary,
 } from "../services/listingService";
 import "../styles/ListingManagement.css";
@@ -16,21 +18,29 @@ function formatCurrency(value: number) {
 
 function getStatusBadge(status: string) {
   if (status === "SOLD") {
-    return { text: "Da ban", className: "status-badge sold" };
+    return { text: "Đã bán", className: "status-badge sold" };
   }
 
   if (status === "ACTIVE") {
-    return { text: "Dang ban", className: "status-badge active" };
+    return { text: "Đang bán", className: "status-badge active" };
   }
 
-  return { text: "Tam an", className: "status-badge inactive" };
+  return { text: "Tạm ẩn", className: "status-badge inactive" };
 }
+
+const STATUS_OPTIONS = [
+  { value: "ACTIVE", label: "Đang bán", className: "active" },
+  { value: "SOLD", label: "Đã bán", className: "sold" },
+  { value: "INACTIVE", label: "Tạm ẩn", className: "inactive" },
+];
 
 export default function MyListings() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [listings, setListings] = useState<ListingSummary[]>([]);
   const [page, setPage] = useState(1);
+  const [openStatusMenuId, setOpenStatusMenuId] = useState<number | null>(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState<number | null>(null);
 
   // Tai danh sach bai dang cua nguoi dung khi vao trang.
   const loadListings = async () => {
@@ -89,6 +99,35 @@ export default function MyListings() {
     }
   };
 
+  const handleStatusChange = async (listingId: number, nextStatus: string) => {
+    if (updatingStatusId === listingId) {
+      return;
+    }
+
+    setUpdatingStatusId(listingId);
+
+    try {
+      const listingDetail = await fetchMyListingById(listingId);
+      await updateListing(listingId, {
+        title: listingDetail.title,
+        categoryId: listingDetail.categoryId,
+        price: listingDetail.price,
+        deliveryAddress: listingDetail.deliveryAddress,
+        conditionLevel: listingDetail.conditionLevel,
+        description: listingDetail.description,
+        status: nextStatus,
+        images: [],
+      });
+      await loadListings();
+    } catch (error) {
+      console.error("Khong the cap nhat trang thai", error);
+      alert("Khong the cap nhat trang thai");
+    } finally {
+      setUpdatingStatusId(null);
+      setOpenStatusMenuId(null);
+    }
+  };
+
   return (
     <section className="listing-panel">
       <div className="listing-panel-header">
@@ -108,11 +147,11 @@ export default function MyListings() {
         <table className="listing-table">
           <thead>
             <tr>
-              <th>Hinh anh</th>
-              <th>Tieu de</th>
-              <th>Gia ca</th>
-              <th>Trang thai</th>
-              <th>Cap nhat/Xoa</th>
+              <th>Hình ảnh</th>
+              <th>Tiêu đề</th>
+              <th>Giá cả</th>
+              <th>Trạng thái</th>
+              <th>Chỉnh sửa/Xóa</th>
             </tr>
           </thead>
 
@@ -147,11 +186,46 @@ export default function MyListings() {
                     </td>
 
                     <td data-label="Tieu de">{listing.title}</td>
-                    <td data-label="Gia ca">{formatCurrency(listing.price)}</td>
+                    <td data-label="Gia ca">
+                      {formatCurrency(listing.price)}đ
+                    </td>
                     <td data-label="Trang thai">
-                      <span className={statusBadge.className}>
-                        {statusBadge.text}
-                      </span>
+                      <div className="status-cell">
+                        <button
+                          type="button"
+                          className={`status-badge status-toggle ${statusBadge.className} ${updatingStatusId === listing.id ? "loading" : ""}`}
+                          onClick={() =>
+                            setOpenStatusMenuId((currentOpenId) =>
+                              currentOpenId === listing.id ? null : listing.id,
+                            )
+                          }
+                          disabled={updatingStatusId === listing.id}
+                          aria-haspopup="menu"
+                          aria-expanded={openStatusMenuId === listing.id}
+                          aria-label={`Cap nhat trang thai bai dang ${listing.title}`}
+                        >
+                          <span>{statusBadge.text}</span>
+                          <ChevronDown size={14} />
+                        </button>
+
+                        {openStatusMenuId === listing.id ? (
+                          <div className="status-menu" role="menu">
+                            {STATUS_OPTIONS.map((option) => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                className={`status-menu-item ${option.className}`}
+                                onClick={() =>
+                                  handleStatusChange(listing.id, option.value)
+                                }
+                                role="menuitem"
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     </td>
 
                     <td data-label="Cap nhat/Xoa">
@@ -163,7 +237,7 @@ export default function MyListings() {
                           }
                           aria-label="Cap nhat bai dang"
                         >
-                          <Pencil size={15} />
+                          <Pencil size={19} />
                         </button>
 
                         <button
@@ -172,7 +246,7 @@ export default function MyListings() {
                           onClick={() => handleDelete(listing.id)}
                           aria-label="Xoa bai dang"
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={19} />
                         </button>
                       </div>
                     </td>
