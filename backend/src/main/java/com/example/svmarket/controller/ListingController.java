@@ -51,6 +51,12 @@ public class ListingController {
         return listingService.getActiveListings();
     }
 
+    // Ho tro route cu /active cho frontend.
+    @GetMapping("/active")
+    public List<ListingSummaryResponse> getActiveListingsLegacyRoute() {
+        return listingService.getActiveListings();
+    }
+
     // Them/bo luu bai dang theo user dang nhap.
     @PostMapping("/{id}/favorite")
     public FavoriteToggleResponse toggleFavoriteListing(@RequestHeader("Authorization") String token,
@@ -74,7 +80,7 @@ public class ListingController {
     }
 
     // Lay chi tiet bai dang dang hoat dong cho trang chi tiet san pham.
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public ListingDetailResponse getActiveListingById(@PathVariable Integer id) {
         return listingService.getActiveListingById(id);
     }

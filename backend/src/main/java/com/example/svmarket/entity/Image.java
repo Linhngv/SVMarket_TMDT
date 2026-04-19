@@ -21,6 +21,10 @@ public class Image {
     @Column(length = 500)
     private String url;
 
+    // public_id tren Cloudinary de quan ly/xoa anh.
+    @Column(name = "public_id", length = 255)
+    private String publicId;
+
     // Nhiều hình ảnh trong một bài đăng
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "listing_id")

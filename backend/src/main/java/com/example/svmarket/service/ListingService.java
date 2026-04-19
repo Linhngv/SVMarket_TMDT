@@ -1,10 +1,5 @@
 package com.example.svmarket.service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +26,7 @@ import com.example.svmarket.repository.ImageRepository;
 import com.example.svmarket.repository.ListingFavoriteRepository;
 import com.example.svmarket.repository.ListingRepository;
 import com.example.svmarket.repository.UserRepository;
+import com.example.svmarket.service.CloudinaryService.UploadedImage;
 
 @Service
 public class ListingService {
@@ -51,6 +47,9 @@ public class ListingService {
 
     @Autowired
     private ListingFavoriteRepository listingFavoriteRepository;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     // Lay danh sach danh muc de hien thi dropdown o form.
     public List<CategoryOptionResponse> getCategories() {
@@ -195,6 +194,9 @@ public class ListingService {
         List<String> imageUrls;
 
         if (images != null && !images.isEmpty() && images.stream().anyMatch(file -> !file.isEmpty())) {
+            // Xoa anh cu tren Cloudinary truoc khi thay bo anh moi.
+            List<Image> oldImages = imageRepository.findByListingId(listing.getId());
+            oldImages.forEach(oldImage -> cloudinaryService.deleteImage(oldImage.getPublicId()));
             imageRepository.deleteByListingId(listing.getId());
             imageUrls = saveImages(listing, images);
         } else {
@@ -294,6 +296,7 @@ public class ListingService {
         return response;
     }
 
+    // Luu danh sach anh bai dang len Cloudinary va DB.
     private List<String> saveImages(Listing listing, List<MultipartFile> images) {
         if (images == null || images.isEmpty()) {
             return List.of();
@@ -307,38 +310,27 @@ public class ListingService {
             throw new BadRequestException("Chi duoc tai len toi da 5 anh" );
         }
 
-        Path uploadPath = Paths.get(System.getProperty("user.dir"), "uploads", "listings");
+        List<String> imageUrls = new ArrayList<>();
+        List<Image> imageEntities = new ArrayList<>();
 
-        try {
-            Files.createDirectories(uploadPath);
-
-            List<String> imageUrls = new ArrayList<>();
-            List<Image> imageEntities = new ArrayList<>();
-
-            for (MultipartFile file : validImages) {
-                String contentType = file.getContentType();
-                if (contentType == null || !contentType.startsWith("image/")) {
-                    throw new BadRequestException("Tat ca file phai la hinh anh");
-                }
-
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                Path filePath = uploadPath.resolve(fileName);
-
-                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-                String url = "/uploads/listings/" + fileName;
-                imageUrls.add(url);
-
-                imageEntities.add(Image.builder()
-                        .url(url)
-                        .listing(listing)
-                        .build());
+        for (MultipartFile file : validImages) {
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new BadRequestException("Tat ca file phai la hinh anh");
             }
 
-            imageRepository.saveAll(imageEntities);
-            return imageUrls;
-        } catch (IOException e) {
-            throw new RuntimeException("Khong the luu anh bai dang", e);
+            UploadedImage uploadedImage = cloudinaryService.uploadListingImage(file);
+            String url = uploadedImage.secureUrl();
+            imageUrls.add(url);
+
+            imageEntities.add(Image.builder()
+                    .url(url)
+                    .publicId(uploadedImage.publicId())
+                    .listing(listing)
+                    .build());
         }
+
+        imageRepository.saveAll(imageEntities);
+        return imageUrls;
     }
 }
