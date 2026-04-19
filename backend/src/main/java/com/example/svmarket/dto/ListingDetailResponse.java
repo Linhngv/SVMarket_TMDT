@@ -1,11 +1,12 @@
 package com.example.svmarket.dto;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Getter
 @Setter
@@ -21,4 +22,8 @@ public class ListingDetailResponse {
     private String description;
     private String status;
     private List<String> imageUrls;
+    private String sellerName;
+    private String sellerUniversity;
+    private String thumbnailUrl;
+    private LocalDateTime createdAt;
 }

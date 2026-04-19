@@ -93,16 +93,18 @@ export default function CreateListing() {
   };
 
   return (
-    <ListingForm
-      title="Thêm bài đăng"
-      submitLabel="Thêm bài đăng"
-      categories={categories}
-      values={values}
-      imagePreviews={imagePreviews}
-      submitDisabled={isSubmitting}
-      onChange={setValues}
-      onImageChange={setImages}
-      onSubmit={handleCreateListing}
-    />
+    <div className="create-listing-page">
+      <ListingForm
+        title="Thêm bài đăng"
+        submitLabel="Thêm bài đăng"
+        categories={categories}
+        values={values}
+        imagePreviews={imagePreviews}
+        submitDisabled={isSubmitting}
+        onChange={setValues}
+        onImageChange={setImages}
+        onSubmit={handleCreateListing}
+      />
+    </div>
   );
 }

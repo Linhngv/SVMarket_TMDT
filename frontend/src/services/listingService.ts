@@ -13,6 +13,8 @@ export type ListingSummary = {
   price: number;
   status: string;
   thumbnailUrl: string | null;
+  sellerUniversity?: string | null;
+  createdAt?: string;
 };
 
 export type ListingDetail = {
@@ -26,6 +28,13 @@ export type ListingDetail = {
   description: string;
   status: string;
   imageUrls: string[];
+};
+
+export type PublicListingDetail = ListingDetail & {
+  sellerName?: string | null;
+  sellerUniversity?: string | null;
+  thumbnailUrl?: string | null;
+  createdAt?: string;
 };
 
 export type ListingFormPayload = {
@@ -84,12 +93,26 @@ export async function fetchMyListings() {
   return response.data;
 }
 
+// Lay danh sach bai dang dang hoat dong cho trang chu.
+export async function fetchActiveListings() {
+  const response = await axios.get<ListingSummary[]>(API_BASE_URL);
+  return response.data;
+}
+
 // Lay chi tiet bai dang theo id de do du lieu vao form sua.
 export async function fetchMyListingById(id: number) {
   const response = await axios.get<ListingDetail>(`${API_BASE_URL}/my/${id}`, {
     headers: getAuthHeader(),
   });
 
+  return response.data;
+}
+
+// Lay chi tiet bai dang dang hoat dong cho trang chi tiet san pham.
+export async function fetchListingById(id: number) {
+  const response = await axios.get<PublicListingDetail>(
+    `${API_BASE_URL}/${id}`,
+  );
   return response.data;
 }
 

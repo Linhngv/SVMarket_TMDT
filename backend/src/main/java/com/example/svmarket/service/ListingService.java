@@ -1,24 +1,5 @@
 package com.example.svmarket.service;
 
-import com.example.svmarket.dto.CategoryOptionResponse;
-import com.example.svmarket.dto.ListingDetailResponse;
-import com.example.svmarket.dto.ListingSummaryResponse;
-import com.example.svmarket.dto.ListingUpsertRequest;
-import com.example.svmarket.entity.Category;
-import com.example.svmarket.entity.Image;
-import com.example.svmarket.entity.Listing;
-import com.example.svmarket.entity.ListingStatus;
-import com.example.svmarket.entity.User;
-import com.example.svmarket.exception.BadRequestException;
-import com.example.svmarket.repository.CategoryRepository;
-import com.example.svmarket.repository.ImageRepository;
-import com.example.svmarket.repository.ListingRepository;
-import com.example.svmarket.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,6 +8,29 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.example.svmarket.dto.CategoryOptionResponse;
+import com.example.svmarket.dto.FavoriteToggleResponse;
+import com.example.svmarket.dto.ListingDetailResponse;
+import com.example.svmarket.dto.ListingSummaryResponse;
+import com.example.svmarket.dto.ListingUpsertRequest;
+import com.example.svmarket.entity.Category;
+import com.example.svmarket.entity.Image;
+import com.example.svmarket.entity.Listing;
+import com.example.svmarket.entity.ListingFavorite;
+import com.example.svmarket.entity.ListingStatus;
+import com.example.svmarket.entity.User;
+import com.example.svmarket.exception.BadRequestException;
+import com.example.svmarket.repository.CategoryRepository;
+import com.example.svmarket.repository.ImageRepository;
+import com.example.svmarket.repository.ListingFavoriteRepository;
+import com.example.svmarket.repository.ListingRepository;
+import com.example.svmarket.repository.UserRepository;
 
 @Service
 public class ListingService {
@@ -44,6 +48,9 @@ public class ListingService {
 
     @Autowired
     private ImageRepository imageRepository;
+
+    @Autowired
+    private ListingFavoriteRepository listingFavoriteRepository;
 
     // Lay danh sach danh muc de hien thi dropdown o form.
     public List<CategoryOptionResponse> getCategories() {
@@ -83,20 +90,76 @@ public class ListingService {
 
         return listingRepository.findBySellerIdAndStatusNotOrderByCreatedAtDesc(seller.getId(), ListingStatus.DELETED)
                 .stream()
-                .map(listing -> {
-                    String thumbnail = listing.getImages() != null && !listing.getImages().isEmpty()
-                            ? listing.getImages().get(0).getUrl()
-                            : null;
+            .map(this::toSummaryResponse)
+            .toList();
+        }
 
-                    return new ListingSummaryResponse(
-                            listing.getId(),
-                            listing.getTitle(),
-                            listing.getPrice(),
-                            listing.getStatus().name(),
-                            thumbnail);
-                })
+        // Lay danh sach bai dang dang hoat dong de hien thi o trang chu.
+        public List<ListingSummaryResponse> getActiveListings() {
+        return listingRepository.findByStatusOrderByCreatedAtDesc(ListingStatus.ACTIVE)
+            .stream()
+            .map(this::toSummaryResponse)
                 .toList();
     }
+
+    // Them/bo luu bai dang theo user dang nhap.
+    @Transactional
+    public FavoriteToggleResponse toggleFavoriteListing(String email, Integer listingId) {
+        User user = getUserByEmail(email);
+        Listing listing = listingRepository.findByIdAndStatus(listingId, ListingStatus.ACTIVE)
+                .orElseThrow(() -> new BadRequestException("Bai dang khong ton tai hoac da bi an"));
+
+        return listingFavoriteRepository.findByUserIdAndListingId(user.getId(), listing.getId())
+                .map(existingFavorite -> {
+                    listingFavoriteRepository.delete(existingFavorite);
+                    return new FavoriteToggleResponse(listingId, false);
+                })
+                .orElseGet(() -> {
+                    ListingFavorite favorite = ListingFavorite.builder()
+                            .user(user)
+                            .listing(listing)
+                            .build();
+                    listingFavoriteRepository.save(favorite);
+                    return new FavoriteToggleResponse(listingId, true);
+                });
+    }
+
+    // Lay danh sach bai dang da luu cua user dang nhap.
+    public List<ListingSummaryResponse> getMyFavoriteListings(String email) {
+        User user = getUserByEmail(email);
+
+        return listingFavoriteRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
+                .stream()
+                .map(ListingFavorite::getListing)
+                .filter(listing -> listing != null && listing.getStatus() == ListingStatus.ACTIVE)
+                .map(this::toSummaryResponse)
+                .toList();
+    }
+
+    // Lay danh sach id bai dang da luu de to mau icon tim tren UI.
+    public List<Integer> getMyFavoriteListingIds(String email) {
+        User user = getUserByEmail(email);
+
+        return listingFavoriteRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
+                .stream()
+                .map(ListingFavorite::getListing)
+                .filter(listing -> listing != null && listing.getStatus() == ListingStatus.ACTIVE)
+                .map(Listing::getId)
+                .distinct()
+                .toList();
+    }
+
+        // Lay chi tiet mot bai dang hoat dong de hien thi trang san pham.
+        public ListingDetailResponse getActiveListingById(Integer listingId) {
+            Listing listing = listingRepository.findByIdAndStatus(listingId, ListingStatus.ACTIVE)
+                    .orElseThrow(() -> new BadRequestException("Bai dang khong ton tai hoac da bi an"));
+
+            List<String> imageUrls = listing.getImages() == null
+                    ? List.of()
+                    : listing.getImages().stream().map(Image::getUrl).toList();
+
+            return toPublicDetailResponse(listing, imageUrls);
+        }
 
     // Lay chi tiet mot bai dang cua user hien tai de hien thi va sua.
     public ListingDetailResponse getMyListingById(String email, Integer listingId) {
@@ -194,6 +257,41 @@ public class ListingService {
                 .status(listing.getStatus() != null ? listing.getStatus().name() : ListingStatus.ACTIVE.name())
                 .imageUrls(imageUrls)
                 .build();
+    }
+
+    private ListingDetailResponse toPublicDetailResponse(Listing listing, List<String> imageUrls) {
+        return ListingDetailResponse.builder()
+                .id(listing.getId())
+                .title(listing.getTitle())
+                .categoryId(listing.getCategory() != null ? listing.getCategory().getId() : null)
+                .categoryName(listing.getCategory() != null ? listing.getCategory().getName() : null)
+                .price(listing.getPrice())
+                .deliveryAddress(listing.getDeliveryAddress())
+                .conditionLevel(listing.getConditionLevel())
+                .description(listing.getDescription())
+                .status(listing.getStatus() != null ? listing.getStatus().name() : ListingStatus.ACTIVE.name())
+                .imageUrls(imageUrls)
+                .sellerName(listing.getSeller() != null ? listing.getSeller().getFullName() : null)
+                .sellerUniversity(listing.getSeller() != null ? listing.getSeller().getUniversity() : null)
+                .thumbnailUrl(!imageUrls.isEmpty() ? imageUrls.get(0) : null)
+                .createdAt(listing.getCreatedAt())
+                .build();
+    }
+
+    private ListingSummaryResponse toSummaryResponse(Listing listing) {
+        String thumbnail = listing.getImages() != null && !listing.getImages().isEmpty()
+                ? listing.getImages().get(0).getUrl()
+                : null;
+
+        ListingSummaryResponse response = new ListingSummaryResponse();
+        response.setId(listing.getId());
+        response.setTitle(listing.getTitle());
+        response.setPrice(listing.getPrice());
+        response.setStatus(listing.getStatus() != null ? listing.getStatus().name() : ListingStatus.ACTIVE.name());
+        response.setThumbnailUrl(thumbnail);
+        response.setSellerUniversity(listing.getSeller() != null ? listing.getSeller().getUniversity() : null);
+        response.setCreatedAt(listing.getCreatedAt());
+        return response;
     }
 
     private List<String> saveImages(Listing listing, List<MultipartFile> images) {
