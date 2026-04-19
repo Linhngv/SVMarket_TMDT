@@ -1,0 +1,166 @@
+.admin-sidebar {
+    width: 300px;
+    min-width: 200px;
+    background: #ffffff;
+    padding: 20px 0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    border-right: 1px solid #e5e7eb;
+}
+
+.admin-sidebar-logo {
+    font-size: 28px;
+    font-weight: 700;
+    padding: 0 20px 16px;
+}
+
+.admin-sidebar-group {
+    margin-bottom: 20px;
+}
+
+.admin-sidebar-group-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #14532d;
+    padding: 6px 20px;
+    margin-bottom: 6px;
+}
+
+.admin-sidebar-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-sidebar-menu li {
+    padding-left: 20px;
+    margin-bottom: 6px;
+}
+
+.admin-sidebar-item {
+    position: relative;
+    width: calc(100% - 20px);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    background: #F9FAFB;
+    color: #1A1A2E;
+    border-radius: 999px;
+    transition: all 0.2s ease;
+}
+
+.admin-sidebar-item svg {
+    width: 24px;
+    height: 24px;
+    color: #1A1A2E;
+}
+
+.admin-sidebar .admin-sidebar-item:hover {
+    background: #E8F5EE;
+}
+
+.admin-sidebar-item::before {
+    content: "";
+    position: absolute;
+    left: -12px;
+    top: -2px;
+    bottom: -2px;
+    width: 3px;
+    background: #e5e7eb;
+    border-radius: 4px;
+}
+
+.admin-sidebar-item.active {
+    background: var(--dark-green) !important;
+    color: #F9FAFB !important;
+}
+
+.admin-sidebar-item.active span {
+    font-weight: 500;
+}
+
+.admin-sidebar-item.active svg {
+    color: #F9FAFB;
+}
+
+.admin-sidebar-item.active::before {
+    background: #14532d;
+    width: 4px;
+}
+
+.admin-sidebar-logout {
+    padding: 10px 20px;
+    margin-top: 10px;
+}
+
+.admin-sidebar-logout .admin-sidebar-item {
+    background: transparent;
+    color: #dc2626;
+}
+
+.admin-sidebar-logout .admin-sidebar-item svg {
+    color: #dc2626;
+}
+
+.admin-sidebar-logout .admin-sidebar-item::before {
+    display: none;
+}
+
+.admin-sidebar-logout .admin-sidebar-item:hover {
+    background: #fee2e2;
+}
+
+@media (max-width: 992px) {
+    .admin-sidebar {
+        width: 100%;
+        min-height: auto;
+        padding: 16px;
+    }
+
+    .admin-sidebar-menu li {
+        padding-left: 0;
+    }
+
+    .admin-sidebar-item {
+        width: 100%;
+    }
+
+    .admin-sidebar-item::before {
+        display: none;
+    }
+}
+
+/* Tùy chỉnh thanh cuộn cho Sidebar */
+.admin-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 10px;
+}
+
+@media (max-width: 640px) {
+    .admin-sidebar-group-label {
+        font-size: 13px;
+    }
+
+    .admin-sidebar-item {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-sidebar-group-label {
+        display: none;
+    }
+}

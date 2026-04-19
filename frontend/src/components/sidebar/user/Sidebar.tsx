@@ -1,40 +1,55 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import "../../../styles/Sidebar.css";
 
-const menuGroups = [
+type SidebarItem = {
+  id: string;
+  label: string;
+  path: string;
+};
+
+type SidebarGroup = {
+  label: string;
+  items: SidebarItem[];
+};
+
+const menuGroups: SidebarGroup[] = [
   {
-    label: "Quản lí hồ sơ",
+    label: "Quản lý hồ sơ",
     items: [
-      { id: "thong-tin", label: "Thông tin cá nhân" },
-      { id: "mat-khau", label: "Thay đổi mật khẩu" },
+      { id: "thong-tin", label: "Thông tin cá nhân", path: "/profile" },
+      { id: "mat-khau", label: "Thay đổi mật khẩu", path: "/change-password" },
     ],
   },
   {
-    label: "Quản lí bài đăng",
+    label: "Quản lý bài đăng",
     items: [
-      { id: "them-bai", label: "Thêm bài đăng" },
-      { id: "danh-sach-bai", label: "Danh sách bài đăng" },
+      { id: "create-listing", label: "Thêm bài đăng", path: "/create-listing" },
+      {
+        id: "my-listings",
+        label: "Danh sách bài đăng",
+        path: "/my-listings",
+      },
     ],
   },
   {
-    label: "Quản lí giao dịch",
+    label: "Quản lý giao dịch",
     items: [
-      { id: "purchase-history", label: "Mua hàng" },
-      { id: "sales-history", label: "Bán hàng" },
+      { id: "purchase-history", label: "Mua hàng", path: "/purchase-history" },
+      { id: "sales-history", label: "Bán hàng", path: "/sales-history" },
     ],
   },
   {
-    label: "Quản lí đánh giá",
+    label: "Quản lý đánh giá",
     items: [
-      { id: "nguoi-ban", label: "Người bán" },
-      { id: "nguoi-mua", label: "Người mua" },
+      { id: "nguoi-ban", label: "Người bán", path: "/reviews/seller" },
+      { id: "nguoi-mua", label: "Người mua", path: "/reviews/buyer" },
     ],
   },
   {
-    label: "Quản lí gói tin",
+    label: "Quản lý gói tin",
     items: [
-      { id: "my-packages", label: "Gói tin sử dụng" },
-      { id: "thong-ke", label: "Thống kê hoạt động" },
+      { id: "goi-tin", label: "Gói tin sử dụng", path: "/my-packages" },
+      { id: "thong-ke", label: "Thống kê hoạt động", path: "/statistics" },
     ],
   },
 ];
@@ -49,18 +64,22 @@ export default function Sidebar() {
         <div key={group.label} className="sidebar-group">
           <p className="sidebar-group-label">{group.label}</p>
           <ul className="sidebar-menu">
-            {group.items.map((item) => (
-              <li key={item.id}>
-                <button
-                  className={`sidebar-item ${
-                    location.pathname === `/${item.id}` ? "active" : ""
-                  }`}
-                  onClick={() => navigate(`/${item.id}`)}
-                >
-                  {item.label}
-                </button>
-              </li>
-            ))}
+            {group.items.map((item) => {
+              const isActive = location.pathname === item.path ||
+                (item.path === "/my-listings" && location.pathname.startsWith("/my-listings/"));
+
+              return (
+                <li key={item.id}>
+                  <button
+                    className={`sidebar-item ${isActive ? "active" : ""}`}
+                    style={{ borderLeft: isActive ? "4px solid var(--dark-green)" : "4px solid #E8F5EE" }}
+                    onClick={() => navigate(item.path)}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       ))}

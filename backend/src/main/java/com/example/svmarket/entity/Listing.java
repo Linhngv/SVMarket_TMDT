@@ -65,4 +65,7 @@ public class Listing {
 
     @OneToMany(mappedBy = "listing")
     private List<Review> reviews;
+
+    @Column(name = "reject_reason", columnDefinition = "TEXT")
+    private String rejectReason;
 }

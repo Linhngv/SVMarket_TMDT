@@ -31,4 +31,8 @@ public class OrderDetail {
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal price;
+
+    @Column(columnDefinition = "TEXT")
+    private String note;
+
 }

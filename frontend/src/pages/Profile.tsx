@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+import Sidebar from "../components/sidebar/user/Sidebar";
 
 export default function Profile() {
 
     const token = localStorage.getItem("token");
-
-    const isLoggedIn = true;
 
     const [avatarUrl, setAvatarUrl] = useState("/images/avatar_default.jpg");
     const [userName, setUserName] = useState("");
@@ -20,23 +19,26 @@ export default function Profile() {
 
     const [active, setActive] = useState("profile");
 
+    const { refreshUser } = useAuth();
+
     const handleSave = async () => {
         try {
-            await axios.put(
-                "http://localhost:8080/api/user/profile",
-                {
+            const res = await fetch("http://localhost:8080/api/user/profile", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
                     fullName: name,
                     university: school,
                     province: city,
                     addressDetail: address,
                     gender: gender.toUpperCase()
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+                })
+            });
+
+            if (!res.ok) throw new Error("Update failed");
 
             alert("Cập nhật thành công!");
         } catch (err) {
@@ -53,17 +55,21 @@ export default function Profile() {
         formData.append("file", file);
 
         try {
-            const res = await axios.post(
-                "http://localhost:8080/api/user/avatar",
-                formData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
+            const res = await fetch("http://localhost:8080/api/user/avatar", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                body: formData
+            });
 
-            setAvatarUrl(res.data);
+            if (!res.ok) throw new Error("Upload failed");
+
+            const data = await res.text();
+
+            setAvatarUrl(data);
+
+            await refreshUser();
 
         } catch (err) {
             console.error("Upload avatar lỗi:", err);
@@ -74,22 +80,24 @@ export default function Profile() {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await axios.get("http://localhost:8080/api/user/profile", {
+                const res = await fetch("http://localhost:8080/api/user/profile", {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 });
 
-                const data = res.data;
+                if (!res.ok) throw new Error("Fetch failed");
 
-                // Mapping đúng theo yêu cầu
-                setName(data.fullName);                // users.full_name
+                const data = await res.json();
+
+                setName(data.fullName);
                 setUserName(data.fullName);
-                setAvatarUrl(data.avatar || "/images/avatar_default.jpg"); // users.avatar
-                setCity(data.province);               // address.province
-                setSchool(data.university);           // users.university
-                setAddress(data.addressDetail);       // address.address_detail
+                setAvatarUrl(data.avatar || "/images/avatar_default.jpg");
+                setCity(data.province);
+                setSchool(data.university);
+                setAddress(data.addressDetail);
                 setGender((data.gender || "OTHER").toLowerCase());
+
             } catch (err) {
                 console.error("Lỗi lấy profile:", err);
             }
@@ -101,11 +109,7 @@ export default function Profile() {
     return (
         <>
             {/* HEADER */}
-            <Header
-                isLoggedIn={isLoggedIn}
-                avatarUrl={avatarUrl}
-                userName={userName}
-            />
+            <Header />
 
             {/* CONTENT */}
             <div className="container-fluid px-4 mt-3">
@@ -113,67 +117,31 @@ export default function Profile() {
 
                     {/* SIDEBAR */}
                     <div className="col-md-3 d-flex">
-                        <div className="card p-3 w-100">
-                            <h6 className="profile-section">Quản lý hồ sơ</h6>
-                            <p className={`sidebar-item ${active === "profile" ? "active" : ""}`}
-                                onClick={() => setActive("profile")}
-                            >Thông tin cá nhân</p>
-                            <p className="sidebar-item">Thay đổi mật khẩu</p>
-
-                            <h6 className="profile-section">Quản lý bài đăng</h6>
-                            <p className="sidebar-item">Thêm bài đăng</p>
-                            <p className="sidebar-item">Danh sách bài đăng</p>
-
-                            <h6 className="profile-section" >Quản lý giao dịch</h6>
-                            <p className="sidebar-item">Mua hàng</p>
-                            <p className="sidebar-item">Bán hàng</p>
-
-                            <h6 className="profile-section" >Quản lý đánh giá</h6>
-                            <p className="sidebar-item">Người bán</p>
-                            <p className="sidebar-item">người mua</p>
-
-                            <h6 className="profile-section" >Quản lý gói tin</h6>
-                            <p className="sidebar-item">Gói tin sử dụng</p>
-                            <p className="sidebar-item">Thống kê hoạt động</p>
-                        </div>
+                        <Sidebar />
                     </div>
 
                     {/* CONTENT */}
-                    <div className="col-md-9 d-flex">
+                    <div className="col-md-9">
                         <div className="card p-4 w-100">
 
                             <h5 className="profile-title mb-4">Hồ sơ cá nhân</h5>
 
                             {/* AVATAR */}
                             <div className="avatar-container">
-
-                                {/* <img
-                                    src={avatarUrl}
-                                    alt=""
-                                    className="avatar-img"
-                                /> */}
-
                                 <img
                                     src={
                                         avatarUrl
-                                            ? `http://localhost:8080${avatarUrl}`
+                                            ? (avatarUrl.startsWith("/images/") || avatarUrl.startsWith("http")
+                                                ? avatarUrl
+                                                : `http://localhost:8080${avatarUrl}`)
                                             : "/images/avatar_default.jpg"
                                     }
                                     alt=""
                                     className="avatar-img"
-                                />
-
-                                {/* <input
-                                    type="file"
-                                    id="avatarUpload"
-                                    className="avatar-input"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) {
-                                            console.log("Selected file:", file);
-                                        }
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = "/images/avatar_default.jpg";
                                     }}
-                                /> */}
+                                />
 
                                 <input
                                     type="file"
@@ -256,7 +224,7 @@ export default function Profile() {
                                     />
                                 </div>
 
-                                <div className="col-md-6 mb-3 profile-section">
+                                <div className="col-md-6 mb-3 profile-section" style={{ marginTop: "-1px" }}>
                                     <label className="profile-section">Trường học</label>
                                     <input
                                         className="form-control input-short"
@@ -276,7 +244,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
-                            <div className="d-flex justify-content-end mt-3">
+                            <div className="d-flex justify-content-end mt-3" style={{ marginBottom: "40px" }}>
                                 <button className="btn btn-success save-btn" onClick={handleSave}>
                                     Lưu thay đổi
                                 </button>

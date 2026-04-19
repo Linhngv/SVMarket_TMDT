@@ -1,10 +1,10 @@
 .sidebar {
-  width: 240px;
-  min-width: 200px;
+  min-width: 300px;
   background: var(--white);
-  padding: 20px 0;
-  min-height: 100vh;
-  border-radius: 5px;
+  padding: 20px 0 20px 10px;
+  min-height: 85vh;
+  border-radius: 15px;
+  margin-bottom: 20px;
 }
 
 .sidebar-group {
@@ -12,7 +12,7 @@
 }
 
 .sidebar-group-label {
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--dark);
   padding: 6px 10px;
@@ -39,13 +39,13 @@
   cursor: pointer;
   padding: 10px 16px 10px 10px;
   margin-bottom: 10px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
   border-radius: 0;
   transition:
     background 0.15s,
     color 0.15s;
-  border-left: 1px solid var(--light-green);
+  border-left: 4px solid #E8F5EE;
 }
 
 .sidebar-item:hover {
@@ -57,7 +57,7 @@
   background: var(--light-green);
   color: var(--dark-green);
   font-weight: 600;
-  border-left: 1px solid var(--dark-green);
+  border-left: 4px solid var(--dark-green);
 }
 
 @media (max-width: 992px) {

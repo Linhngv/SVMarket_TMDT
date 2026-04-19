@@ -1,0 +1,16 @@
+.user-area-layout {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.user-area-main {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 992px) {
+  .user-area-layout {
+    flex-direction: column;
+  }
+}
