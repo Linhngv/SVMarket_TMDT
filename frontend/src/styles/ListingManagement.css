@@ -167,6 +167,64 @@
   cursor: not-allowed;
 }
 
+.create-listing-page {
+  background: linear-gradient(180deg, #f6faf7 0%, #eef6f0 100%);
+  border: 1px solid #deebe2;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.create-listing-page .listing-panel {
+  border-radius: 12px;
+  border-color: #dbe7df;
+  box-shadow: 0 10px 24px rgba(15, 77, 46, 0.08);
+  padding: 24px 28px 26px;
+}
+
+.create-listing-page .listing-panel-header {
+  margin-bottom: 20px;
+}
+
+.create-listing-page .listing-panel-header h2 {
+  font-size: 32px;
+  color: #0f4d2e;
+}
+
+.create-listing-page .listing-form-grid {
+  max-width: 760px;
+  gap: 16px 20px;
+}
+
+.create-listing-page .field-group label {
+  font-size: 17px;
+  font-weight: 600;
+  color: #12462d;
+}
+
+.create-listing-page .field-group input,
+.create-listing-page .field-group textarea,
+.create-listing-page .field-group select,
+.create-listing-page .image-upload-box {
+  border-color: #d9e7de;
+  background: #fbfdfb;
+}
+
+.create-listing-page .field-group input:focus,
+.create-listing-page .field-group textarea:focus,
+.create-listing-page .field-group select:focus {
+  outline: none;
+  border-color: #1b7a4a;
+  box-shadow: 0 0 0 3px rgba(27, 122, 74, 0.12);
+}
+
+.create-listing-page .listing-submit-btn {
+  margin-top: 24px;
+  height: 48px;
+  border-radius: 10px;
+  font-size: 18px;
+  max-width: 760px;
+}
+
 .listing-search-wrap {
   max-width: 480px;
   margin: 0 auto 14px;

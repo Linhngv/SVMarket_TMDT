@@ -11,9 +11,14 @@ import {
   User,
 } from "lucide-react";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import {
+  favoritesUpdatedEvent,
+  fetchMyFavoriteListings,
+} from "../services/favoriteService";
+import { ListingSummary } from "../services/listingService";
 
 type HeaderProps = {
   isLoggedIn?: boolean;
@@ -29,7 +34,14 @@ export default function Header({
   const { isLoggedIn, user, logout } = useAuth();
 
   const [open, setOpen] = useState(false);
+  const [openFavorites, setOpenFavorites] = useState(false);
+  const [favoriteListings, setFavoriteListings] = useState<ListingSummary[]>(
+    [],
+  );
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const favoriteRef = useRef<HTMLDivElement>(null);
+  const favoriteCloseTimerRef = useRef<number | null>(null);
   const navigate = useNavigate();
 
   // click outside close popup
@@ -55,6 +67,63 @@ export default function Header({
 
   const resolvedUserName = userName || user?.fullName;
 
+  // Tai danh sach bai dang da luu de hien thi trong popup icon tim.
+  const loadFavoriteListings = useCallback(async () => {
+    if (!resolvedIsLoggedIn) {
+      setFavoriteListings([]);
+      return;
+    }
+
+    try {
+      setLoadingFavorites(true);
+      const data = await fetchMyFavoriteListings();
+      setFavoriteListings(data);
+    } catch (error) {
+      console.error("Khong the tai danh sach bai dang da luu", error);
+      setFavoriteListings([]);
+    } finally {
+      setLoadingFavorites(false);
+    }
+  }, [resolvedIsLoggedIn]);
+
+  useEffect(() => {
+    const handleFavoritesUpdated = () => {
+      if (resolvedIsLoggedIn) {
+        loadFavoriteListings();
+      }
+    };
+
+    window.addEventListener(favoritesUpdatedEvent, handleFavoritesUpdated);
+    return () => {
+      window.removeEventListener(favoritesUpdatedEvent, handleFavoritesUpdated);
+    };
+  }, [loadFavoriteListings, resolvedIsLoggedIn]);
+
+  const handleFavoritesMouseEnter = () => {
+    if (favoriteCloseTimerRef.current) {
+      window.clearTimeout(favoriteCloseTimerRef.current);
+    }
+
+    setOpenFavorites(true);
+    if (resolvedIsLoggedIn) {
+      loadFavoriteListings();
+    }
+  };
+
+  const handleFavoritesMouseLeave = () => {
+    favoriteCloseTimerRef.current = window.setTimeout(() => {
+      setOpenFavorites(false);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (favoriteCloseTimerRef.current) {
+        window.clearTimeout(favoriteCloseTimerRef.current);
+      }
+    };
+  }, []);
+
   // Click avatar nho de vao trang quan ly bai dang.
   const handleAvatarClick = () => {
     if (!resolvedIsLoggedIn) {
@@ -64,6 +133,16 @@ export default function Header({
 
     setOpen(false);
     navigate("/my-listings");
+  };
+
+  // Click nut Dang tin de vao trang tao bai dang.
+  const handleCreateListingClick = () => {
+    if (!resolvedIsLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    navigate("/create-listing");
   };
 
   return (
@@ -81,8 +160,25 @@ export default function Header({
 
         {/* RIGHT */}
         <div className="d-flex align-items-center gap-2">
-          <div className="icon-btn">
-            <Heart size={18} />
+          <div
+            className="saved-listings-wrapper"
+            ref={favoriteRef}
+            onMouseEnter={handleFavoritesMouseEnter}
+            onMouseLeave={handleFavoritesMouseLeave}
+          >
+            <div className="icon-btn">
+              <Heart size={18} />
+            </div>
+
+            {openFavorites && (
+              <SavedListingsPopup
+                isLoggedIn={resolvedIsLoggedIn}
+                isLoading={loadingFavorites}
+                listings={favoriteListings}
+                onNavigate={(path) => navigate(path)}
+                onLogin={() => navigate("/login")}
+              />
+            )}
           </div>
           <div className="icon-btn">
             <Bell size={18} />
@@ -93,7 +189,11 @@ export default function Header({
             Liên hệ
           </button>
 
-          <button className="btn btn-success rounded-pill px-3">
+          <button
+            type="button"
+            className="btn btn-success rounded-pill px-3"
+            onClick={handleCreateListingClick}
+          >
             Đăng tin
           </button>
 
@@ -135,6 +235,82 @@ export default function Header({
             )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+type SavedListingsPopupProps = {
+  isLoggedIn: boolean;
+  isLoading: boolean;
+  listings: ListingSummary[];
+  onNavigate: (path: string) => void;
+  onLogin: () => void;
+};
+
+function SavedListingsPopup({
+  isLoggedIn,
+  isLoading,
+  listings,
+  onNavigate,
+  onLogin,
+}: SavedListingsPopupProps) {
+  if (!isLoggedIn) {
+    return (
+      <div className="saved-listings-popup">
+        <div className="saved-listings-arrow"></div>
+        <div className="saved-listings-body empty">
+          Vui lòng đăng nhập để lưu bài đăng.
+        </div>
+        <button
+          type="button"
+          className="saved-listings-login-btn"
+          onClick={onLogin}
+        >
+          Đăng nhập
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="saved-listings-popup">
+      <div className="saved-listings-arrow"></div>
+
+      <div className="saved-listings-header">
+        <h6>Tin đăng đã lưu</h6>
+        <button type="button" onClick={() => onNavigate("/my-listings")}>
+          Xem tất cả
+        </button>
+      </div>
+
+      <div className="saved-listings-body">
+        {isLoading && <p className="saved-listings-empty">Đang tải...</p>}
+
+        {!isLoading && listings.length === 0 && (
+          <p className="saved-listings-empty">Bạn chưa lưu bài đăng nào.</p>
+        )}
+
+        {!isLoading &&
+          listings.slice(0, 5).map((listing) => {
+            const imageUrl = listing.thumbnailUrl
+              ? listing.thumbnailUrl.startsWith("http")
+                ? listing.thumbnailUrl
+                : `http://localhost:8080${listing.thumbnailUrl}`
+              : "/images/detail.png";
+
+            return (
+              <button
+                key={listing.id}
+                type="button"
+                className="saved-listing-item"
+                onClick={() => onNavigate(`/product/${listing.id}`)}
+              >
+                <img src={imageUrl} alt={listing.title} />
+                <span>{listing.title}</span>
+              </button>
+            );
+          })}
       </div>
     </div>
   );
