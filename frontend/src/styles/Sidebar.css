@@ -1,11 +1,10 @@
 .sidebar {
   min-width: 300px;
   background: var(--white);
-  padding: 20px 0;
+  padding: 20px 0 20px 10px;
   min-height: 85vh;
   border-radius: 15px;
   margin-bottom: 20px;
-  margin-right: 20px;
 }
 
 .sidebar-group {
@@ -40,7 +39,7 @@
   cursor: pointer;
   padding: 10px 16px 10px 10px;
   margin-bottom: 10px;
-  font-size: 17px;
+  font-size: 14px;
   color: var(--text-secondary);
   border-radius: 0;
   transition:

@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import ProductDetail from "./pages/product/ProductDetail";
 import PurchaseHistory from "./pages/PurchaseHistory";
 import SalesHistory from "./pages/SalesHistory";
+import MyPackages from "./pages/package-management/MyPackages";
 import Payment from "./pages/Payment";
 import UserAreaLayout from "./components/sidebar/user/UserAreaLayout";
 import CreateListing from "./pages/CreateListing";
@@ -41,6 +42,7 @@ function App() {
         <Route path="/my-listings/:id/edit" element={<EditListing />} />
         <Route path="/purchase-history" element={<PurchaseHistory />} />
         <Route path="/sales-history" element={<SalesHistory />} />
+        <Route path="/my-packages" element={<MyPackages />} />
       </Route>
 
       <Route path="/payment/:orderId" element={<Payment />} />

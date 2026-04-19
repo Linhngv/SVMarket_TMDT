@@ -48,7 +48,7 @@ const menuGroups: SidebarGroup[] = [
   {
     label: "Quản lý gói tin",
     items: [
-      { id: "goi-tin", label: "Gói tin sử dụng", path: "/packages" },
+      { id: "goi-tin", label: "Gói tin sử dụng", path: "/my-packages" },
       { id: "thong-ke", label: "Thống kê hoạt động", path: "/statistics" },
     ],
   },
