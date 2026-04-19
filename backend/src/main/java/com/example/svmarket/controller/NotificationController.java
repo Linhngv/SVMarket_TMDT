@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,6 +47,19 @@ public class NotificationController {
         try {
             String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
             notificationService.markAllAsRead(email);
+        } catch (Exception e) {
+            // Bỏ qua lỗi nếu token không hợp lệ
+        }
+    }
+
+    @PutMapping("/{id}/read")
+    public void markAsRead(@PathVariable Integer id, @RequestHeader(value = "Authorization", required = false) String token) {
+        if (token == null || !token.startsWith("Bearer ") || token.equals("Bearer null")) {
+            return;
+        }
+        try {
+            String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+            notificationService.markAsRead(email, id);
         } catch (Exception e) {
             // Bỏ qua lỗi nếu token không hợp lệ
         }

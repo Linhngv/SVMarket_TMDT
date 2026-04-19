@@ -121,7 +121,7 @@ export default function Profile() {
                     </div>
 
                     {/* CONTENT */}
-                    <div className="col-md-9 d-flex">
+                    <div className="col-md-9">
                         <div className="card p-4 w-100">
 
                             <h5 className="profile-title mb-4">Hồ sơ cá nhân</h5>
@@ -244,7 +244,7 @@ export default function Profile() {
                                 </div>
                             </div>
 
-                            <div className="d-flex justify-content-end mt-3">
+                            <div className="d-flex justify-content-end mt-3" style={{ marginBottom: "40px" }}>
                                 <button className="btn btn-success save-btn" onClick={handleSave}>
                                     Lưu thay đổi
                                 </button>

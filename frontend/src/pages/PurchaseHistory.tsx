@@ -1,35 +1,78 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import "../styles/History.css";
 
-const purchaseData = [
-  {
-    id: "GD101",
-    product: "Giáo trình Kinh tế vi mô – ĐH Kinh tế",
-    price: "35.000đ",
-    date: "26/03/2026",
-    status: "Hoàn thành",
-  },
-  {
-    id: "GD102",
-    product: "Giáo trình Kinh tế chính trị Mác Lênin",
-    price: "45.000đ",
-    date: "06/04/2026",
-    status: "Đang giao dịch",
-  },
-];
+interface PurchaseTransaction {
+  id: string | number;
+  product: string;
+  price: number;
+  status: string;
+  requestDate: any;
+}
 
 export default function PurchaseHistory() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [purchases, setPurchases] = useState<PurchaseTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = purchaseData.filter(
+  useEffect(() => {
+    const fetchPurchases = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:8080/api/orders/purchases", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setPurchases(data);
+        }
+      } catch (error) {
+        console.error("Lỗi lấy lịch sử mua hàng:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPurchases();
+  }, []);
+
+  const filtered = purchases.filter(
     (t) =>
-      t.id.toLowerCase().includes(search.toLowerCase()) ||
+      String(t.id).toLowerCase().includes(search.toLowerCase()) ||
       t.product.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / 10));
+  const formatStatus = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'Chờ xác nhận';
+      case 'PAID': return 'Đã thanh toán';
+      case 'SHIPPED': return 'Đang giao dịch';
+      case 'COMPLETED': return 'Hoàn thành';
+      case 'CANCELLED': return 'Đã hủy';
+      default: return status;
+    }
+  };
+
+  const formatDate = (dateValue: any) => {
+    if (!dateValue) return "";
+    let date: Date;
+    if (Array.isArray(dateValue)) {
+      date = new Date(dateValue[0], dateValue[1] - 1, dateValue[2], dateValue[3] || 0, dateValue[4] || 0, dateValue[5] || 0);
+    } else {
+      date = new Date(dateValue);
+    }
+    return date.toLocaleDateString("vi-VN");
+  };
+
+  const formattedPurchases = filtered.map(row => ({
+    ...row,
+    id: String(row.id),
+    price: new Intl.NumberFormat("vi-VN").format(row.price) + "đ",
+    status: formatStatus(row.status),
+    date: formatDate(row.requestDate)
+  }));
+
+  const totalPages = Math.max(1, Math.ceil(formattedPurchases.length / 10));
 
   return (
     <div className="history-container">
@@ -42,8 +85,7 @@ export default function PurchaseHistory() {
           placeholder="Tìm kiếm theo ID giao dịch"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
-        />
+          className="search-input" />
       </div>
 
       <table className="history-table">
@@ -57,14 +99,16 @@ export default function PurchaseHistory() {
           </tr>
         </thead>
         <tbody>
-          {filtered.length === 0 ? (
+          {loading ? (
             <tr>
-              <td colSpan={5} className="empty-row">
-                Không có dữ liệu
-              </td>
+              <td colSpan={5} className="text-center py-4">Đang tải dữ liệu...</td>
+            </tr>
+          ) : formattedPurchases.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="empty-row">Không có dữ liệu</td>
             </tr>
           ) : (
-            filtered.map((row) => (
+            formattedPurchases.map((row) => (
               <tr key={row.id}>
                 <td className="id-cell" data-label="ID giao dịch">{row.id}</td>
                 <td data-label="Sản phẩm">{row.product}</td>
@@ -72,7 +116,7 @@ export default function PurchaseHistory() {
                 <td data-label="Ngày">{row.date}</td>
                 <td data-label="Trạng thái">
                   <span
-                    className={`status-pill ${row.status === "Hoàn thành" ? "done" : "shipping"}`}
+                    className={`status-pill ${row.status === 'Hoàn thành' ? 'done' : row.status === 'Chờ xác nhận' ? 'pending' : 'shipping'}`}
                   >
                     {row.status}
                   </span>

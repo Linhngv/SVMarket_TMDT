@@ -117,6 +117,55 @@ export default function Header({
     }
   };
 
+  // Hàm gọi API đánh dấu 1 thông báo cụ thể là đã đọc và điều hướng
+  const handleNotificationClick = async (note: any) => {
+    if (!note.isRead) {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          await fetch(`http://localhost:8080/api/notifications/${note.id}/read`, {
+            method: "PUT",
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setNotifications(prev => prev.map(n => n.id === note.id ? { ...n, isRead: true } : n));
+        }
+      } catch (error) {
+        console.error("Lỗi đánh dấu đã đọc:", error);
+      }
+    }
+
+    if (note.type === "PAYMENT" || note.content.includes("đã chấp nhận")) {
+      navigate(`/purchase-history`);
+      setShowNotifications(false);
+    } else if (note.type === "ORDER") {
+      navigate("/sales-history");
+      setShowNotifications(false);
+    }
+  };
+
+  // Hàm tính toán và hiển thị thời gian trôi qua
+  const formatTimeAgo = (dateValue: any) => {
+    if (!dateValue) return "";
+    let date: Date;
+    if (Array.isArray(dateValue)) {
+      date = new Date(dateValue[0], dateValue[1] - 1, dateValue[2], dateValue[3] || 0, dateValue[4] || 0, dateValue[5] || 0);
+    } else {
+      date = new Date(dateValue);
+    }
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diffInSeconds < 60) return "Vừa xong";
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} giờ trước`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays} ngày trước`;
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) return `${diffInMonths} tháng trước`;
+    return `${Math.floor(diffInDays / 365)} năm trước`;
+  };
+
   // Tai danh sach bai dang da luu de hien thi trong popup icon tim.
   const loadFavoriteListings = useCallback(async () => {
     if (!resolvedIsLoggedIn) {
@@ -182,7 +231,7 @@ export default function Header({
     }
 
     setOpen(false);
-    navigate("/my-listings");
+    navigate("/profile");
   };
 
   // Click nut Dang tin de vao trang tao bai dang.
@@ -195,33 +244,6 @@ export default function Header({
     navigate("/create-listing");
   };
 
-  // Hàm tính toán và hiển thị thời gian trôi qua
-  const formatTimeAgo = (dateValue: any) => {
-    if (!dateValue) return "";
-    let date: Date;
-
-    // Trường hợp trả về thời gian dạng mảng số nguyên
-    if (Array.isArray(dateValue)) {
-      date = new Date(dateValue[0], dateValue[1] - 1, dateValue[2], dateValue[3] || 0, dateValue[4] || 0, dateValue[5] || 0);
-    } else {
-      date = new Date(dateValue);
-    }
-
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return "Vừa xong";
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours} giờ trước`;
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 30) return `${diffInDays} ngày trước`;
-    const diffInMonths = Math.floor(diffInDays / 30);
-    if (diffInMonths < 12) return `${diffInMonths} tháng trước`;
-    return `${Math.floor(diffInDays / 365)} năm trước`;
-  };
-
   return (
     <div className="header shadow-sm">
       <div className="container-fluid px-4 d-flex justify-content-between align-items-center py-2">
@@ -231,8 +253,8 @@ export default function Header({
           style={{ cursor: "pointer" }}
           onClick={() => navigate("/")}
         >
-          <span style={{ color: "#1B7A4A" }}>SV</span>
-          <span style={{ color: "#D4A017" }}>Marketplace</span>
+          <span style={{ color: "var(--primary)" }}>SV</span>
+          <span style={{ color: "var(--gold)" }}>Marketplace</span>
         </div>
 
         {/* RIGHT */}
@@ -262,6 +284,7 @@ export default function Header({
           <div style={{ position: "relative" }}>
             <div
               className="icon-btn"
+              style={{ position: "relative" }}
               onClick={() => setShowNotifications(!showNotifications)}
             >
               <Bell size={18} />
@@ -279,7 +302,9 @@ export default function Header({
                 <div className="notification-arrow"></div>
 
                 <div className="notification-item">
-                  <h6>Thông báo</h6>
+                  <h6>
+                    Thông báo
+                  </h6>
                   {unreadCount > 0 && (
                     <span
                       onClick={handleMarkAllAsRead}
@@ -293,9 +318,14 @@ export default function Header({
                   <p className="text-muted text-center m-0">Không có thông báo nào</p>
                 ) : (
                   notifications.map(note => (
-                    <div key={note.id} className="notification-note" style={{ backgroundColor: note.isRead ? "transparent" : "#E8F5EE" }}>
+                    <div
+                      key={note.id}
+                      className="notification-note"
+                      style={{ backgroundColor: note.isRead ? "transparent" : "var(--light-green)" }}
+                      onClick={() => handleNotificationClick(note)}
+                    >
                       {/* Nút tròn màu xanh lá */}
-                      <div className="dot-green" style={{ backgroundColor: note.isRead ? "transparent" : "#1B7A4A" }}></div>
+                      <div className="dot-green" style={{ backgroundColor: note.isRead ? "transparent" : "var(--primary)" }}></div>
 
                       {/* Nội dung thông báo */}
                       <div className="notification-content">
@@ -351,7 +381,6 @@ export default function Header({
               <ChevronDown
                 size={16}
                 className={`arrow-icon ${open ? "rotate" : ""}`}
-                style={{ cursor: "pointer" }}
                 onClick={() => setOpen((prev) => !prev)}
               />
             </div>
@@ -579,8 +608,8 @@ function PopupSection({ title, items, isLogout = false }: SectionProps) {
           <div
             key={index}
             className={`popup-row ${isLogout ? "logout" : ""}`}
-            onClick={item.onClick}
             style={{ cursor: item.onClick ? "pointer" : "default" }}
+            onClick={item.onClick}
           >
             <div className="d-flex align-items-center gap-2">
               {item.icon}

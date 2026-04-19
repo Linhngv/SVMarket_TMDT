@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import ProductDetail from "./pages/product/ProductDetail";
 import PurchaseHistory from "./pages/PurchaseHistory";
 import SalesHistory from "./pages/SalesHistory";
+import Payment from "./pages/Payment";
 import UserAreaLayout from "./components/sidebar/user/UserAreaLayout";
 import CreateListing from "./pages/CreateListing";
 import MyListings from "./pages/MyListings";
@@ -41,6 +42,8 @@ function App() {
         <Route path="/purchase-history" element={<PurchaseHistory />} />
         <Route path="/sales-history" element={<SalesHistory />} />
       </Route>
+
+      <Route path="/payment/:orderId" element={<Payment />} />
 
       <Route path="/admin/posts" element={<AdminPostList />} />
       <Route path="/admin/duyet-bai" element={<AdminPostApproval />} />
