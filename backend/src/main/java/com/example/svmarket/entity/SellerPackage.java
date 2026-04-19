@@ -31,6 +31,14 @@ public class SellerPackage {
     @Builder.Default
     private PackageStatus status = PackageStatus.ACTIVE;
 
+    // Lượt bài đăng còn lại
+    @Column(name = "remaining_posts", nullable = false)
+    private Integer remainingPosts;
+
+    // Lượt đẩy tin còn lại
+    @Column(name = "remaining_pushes", nullable = false)
+    private Integer remainingPushes;
+
     @Column(name = "start_date")
     private LocalDateTime startDate;
 

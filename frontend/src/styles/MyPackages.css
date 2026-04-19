@@ -1,0 +1,240 @@
+/* đổi tên, giữ nguyên styles */
+.package-container {
+  /* = goi-tin-container */
+  padding: 24px 20px;
+  background: var(--white);
+  color: var(--text-primary);
+  border-radius: 5px;
+}
+
+.package-title {
+  /* = goi-tin-title */
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 24px 0;
+}
+
+.table-wrapper {
+  /* = goi-tin-table-wrapper */
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 32px;
+}
+
+.data-table {
+  /* = goi-tin-table */
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table thead tr {
+  background: var(--gray-light);
+}
+
+.data-table thead th {
+  padding: 10px 14px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-light);
+  font-size: 13px;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid var(--border-light);
+  transition: background 0.15s;
+}
+
+.data-table tbody tr:last-child {
+  border-bottom: none;
+}
+.data-table tbody tr:hover {
+  background: var(--background);
+}
+
+.data-table tbody td {
+  padding: 12px 14px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.history-section {
+  /* = lich-su-section */
+  margin-top: 8px;
+}
+
+.package-tag {
+  /* = loai-goi-tag */
+  display: inline-block;
+  background: var(--light-green);
+  color: var(--primary);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.btn-activate {
+  /* = btn-kich-hoat */
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  transition: background 0.15s;
+}
+
+.btn-activate:hover {
+  background: var(--dark-green);
+}
+
+/* giữ nguyên các class còn lại */
+.td-center {
+  text-align: center;
+}
+.td-action {
+  text-align: right;
+}
+.time-text {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.status-message {
+  border-radius: 6px;
+  color: var(--primary);
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+.section-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: -8px 0 16px 0;
+}
+.qty-zero {
+  color: var(--text-muted);
+}
+.qty-available {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 15px 0 36px 0;
+}
+.plan-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+.plan-card.popular {
+  border: 2px solid var(--primary);
+}
+.badge-popular {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.plan-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.plan-price {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.plan-period {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: -6px;
+}
+.plan-divider {
+  border: none;
+  border-top: 1px solid var(--border-light);
+  margin: 2px 0;
+}
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.plan-features li strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.check-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--light-green);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.btn-buy {
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-primary);
+  transition: background 0.15s;
+}
+.btn-buy:hover {
+  background: var(--background);
+}
+.btn-buy.primary {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+.btn-buy.primary:hover {
+  background: var(--dark-green);
+}

@@ -66,6 +66,8 @@ package com.example.svmarket.security;
 //     }
 // }
 
+import com.example.svmarket.util.JwtAuthFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -74,6 +76,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -83,6 +86,8 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    @Autowired
+    private JwtAuthFilter jwtAuthFilter;
 
     // BỎ QUA security cho file tĩnh (QUAN TRỌNG NHẤT để fix 403 avatar)
     @Bean
@@ -126,6 +131,10 @@ public class SecurityConfig {
                         // USER API (tùy bạn, có thể cần login)
                         .requestMatchers("/api/user/**").permitAll()
 
+                        .requestMatchers("/api/package-plans/**").permitAll()
+
+                        .requestMatchers("/api/payment/callback").permitAll()
+
                         // STATIC (đã ignore ở trên, nhưng để đây cũng OK)
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
@@ -141,7 +150,7 @@ public class SecurityConfig {
 
                 // tắt basic auth
                 .httpBasic(basic -> basic.disable())
-
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }

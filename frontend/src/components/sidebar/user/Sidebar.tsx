@@ -33,7 +33,7 @@ const menuGroups = [
   {
     label: "Quản lí gói tin",
     items: [
-      { id: "goi-tin", label: "Gói tin sử dụng" },
+      { id: "my-packages", label: "Gói tin sử dụng" },
       { id: "thong-ke", label: "Thống kê hoạt động" },
     ],
   },
