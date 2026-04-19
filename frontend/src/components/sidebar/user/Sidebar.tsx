@@ -17,7 +17,7 @@ const menuGroups: SidebarGroup[] = [
     label: "Quản lí hồ sơ",
     items: [
       { id: "thong-tin", label: "Thông tin cá nhân", path: "/profile" },
-      { id: "mat-khau", label: "Thay đổi mật khẩu", path: "/profile" },
+      { id: "mat-khau", label: "Thay đổi mật khẩu", path: "/change-password" },
     ],
   },
   {
@@ -41,15 +41,15 @@ const menuGroups: SidebarGroup[] = [
   {
     label: "Quản lí đánh giá",
     items: [
-      { id: "nguoi-ban", label: "Người bán", path: "/profile" },
-      { id: "nguoi-mua", label: "Người mua", path: "/profile" },
+      { id: "nguoi-ban", label: "Người bán", path: "/reviews/seller" },
+      { id: "nguoi-mua", label: "Người mua", path: "/reviews/buyer" },
     ],
   },
   {
     label: "Quản lí gói tin",
     items: [
-      { id: "goi-tin", label: "Gói tin sử dụng", path: "/profile" },
-      { id: "thong-ke", label: "Thống kê hoạt động", path: "/profile" },
+      { id: "goi-tin", label: "Gói tin sử dụng", path: "/packages" },
+      { id: "thong-ke", label: "Thống kê hoạt động", path: "/statistics" },
     ],
   },
 ];
@@ -64,22 +64,22 @@ export default function Sidebar() {
         <div key={group.label} className="sidebar-group">
           <p className="sidebar-group-label">{group.label}</p>
           <ul className="sidebar-menu">
-            {group.items.map((item) => (
-              <li key={item.id}>
-                <button
-                  className={`sidebar-item ${
-                    location.pathname === item.path ||
-                    (item.path === "/my-listings" &&
-                      location.pathname.startsWith("/my-listings/"))
-                      ? "active"
-                      : ""
-                  }`}
-                  onClick={() => navigate(item.path)}
-                >
-                  {item.label}
-                </button>
-              </li>
-            ))}
+            {group.items.map((item) => {
+              const isActive = location.pathname === item.path ||
+                (item.path === "/my-listings" && location.pathname.startsWith("/my-listings/"));
+
+              return (
+                <li key={item.id}>
+                  <button
+                    className={`sidebar-item ${isActive ? "active" : ""}`}
+                    style={{ borderLeft: isActive ? "4px solid var(--dark-green)" : "4px solid #E8F5EE" }}
+                    onClick={() => navigate(item.path)}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       ))}
