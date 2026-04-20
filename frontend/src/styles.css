@@ -950,9 +950,36 @@ body {
     text-align: center;
   }
 
-  .product-img {
-    height: 120px;
+  .product-img-wrapper {
     height: 160px;
+  }
+
+  .product-card {
+    padding: 8px;
+  }
+
+  .product-item-title {
+    font-size: 13px;
+  }
+
+  .product-price {
+    font-size: 13px;
+  }
+
+  .product-meta {
+    font-size: 11px;
+  }
+
+  .product-status-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .product-heart {
+    width: 28px;
+    height: 28px;
+    top: 8px;
+    right: 8px;
   }
 }
 

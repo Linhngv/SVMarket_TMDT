@@ -1,30 +1,327 @@
-import React from "react";
-import { Bell, ChevronDown } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Bell, ChevronDown, ChevronUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import "../../styles/admin/AdminTopBar.css";
+import { useAuth } from "../../context/AuthContext";
 
 interface AdminTopBarProps {
     breadcrumb: React.ReactNode;
 }
 
-const CustomUserIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="35" height="35">
-        <path fill="#1a1a2e" d="M470.5 463.6C451.4 416.9 405.5 384 352 384L288 384C234.5 384 188.6 416.9 169.5 463.6C133.9 426.3 112 375.7 112 320C112 205.1 205.1 112 320 112C434.9 112 528 205.1 528 320C528 375.7 506.1 426.2 470.5 463.6zM430.4 496.3C398.4 516.4 360.6 528 320 528C279.4 528 241.6 516.4 209.5 496.3C216.8 459.6 249.2 432 288 432L352 432C390.8 432 423.2 459.6 430.5 496.3zM320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576zM320 304C297.9 304 280 286.1 280 264C280 241.9 297.9 224 320 224C342.1 224 360 241.9 360 264C360 286.1 342.1 304 320 304zM232 264C232 312.6 271.4 352 320 352C368.6 352 408 312.6 408 264C408 215.4 368.6 176 320 176C271.4 176 232 215.4 232 264z" />
-    </svg>
-);
-
 export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
+    const { user } = useAuth();
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [showUserDropdown, setShowUserDropdown] = useState(false);
+    const navigate = useNavigate();
+    const notificationRef = useRef<HTMLDivElement>(null);
+    const userRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) return;
+                const res = await fetch("http://localhost:8080/api/notifications/my", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setNotifications(data);
+                }
+            } catch (error) {
+                console.error("Lỗi lấy thông báo:", error);
+            }
+        };
+        fetchNotifications();
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                notificationRef.current &&
+                !notificationRef.current.contains(event.target as Node)
+            ) {
+                setShowNotifications(false);
+            }
+            if (
+                userRef.current &&
+                !userRef.current.contains(event.target as Node)
+            ) {
+                setShowUserDropdown(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const unreadCount = notifications.filter((n) => !n.isRead).length;
+    const unreadSystemNotes = notifications.filter(
+        (n) => n.type === "SYSTEM" && !n.isRead,
+    );
+    const pendingCount = unreadSystemNotes.length;
+
+    const displayNotifications = notifications.filter(
+        (n) => !(n.type === "SYSTEM" && !n.isRead),
+    );
+
+    const handlePendingClick = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (token) {
+                await Promise.all(
+                    unreadSystemNotes.map((n) =>
+                        fetch(`http://localhost:8080/api/notifications/${n.id}/read`, {
+                            method: "PUT",
+                            headers: { Authorization: `Bearer ${token}` },
+                        }),
+                    ),
+                );
+                setNotifications((prev) =>
+                    prev.map((n) => (n.type === "SYSTEM" ? { ...n, isRead: true } : n)),
+                );
+            }
+        } catch (error) {
+            console.error("Lỗi đánh dấu đã đọc:", error);
+        }
+        navigate("/admin/duyet-bai");
+        setShowNotifications(false);
+    };
+
+    const handleMarkAllAsRead = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            const res = await fetch(
+                "http://localhost:8080/api/notifications/mark-read",
+                {
+                    method: "PUT",
+                    headers: { Authorization: `Bearer ${token}` },
+                },
+            );
+
+            if (res.ok) {
+                setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+            }
+        } catch (error) {
+            console.error("Lỗi đánh dấu đã đọc:", error);
+        }
+    };
+
+    const handleNotificationClick = async (note: any) => {
+        if (!note.isRead) {
+            try {
+                const token = localStorage.getItem("token");
+                if (token) {
+                    await fetch(
+                        `http://localhost:8080/api/notifications/${note.id}/read`,
+                        {
+                            method: "PUT",
+                            headers: { Authorization: `Bearer ${token}` },
+                        },
+                    );
+                    setNotifications((prev) =>
+                        prev.map((n) => (n.id === note.id ? { ...n, isRead: true } : n)),
+                    );
+                }
+            } catch (error) {
+                console.error("Lỗi đánh dấu đã đọc:", error);
+            }
+        }
+
+        if (note.type === "SYSTEM") {
+            navigate("/admin/duyet-bai");
+            setShowNotifications(false);
+        }
+    };
+
+    const formatTimeAgo = (dateValue: any) => {
+        if (!dateValue) return "";
+        let date: Date;
+        if (Array.isArray(dateValue)) {
+            date = new Date(
+                dateValue[0],
+                dateValue[1] - 1,
+                dateValue[2],
+                dateValue[3] || 0,
+                dateValue[4] || 0,
+                dateValue[5] || 0,
+            );
+        } else {
+            date = new Date(dateValue);
+        }
+        const now = new Date();
+        const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+        if (diffInSeconds < 60) return "Vừa xong";
+        const diffInMinutes = Math.floor(diffInSeconds / 60);
+        if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) return `${diffInHours} giờ trước`;
+        const diffInDays = Math.floor(diffInHours / 24);
+        if (diffInDays < 30) return `${diffInDays} ngày trước`;
+        const diffInMonths = Math.floor(diffInDays / 30);
+        if (diffInMonths < 12) return `${diffInMonths} tháng trước`;
+        return `${Math.floor(diffInDays / 365)} năm trước`;
+    };
+
     return (
-        <div className="admin-topbar d-flex justify-content-between align-items-center" style={{ fontSize: "16px", position: "sticky", top: 0, zIndex: 1000 }}>
-            <div className="breadcrumb mb-0">
-                {breadcrumb}
-            </div>
+        <div
+            className="admin-topbar d-flex justify-content-between align-items-center"
+        >
+            <div className="breadcrumb mb-0">{breadcrumb}</div>
 
             <div className="topbar-right d-flex align-items-center gap-3">
-                <div className="avatar-box bg-light rounded-circle d-flex justify-content-center align-items-center" style={{ width: "40px", height: "40px", cursor: "pointer" }}>
-                    <Bell size={25} />
+                <div className="container-bell" ref={notificationRef}>
+                    <div
+                        className="icon-bell avatar-box bg-light rounded-circle d-flex justify-content-center align-items-center position-relative"
+                        onClick={() => setShowNotifications(!showNotifications)}
+                    >
+                        <Bell size={25} />
+                        {unreadCount > 0 && (
+                            <span
+                                className="position-absolute p-1 bg-danger border border-light rounded-circle"
+                            ></span>
+                        )}
+                    </div>
+                    {showNotifications && (
+                        <div
+                            className="notification-dropdown"
+                            style={{
+                                minWidth: "270px"
+                            }}
+                        >
+                            <div className="notification-arrow"></div>
+                            <div className="notification-item">
+                                <h6>Thông báo</h6>
+                                {unreadCount > 0 && (
+                                    <span
+                                        onClick={handleMarkAllAsRead}
+                                    >
+                                        Đánh dấu là đã đọc
+                                    </span>
+                                )}
+                            </div>
+                            {notifications.length === 0 ? (
+                                <p
+                                    className="text-muted text-center m-0 py-3"
+                                    style={{ fontSize: "14px" }}
+                                >
+                                    Không có thông báo nào
+                                </p>
+                            ) : (
+                                <>
+                                    {pendingCount > 0 && (
+                                        <div
+                                            className="notification-note"
+                                            onClick={handlePendingClick}
+                                        >
+                                            <div
+                                                className="dot-green"
+                                            ></div>
+                                            <div className="notification-content">
+                                                Có <strong>{pendingCount}</strong> bài đăng mới
+                                                <div className="notification-time mt-1">
+                                                    Đang chờ bạn kiểm duyệt
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {displayNotifications.map((note) => (
+                                        <div
+                                            key={note.id}
+                                            className="notification-note"
+                                            style={{
+                                                backgroundColor: note.isRead
+                                                    ? "transparent"
+                                                    : "var(--light-green)"
+                                            }}
+                                            onClick={() => handleNotificationClick(note)}
+                                        >
+                                            <div
+                                                className="dot-green"
+                                                style={{
+                                                    backgroundColor: note.isRead
+                                                        ? "transparent"
+                                                        : "var(--primary)",
+                                                }}
+                                            ></div>
+                                            <div className="notification-content">
+                                                {note.content.startsWith(
+                                                    "Có bài đăng mới cần kiểm duyệt: ",
+                                                ) ? (
+                                                    <>
+                                                        Có bài đăng mới cần kiểm duyệt:{" "}
+                                                        <strong>
+                                                            {note.content.replace(
+                                                                "Có bài đăng mới cần kiểm duyệt: ",
+                                                                "",
+                                                            )}
+                                                        </strong>
+                                                    </>
+                                                ) : (
+                                                    note.content
+                                                )}
+                                                <div className="notification-time mt-1">
+                                                    {formatTimeAgo(note.createdAt)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </>
+                            )}
+                        </div>
+                    )}
                 </div>
-                <div className="avatar-box bg-light rounded-pill d-flex justify-content-center align-items-center gap-1 px-3" style={{ height: "40px", cursor: "pointer" }}>
-                    <CustomUserIcon />
-                    <ChevronDown size={18} />
+                <div className="container-user position-relative" ref={userRef}>
+                    <div
+                        className="icon-user avatar-box bg-light rounded-pill d-flex justify-content-center align-items-center gap-2 px-3 py-1"
+                        onClick={() => setShowUserDropdown(!showUserDropdown)}
+                    >
+                        <img
+                            src={
+                                user?.avatar
+                                    ? (user.avatar.startsWith("/images/") || user.avatar.startsWith("http")
+                                        ? user.avatar
+                                        : `http://localhost:8080${user.avatar}`)
+                                    : "/images/avatar_default.jpg"
+                            }
+                            alt="Admin Avatar"
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/images/avatar_default.jpg";
+                            }}
+                        />
+                        <span className="fw-medium d-none d-md-block">
+                            {user?.fullName || "Admin"}
+                        </span>
+                        {showUserDropdown ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </div>
+                    {showUserDropdown && (
+                        <div
+                            className="user-dropdown position-absolute bg-white shadow-sm rounded p-3"
+                        >
+                            <div className="notification-arrow"></div>
+                            <div className="avatar-admin d-flex flex-column align-items-center text-center gap-2">
+                                <img
+                                    src={
+                                        user?.avatar
+                                            ? (user.avatar.startsWith("/images/") || user.avatar.startsWith("http")
+                                                ? user.avatar
+                                                : `http://localhost:8080${user.avatar}`)
+                                            : "/images/avatar_default.jpg"
+                                    }
+                                    alt="Admin Avatar"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = "/images/avatar_default.jpg";
+                                    }}
+                                />
+                                <div className="mt-1">
+                                    <h6 className="fullname-admin m-0 fw-bold">{user?.fullName || "Admin"}</h6>
+                                    <small className="text-muted" style={{ fontSize: "13px" }}>Quản trị viên</small>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

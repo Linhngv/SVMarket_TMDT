@@ -75,14 +75,14 @@ public class AuthService {
         String password = req.getPassword() == null ? "" : req.getPassword();
 
         if (input.isEmpty() || password.isEmpty()) {
-            return new LoginResponse(null, "Vui lòng nhập đầy đủ thông tin", null, null);
+            return new LoginResponse(null, "Vui lòng nhập đầy đủ thông tin", null, null, null);
         }
 
         // 1. Tìm user
         User user = userRepository.findByEmailOrPhone(input);
 
         if (user == null) {
-            return new LoginResponse(null, "Tài khoản không tồn tại", null, null);
+            return new LoginResponse(null, "Tài khoản không tồn tại", null, null, null);
         }
 
         // 2. Kiểm tra mật khẩu (BCrypt + fallback dữ liệu cũ)
@@ -90,7 +90,7 @@ public class AuthService {
                 || user.getPassword().equals(password);
 
         if (!isMatch) {
-            return new LoginResponse(null, "Sai mật khẩu", null, null);
+            return new LoginResponse(null, "Sai mật khẩu", null, null, null);
         }
 
         // 3. Tạo token
@@ -101,7 +101,8 @@ public class AuthService {
                 token,
                 "Login success",
                 user.getFullName(),
-                user.getAvatar());
+                user.getAvatar(),
+                user.getRole() != null ? user.getRole().name() : "USER");
     }
 
     public void register(RegisterRequest registerRequest) {
@@ -110,8 +111,7 @@ public class AuthService {
 
         if (!email.endsWith(".edu.vn")) {
             throw new BadRequestException(
-                    "Vui lòng sử dụng email sinh viên của trường (.edu.vn)"
-            );
+                    "Vui lòng sử dụng email sinh viên của trường (.edu.vn)");
         }
 
         if (userRepository.existsByEmail(email)) {
@@ -160,8 +160,7 @@ public class AuthService {
         user.setStatus("Đang hoạt động");
         user.setRole(Role.USER);
 
-        String university =
-                universityService.findUniversityByEmail(request.getEmail());
+        String university = universityService.findUniversityByEmail(request.getEmail());
 
         user.setUniversity(university); // lưu tên trường
 

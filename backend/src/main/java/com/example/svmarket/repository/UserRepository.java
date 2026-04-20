@@ -5,7 +5,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.example.svmarket.entity.User;
+import com.example.svmarket.entity.Role;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
@@ -14,5 +16,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     User findByEmailOrPhone(@Param("input") String input);
 
     Optional<User> findByEmail(String email);
+
     Boolean existsByEmail(String email);
+
+    List<User> findByRole(Role role);
 }
