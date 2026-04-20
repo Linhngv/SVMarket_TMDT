@@ -249,7 +249,7 @@ const menuGroups = [
   {
     label: "Quản lý gói tin",
     items: [
-      { id: "admin/goi-tin", label: "Danh sách gói tin", icon: <Bookmark size={24} /> },
+      { id: "admin/packages", label: "Danh sách gói tin", icon: <Bookmark size={24} /> },
     ],
   },
   {

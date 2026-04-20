@@ -1,9 +1,20 @@
 package com.example.svmarket.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "package_plans")
@@ -51,4 +62,10 @@ public class PackagePlan {
     //Có vào mục đề xuất không
     @Column(name = "is_featured")
     private Boolean isFeatured;
+
+    // Trạng thái gói
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    @Builder.Default
+    private PackageStatus status = PackageStatus.ACTIVE;
 }
