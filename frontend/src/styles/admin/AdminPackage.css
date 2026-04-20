@@ -1,0 +1,48 @@
+.admin-main {
+    background-color: #f4f6f9;
+    min-height: 100vh;
+}
+
+.page-title {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+/* nut dang ky*/
+.btn-add-package {
+    background-color: #198754; 
+    color: #ffffff;
+    border: none;
+    transition: background-color 0.2s ease-in-out, transform 0.1s;
+}
+
+.btn-add-package:hover {
+    background-color: #157347;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* tim kiem va loc */
+.package-search-box, 
+.package-filter-box {
+    min-width: 260px;
+    border: 1px solid #ced4da !important;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.package-search-box:focus-within, 
+.package-filter-box:focus-within {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+.package-filter-select {
+    cursor: pointer;
+}
+
+.modal-overlay {
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1050; 
+    backdrop-filter: blur(2px); 
+}

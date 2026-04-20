@@ -1,9 +1,11 @@
 package com.example.svmarket.dto;
 
+import java.math.BigDecimal;
+
+import com.example.svmarket.entity.PackageStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
@@ -16,4 +18,5 @@ public class PackagePlanResponse {
     Integer pushHours;
     Integer durationDays;
     Integer priorityLevel;
+    PackageStatus status;
 }

@@ -19,6 +19,7 @@ import EditListing from "./pages/EditListing";
 import AdminPostList from "./pages/admin/PostManagement/AdminPostList";
 import AdminPostApproval from "./pages/admin/PostManagement/AdminPostApproval";
 import AdminViolationList from "./pages/admin/PostManagement/AdminViolationList";
+import AdminPackage from "./pages/admin/AdminPackage";
 
 
 function App() {
@@ -50,6 +51,8 @@ function App() {
       <Route path="/admin/posts" element={<AdminPostList />} />
       <Route path="/admin/duyet-bai" element={<AdminPostApproval />} />
       <Route path="/admin/vi-pham" element={<AdminViolationList />} />
+
+      <Route path="/admin/packages" element={<AdminPackage/>}/>
 
       <Route path="*" element={<div>Trang đang được phát triển.</div>} />
     </Routes>
