@@ -89,6 +89,9 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
 
+    @Autowired
+    private OAuth2SuccessHandler oAuth2SuccessHandler;
+
     // BỎ QUA security cho file tĩnh (QUAN TRỌNG NHẤT để fix 403 avatar)
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -121,8 +124,8 @@ public class SecurityConfig {
                 .cors(cors -> {
                 })
                 .csrf(csrf -> csrf.disable())
-
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                
+                // BỎ cấu hình STATELESS đi vì OAuth2 Login mặc định cần Session để lưu state khi chuyển hướng sang Google
 
                 .authorizeHttpRequests(auth -> auth
                         // AUTH
@@ -164,6 +167,10 @@ public class SecurityConfig {
 
                 // tắt basic auth
                 .httpBasic(basic -> basic.disable())
+                
+                // Bật tính năng đăng nhập bằng OAuth2 (Google) và cấu hình Handler khi thành công
+                .oauth2Login(oauth2 -> oauth2.successHandler(oAuth2SuccessHandler))
+                
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

@@ -49,6 +49,9 @@ dependencies {
     // Cloudinary (upload ảnh lên cloud)
     implementation 'com.cloudinary:cloudinary-http44:1.39.0'
 
+    //OAuth2
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
 
 }
 
