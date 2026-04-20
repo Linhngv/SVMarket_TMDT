@@ -177,7 +177,7 @@ export default function Products({ title }: Props) {
       {/* LIST */}
       <div className="row">
         {items.map((item) => (
-          <div className="col-6 col-md-3 mb-3" key={item.key}>
+          <div className="col-6 col-md-4 col-lg-3 mb-3" key={item.key}>
             <div
               className="product-card"
               onClick={() => navigate(`/product/${item.id}`)}

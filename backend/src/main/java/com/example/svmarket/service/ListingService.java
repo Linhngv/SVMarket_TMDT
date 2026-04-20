@@ -19,12 +19,16 @@ import com.example.svmarket.entity.Image;
 import com.example.svmarket.entity.Listing;
 import com.example.svmarket.entity.ListingFavorite;
 import com.example.svmarket.entity.ListingStatus;
+import com.example.svmarket.entity.Notification;
+import com.example.svmarket.entity.NotificationType;
+import com.example.svmarket.entity.Role;
 import com.example.svmarket.entity.User;
 import com.example.svmarket.exception.BadRequestException;
 import com.example.svmarket.repository.CategoryRepository;
 import com.example.svmarket.repository.ImageRepository;
 import com.example.svmarket.repository.ListingFavoriteRepository;
 import com.example.svmarket.repository.ListingRepository;
+import com.example.svmarket.repository.NotificationRepository;
 import com.example.svmarket.repository.UserRepository;
 import com.example.svmarket.service.CloudinaryService.UploadedImage;
 
@@ -49,6 +53,9 @@ public class ListingService {
     private ListingFavoriteRepository listingFavoriteRepository;
 
     @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
     private CloudinaryService cloudinaryService;
 
     // Lay danh sach danh muc de hien thi dropdown o form.
@@ -61,7 +68,8 @@ public class ListingService {
 
     // Tao bai dang moi cua user dang dang nhap.
     @Transactional
-    public ListingDetailResponse createMyListing(String email, ListingUpsertRequest request, List<MultipartFile> images) {
+    public ListingDetailResponse createMyListing(String email, ListingUpsertRequest request,
+            List<MultipartFile> images) {
         User seller = getUserByEmail(email);
         Category category = getCategoryById(request.getCategoryId());
 
@@ -80,6 +88,19 @@ public class ListingService {
         Listing savedListing = listingRepository.save(listing);
         List<String> imageUrls = saveImages(savedListing, images);
 
+        // Tạo thông báo cho Admin
+        List<User> admins = userRepository.findByRole(Role.ADMIN);
+        for (User admin : admins) {
+            Notification notification = Notification.builder()
+                    .user(admin)
+                    .content("Có bài đăng mới cần kiểm duyệt: " + savedListing.getTitle())
+                    .type(NotificationType.SYSTEM)
+                    .referenceId(savedListing.getId())
+                    .isRead(false)
+                    .build();
+            notificationRepository.save(notification);
+        }
+
         return toDetailResponse(savedListing, imageUrls);
     }
 
@@ -89,15 +110,15 @@ public class ListingService {
 
         return listingRepository.findBySellerIdAndStatusNotOrderByCreatedAtDesc(seller.getId(), ListingStatus.DELETED)
                 .stream()
-            .map(this::toSummaryResponse)
-            .toList();
-        }
+                .map(this::toSummaryResponse)
+                .toList();
+    }
 
-        // Lay danh sach bai dang dang hoat dong de hien thi o trang chu.
-        public List<ListingSummaryResponse> getActiveListings() {
+    // Lay danh sach bai dang dang hoat dong de hien thi o trang chu.
+    public List<ListingSummaryResponse> getActiveListings() {
         return listingRepository.findByStatusOrderByCreatedAtDesc(ListingStatus.ACTIVE)
-            .stream()
-            .map(this::toSummaryResponse)
+                .stream()
+                .map(this::toSummaryResponse)
                 .toList();
     }
 
@@ -148,17 +169,17 @@ public class ListingService {
                 .toList();
     }
 
-        // Lay chi tiet mot bai dang hoat dong de hien thi trang san pham.
-        public ListingDetailResponse getActiveListingById(Integer listingId) {
-            Listing listing = listingRepository.findByIdAndStatus(listingId, ListingStatus.ACTIVE)
-                    .orElseThrow(() -> new BadRequestException("Bai dang khong ton tai hoac da bi an"));
+    // Lay chi tiet mot bai dang hoat dong de hien thi trang san pham.
+    public ListingDetailResponse getActiveListingById(Integer listingId) {
+        Listing listing = listingRepository.findByIdAndStatus(listingId, ListingStatus.ACTIVE)
+                .orElseThrow(() -> new BadRequestException("Bai dang khong ton tai hoac da bi an"));
 
-            List<String> imageUrls = listing.getImages() == null
-                    ? List.of()
-                    : listing.getImages().stream().map(Image::getUrl).toList();
+        List<String> imageUrls = listing.getImages() == null
+                ? List.of()
+                : listing.getImages().stream().map(Image::getUrl).toList();
 
-            return toPublicDetailResponse(listing, imageUrls);
-        }
+        return toPublicDetailResponse(listing, imageUrls);
+    }
 
     // Lay chi tiet mot bai dang cua user hien tai de hien thi va sua.
     public ListingDetailResponse getMyListingById(String email, Integer listingId) {
@@ -175,9 +196,9 @@ public class ListingService {
     // Cap nhat bai dang cua user hien tai, co the thay anh moi.
     @Transactional
     public ListingDetailResponse updateMyListing(String email,
-                                                 Integer listingId,
-                                                 ListingUpsertRequest request,
-                                                 List<MultipartFile> images) {
+            Integer listingId,
+            ListingUpsertRequest request,
+            List<MultipartFile> images) {
         User seller = getUserByEmail(email);
         Listing listing = getMyListingByIdAndSellerId(listingId, seller.getId());
 
@@ -308,7 +329,7 @@ public class ListingService {
                 .toList();
 
         if (validImages.size() > MAX_IMAGES) {
-            throw new BadRequestException("Chi duoc tai len toi da 5 anh" );
+            throw new BadRequestException("Chi duoc tai len toi da 5 anh");
         }
 
         List<String> imageUrls = new ArrayList<>();

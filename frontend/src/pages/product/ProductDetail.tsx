@@ -179,6 +179,7 @@ export default function ProductDetail() {
                       src={imageSrc}
                       className="gallery-img"
                       alt={title}
+                    style={{ objectFit: "contain" }}
                       onError={(event) => {
                         event.currentTarget.src = "/images/detail.png";
                       }}
@@ -292,6 +293,7 @@ export default function ProductDetail() {
                   src={imageSrc}
                   alt={title}
                   className="buy-modal-product-image"
+                  style={{ objectFit: "contain" }}
                   onError={(event) => {
                     event.currentTarget.src = "/images/detail.png";
                   }}

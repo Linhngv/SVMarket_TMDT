@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import "../../styles/admin/AdminSidebar.css";
+import { useAuth } from "../../context/AuthContext";
 
 import {
   Ban,
@@ -263,6 +264,12 @@ const menuGroups = [
 export default function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <aside className="admin-sidebar">
@@ -301,7 +308,10 @@ export default function AdminSidebar() {
 
       {/* LOGOUT */}
       <div className="admin-sidebar-logout">
-        <button className="admin-sidebar-item d-flex align-items-center gap-2">
+        <button
+          className="admin-sidebar-item d-flex align-items-center gap-2"
+          onClick={handleLogout}
+        >
           <LogOut size={24} />
           <span>Đăng xuất</span>
         </button>

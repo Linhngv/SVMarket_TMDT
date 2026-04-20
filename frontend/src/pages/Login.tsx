@@ -33,7 +33,11 @@ export default function Login() {
         await refreshUser();
 
         // chuyển trang
-        navigate("/");
+        if (res.data.role === "ADMIN") {
+          navigate("/admin/posts");
+        } else {
+          navigate("/");
+        }
       } else {
         alert(res.data.message || "Sai tài khoản hoặc mật khẩu");
         setPassword("");

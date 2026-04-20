@@ -1,0 +1,86 @@
+.admin-topbar {
+    font-size: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.topbar-right .container-bell {
+    position: relative;
+}
+
+.topbar-right .container-bell .icon-bell {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+.topbar-right .container-bell .icon-bell span {
+    top: 6px;
+    right: 8px;
+    width: 10px;
+    height: 10px;
+}
+
+.topbar-right .container-bell .icon-bell .notification-dropdown {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.notification-item span {
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--primary);
+}
+
+.notification-note {
+    background-color: var(--light-green);
+    cursor: pointer;
+}
+
+.dot-green {
+    background-color: var(--primary);
+}
+
+.icon-user {
+    height: 40px;
+    cursor: pointer;
+}
+
+.icon-user img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.icon-user span {
+    font-size: 15px;
+    color: #1a1a2e;
+}
+
+.user-dropdown {
+    top: 50px;
+    right: 0;
+    min-width: 220px;
+    z-index: 1000;
+    border: 1px solid #eaeaea;
+}
+
+.user-dropdown .notification-arrow {
+    left: auto;
+    right: 18px;
+}
+
+.avatar-admin img {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.fullname-admin {
+    font-size: 16px;
+    color: #1a1a2e;
+}
