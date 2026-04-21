@@ -1,7 +1,16 @@
 package com.example.svmarket.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import com.example.svmarket.dto.OrderDetailResponse;
+import com.example.svmarket.dto.OrderItemResponse;
+import com.example.svmarket.entity.Order;
+import com.example.svmarket.entity.Payment;
+import com.example.svmarket.entity.User;
+import com.example.svmarket.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,6 +33,9 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -68,5 +80,18 @@ public class OrderController {
         String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
         orderService.acceptOrder(id, email);
         return "Đã chấp nhận đơn hàng";
+    }
+
+    // Chi tiết đơn hàng
+    @GetMapping("/{orderId}/detail")
+    public ResponseEntity<?> getOrderDetail(@PathVariable Integer orderId) {
+        try {
+            return ResponseEntity.ok(orderService.getOrderDetail(orderId));
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("quyền")) {
+                return ResponseEntity.status(403).body(e.getMessage());
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

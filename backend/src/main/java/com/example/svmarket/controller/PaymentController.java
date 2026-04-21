@@ -37,23 +37,23 @@ public class PaymentController {
         return paymentService.createPaymentUrl(packageId, returnUrl);
     }
 
-    @GetMapping("/callback")
-    public void callback(@RequestParam Map<String, String> params,
-                         HttpServletResponse response) throws IOException {
-        String orderInfo = params.get("vnp_OrderInfo");
-        String responseCode = params.get("vnp_ResponseCode");
-        String[] parts = orderInfo.split("-");
-
-        String encodedReturnUrl = parts[5];
-        String returnUrl = new String(Base64.getDecoder().decode(encodedReturnUrl));
-
-        if ("00".equals(responseCode)) {
-            paymentService.handlePaymentSuccess(params);
-            response.sendRedirect(returnUrl + "/my-packages?status=success");
-        } else {
-            response.sendRedirect(returnUrl + "/my-packages?status=failed");
-        }
-    }
+//    @GetMapping("/callback")
+//    public void callback(@RequestParam Map<String, String> params,
+//                         HttpServletResponse response) throws IOException {
+//        String orderInfo = params.get("vnp_OrderInfo");
+//        String responseCode = params.get("vnp_ResponseCode");
+//        String[] parts = orderInfo.split("-");
+//
+//        String encodedReturnUrl = parts[5];
+//        String returnUrl = new String(Base64.getDecoder().decode(encodedReturnUrl));
+//
+//        if ("00".equals(responseCode)) {
+//            paymentService.handlePaymentSuccess(params);
+//            response.sendRedirect(returnUrl + "/my-packages?status=success");
+//        } else {
+//            response.sendRedirect(returnUrl + "/my-packages?status=failed");
+//        }
+//    }
 
     // Lấy thông tin gói đã dăng ký của người dùng
     @GetMapping("/my-packages")
@@ -61,5 +61,47 @@ public class PaymentController {
         User currentUser = jwtUtil.getCurrentUser();
         List<SellerPackage> list = sellerPackageRepository.findBySellerId(currentUser.getId());
         return ResponseEntity.ok(list);
+    }
+
+
+    // Tạo URL thanh toán cho đơn hàng
+    @GetMapping("/create-order")
+    public ResponseEntity<String> createOrderPayment(@RequestParam Integer orderId, @RequestParam String returnUrl) throws Exception {
+        String url = paymentService.createOrderPaymentUrl(orderId, returnUrl);
+        return ResponseEntity.ok(url);
+    }
+
+    // Cập nhật callback để xử lý cả 2 loại
+    @GetMapping("/callback")
+    public void callback(@RequestParam Map<String, String> params,
+                         HttpServletResponse response) throws IOException {
+
+        String responseCode = params.get("vnp_ResponseCode");
+        String orderInfo = params.get("vnp_OrderInfo");
+
+        String[] parts = orderInfo.split("-");
+
+        String type = parts[1]; // package | order
+        String encodedReturnUrl = parts[parts.length - 1];
+        String returnUrl = new String(Base64.getDecoder().decode(encodedReturnUrl));
+
+        if ("00".equals(responseCode)) {
+
+            if ("package".equals(type)) {
+                paymentService.handlePaymentSuccess(params);
+                response.sendRedirect(returnUrl + "/my-packages?status=success");
+
+            } else if ("order".equals(type)) {
+                paymentService.handleOrderPaymentSuccess(params);
+                response.sendRedirect(returnUrl + "/purchase-history?status=success");
+            }
+
+        } else {
+            if ("package".equals(type)) {
+                response.sendRedirect(returnUrl + "/my-packages?status=failed");
+            } else {
+                response.sendRedirect(returnUrl + "/purchase-history?status=failed");
+            }
+        }
     }
 }

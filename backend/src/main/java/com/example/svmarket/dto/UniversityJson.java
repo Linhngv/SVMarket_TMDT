@@ -6,7 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UniversityJson {
-
     private String no;
     private String province;
     private String englishName;

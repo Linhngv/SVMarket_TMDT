@@ -1,5 +1,10 @@
 package com.example.svmarket.service;
 
+import com.example.svmarket.dto.OrderDetailResponse;
+import com.example.svmarket.dto.OrderItemResponse;
+import com.example.svmarket.entity.*;
+import com.example.svmarket.repository.*;
+import com.example.svmarket.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -7,19 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.svmarket.dto.OrderRequest;
 import com.example.svmarket.dto.OrderResponse;
 import java.util.List;
-import com.example.svmarket.entity.Listing;
-import com.example.svmarket.entity.Order;
-import com.example.svmarket.entity.OrderDetail;
-import com.example.svmarket.entity.ListingStatus;
-import com.example.svmarket.entity.OrderStatus;
-import com.example.svmarket.entity.Notification;
-import com.example.svmarket.entity.NotificationType;
-import com.example.svmarket.entity.User;
-import com.example.svmarket.repository.ListingRepository;
-import com.example.svmarket.repository.OrderDetailRepository;
-import com.example.svmarket.repository.OrderRepository;
-import com.example.svmarket.repository.NotificationRepository;
-import com.example.svmarket.repository.UserRepository;
 
 @Service
 @Transactional
@@ -39,6 +31,13 @@ public class OrderService {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
 
     public void createOrder(String buyerEmail, OrderRequest request) {
         User buyer = userRepository.findByEmail(buyerEmail)
@@ -67,6 +66,15 @@ public class OrderService {
                 .build();
 
         orderDetailRepository.save(orderDetail);
+
+        Payment payment = Payment.builder()
+                .order(savedOrder)
+                .amount(savedOrder.getTotalAmount())
+                .status(PaymentStatus.PENDING)
+                .paymentMethod(null)
+                .build();
+
+        paymentRepository.save(payment);
 
         // Tạo thông báo gửi đến người bán
         String content = buyer.getFullName() + " muốn mua " + listing.getTitle();
@@ -173,5 +181,44 @@ public class OrderService {
         Notification notification = Notification.builder().user(order.getBuyer()).content(content)
                 .type(NotificationType.PAYMENT).referenceId(order.getId()).isRead(false).build();
         notificationRepository.save(notification);
+    }
+
+    // Lấy thông tin chi tiết của đơn hàng
+    public OrderDetailResponse getOrderDetail(Integer orderId) {
+
+        User currentUser = jwtUtil.getCurrentUser();
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        if (!order.getBuyer().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("Không có quyền xem đơn hàng này");
+        }
+
+        Payment latestPayment = order.getPayments().isEmpty()
+                ? null
+                : order.getPayments().get(order.getPayments().size() - 1);
+
+        List<OrderItemResponse> items = order.getOrderDetails().stream()
+                .map(d -> new OrderItemResponse(
+                        d.getListing().getTitle(),
+                        d.getQuantity(),
+                        d.getPrice(),
+                        d.getNote()
+                ))
+                .toList();
+
+        return new OrderDetailResponse(
+                order.getId(),
+                order.getBuyer().getFullName(),
+                order.getSeller().getFullName(),
+                order.getTotalAmount(),
+                order.getStatus().name(),
+                order.getCreatedAt(),
+                latestPayment != null ? latestPayment.getStatus().name() : "PENDING",
+                latestPayment != null ? latestPayment.getPaymentMethod() : null,
+                latestPayment != null ? latestPayment.getCreatedAt() : null,
+                items
+        );
     }
 }
