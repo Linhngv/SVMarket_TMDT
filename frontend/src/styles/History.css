@@ -7,7 +7,7 @@
 }
 
 .history-title {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--dark);
   margin: 0 0 20px 0;
@@ -56,7 +56,7 @@
 }
 
 .history-table thead tr {
-  background: transparent;
+  background: var(--light-green);
 }
 
 .history-table th {
@@ -339,5 +339,252 @@
 
   .action-btns {
     gap: 4px;
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-box {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 24px;
+  width: 480px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.modal-close:hover {
+  background: var(--gray-light);
+}
+
+.modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--border-light);
+  padding-top: 14px;
+}
+
+.payment-section {
+  background: var(--background);
+  border-radius: 8px;
+  padding: 10px;
+  border-top: none;
+}
+
+.modal-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.modal-value {
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.price-highlight {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.payment-method-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: all 0.15s;
+}
+
+.payment-option:hover {
+  border-color: var(--primary);
+  background: var(--light-green);
+}
+
+.payment-option.selected {
+  border-color: var(--primary);
+  background: var(--light-green);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.payment-option input[type="radio"] {
+  accent-color: var(--primary);
+  width: 15px;
+  height: 15px;
+}
+
+.btn-pay-online {
+  margin-top: 4px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  transition: background 0.15s;
+}
+
+.btn-pay-online:hover:not(:disabled) {
+  background: var(--dark-green);
+}
+
+.btn-pay-online:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--text-secondary);
+}
+
+.success-modal {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 24px 0;
+  width: 360px;
+  text-align: center;
+  animation: fadeIn 0.25s ease;
+}
+
+.success-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: var(--success);
+  color: white;
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-modal h3 {
+  margin: 8px 0;
+  color: var(--secondary);
+}
+
+.success-modal p {
+  font-size: 13px;
+  color: var(--dark);
+}
+
+.btn-ok {
+  margin-top: 16px;
+  padding: 8px 16px;
+  border: none;
+  background: var(--primary);
+  border: 1.5px solid var(--primary);
+  color: var(--white);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-ok:hover {
+  opacity: 0.8;
+}
+
+@keyframes fadeIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 120px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid var(--border-light);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
