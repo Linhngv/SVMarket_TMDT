@@ -31,6 +31,8 @@ export default function AdminPostList() {
             case "HIDDEN":
             case "DELETED":
                 return "bg-secondary";
+            case "SOLD":
+                return "bg-dark text-white";
             default:
                 return "bg-secondary";
         }
@@ -42,9 +44,18 @@ export default function AdminPostList() {
             case "PENDING":
                 return "Chờ duyệt";
             case "ACTIVE":
+            case "APPROVED":
                 return "Đã duyệt";
             case "REJECTED":
                 return "Vi phạm";
+            case "HIDDEN":
+                return "Tạm ẩn";
+            case "INACTIVE":
+                return "Không hoạt động";
+            case "SOLD":
+                return "Đã bán";
+            case "DELETED":
+                return "Đã xóa";
             default:
                 return status;
         }

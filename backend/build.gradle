@@ -49,6 +49,9 @@ dependencies {
     // Cloudinary (upload ảnh lên cloud)
     implementation 'com.cloudinary:cloudinary-http44:1.39.0'
 
+    // Import và Export Excel
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
 
 }
 

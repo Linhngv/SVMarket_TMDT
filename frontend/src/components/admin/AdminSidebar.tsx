@@ -216,7 +216,7 @@ const menuGroups = [
   {
     label: "Quản lý danh mục",
     items: [
-      { id: "admin/danh-muc", label: "Danh sách danh mục", icon: <IconCategoryList size={24} /> },
+      { id: "admin/categories", label: "Danh sách danh mục", icon: <IconCategoryList size={24} /> },
     ],
   },
   {
