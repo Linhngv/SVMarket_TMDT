@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import type {
   ChangeEvent,
   ClipboardEvent,
@@ -212,14 +213,9 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="register-wrapper">
-      <div className="image-side">
-        <img src="/images/bg_login.jpg" alt="forgot password background" />
-      </div>
-
-      <div className="form-side">
-        <div className="form-container">
-          <h3>Quên mật khẩu</h3>
+    <div style={styles.wrapper}>
+      <div style={styles.formContainer}>
+        <h3 style={styles.title}>Quên mật khẩu</h3>
 
           {step === 1 ? (
             <form onSubmit={handleEmailSubmit} className="form" noValidate>
@@ -357,8 +353,39 @@ export default function ForgotPassword() {
               </div>
             </form>
           )}
-        </div>
       </div>
     </div>
   );
 }
+
+// styles
+const styles: Record<string, CSSProperties> = {
+  wrapper: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    width: "100%",
+    fontFamily: "sans-serif",
+    backgroundImage: "url('/images/bg_tmdt.png')",
+    backgroundSize: "100% 100%",
+    backgroundAttachment: "fixed",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  },
+  formContainer: {
+    width: "100%",
+    maxWidth: "480px",
+    backgroundColor: "#ffffff",
+    padding: "40px",
+    borderRadius: "24px",
+    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+    margin: "20px",
+  },
+  title: {
+    marginBottom: "20px",
+    fontSize: "32px",
+    textAlign: "center",
+    color: "#1A1A2E",
+  },
+};

@@ -58,26 +58,15 @@ export default function Login() {
       <style>
         {`
           @media (max-width: 768px) {
-            .login-wrapper { flex-direction: column !important; height: auto !important; min-height: 100vh; }
-            .image-side { display: none !important; }
-            .form-side { padding: 20px !important; }
+            .login-form-container { padding: 30px 20px !important; }
           }
         `}
       </style>
 
       <div className="login-wrapper" style={styles.wrapper}>
-        {/* LEFT IMAGE */}
-        <div className="image-side" style={styles.imageSide}>
-          <img
-            src="/images/bg_login.jpg"
-            alt="login background"
-            style={styles.image}
-          />
-        </div>
 
         {/* FORM */}
-        <div className="form-side" style={styles.formSide}>
-          <div style={styles.formContainer}>
+        <div className="login-form-container" style={styles.formContainer}>
             <h2 style={styles.title}>Đăng nhập</h2>
 
             <form onSubmit={handleLogin} style={styles.form}>
@@ -127,7 +116,6 @@ export default function Login() {
               </div>
             </form>
           </div>
-        </div>
       </div>
     </>
   );
@@ -137,30 +125,25 @@ export default function Login() {
 const styles: Record<string, CSSProperties> = {
   wrapper: {
     display: "flex",
-    height: "100vh",
-    width: "100%",
-    fontFamily: "sans-serif",
-  },
-  imageSide: {
-    flex: 1,
-    padding: "40px",
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-    objectFit: "cover",
-    borderRadius: "24px",
-  },
-  formSide: {
-    flex: 1,
-    display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: "40px",
+    minHeight: "100vh",
+    width: "100%",
+    fontFamily: "sans-serif",
+    backgroundImage: "url('/images/bg_tmdt.png')",
+    backgroundSize: "100% 100%",
+    backgroundAttachment: "fixed",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
   },
   formContainer: {
     width: "100%",
-    maxWidth: "420px",
+    maxWidth: "480px",
+    backgroundColor: "#ffffff",
+    padding: "40px",
+    borderRadius: "24px",
+    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+    margin: "20px",
   },
   title: {
     marginBottom: "20px",
