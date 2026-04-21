@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/Register.css";
@@ -96,14 +97,18 @@ export default function Register() {
   };
 
   return (
-    <div className="register-wrapper">
-      <div className="image-side">
-        <img src="/images/bg_login.jpg" alt="register background" />
-      </div>
+    <>
+      <style>
+        {`
+          @media (max-width: 768px) {
+            .register-form-container { padding: 30px 20px !important; }
+          }
+        `}
+      </style>
 
-      <div className="form-side">
-        <div className="form-container">
-          <h3>Tạo tài khoản</h3>
+      <div className="register-wrapper" style={styles.wrapper}>
+        <div className="register-form-container" style={styles.formContainer}>
+          <h3 style={styles.title}>Tạo tài khoản</h3>
           <form onSubmit={handleRegister} className="form" noValidate>
 
             {/* Họ và tên */}
@@ -180,8 +185,40 @@ export default function Register() {
               <a href="/login" className="link-login">Đăng nhập</a>
             </div>
           </form>
-        </div>
       </div>
     </div>
+    </>
   );
 }
+
+// styles
+const styles: Record<string, CSSProperties> = {
+  wrapper: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    width: "100%",
+    fontFamily: "sans-serif",
+    backgroundImage: "url('/images/bg_tmdt.png')",
+    backgroundSize: "100% 100%",
+    backgroundAttachment: "fixed",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  },
+  formContainer: {
+    width: "100%",
+    maxWidth: "480px",
+    backgroundColor: "#ffffff",
+    padding: "40px",
+    borderRadius: "24px",
+    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+    margin: "20px",
+  },
+  title: {
+    marginBottom: "20px",
+    fontSize: "32px",
+    textAlign: "center",
+    color: "#1A1A2E",
+  },
+};

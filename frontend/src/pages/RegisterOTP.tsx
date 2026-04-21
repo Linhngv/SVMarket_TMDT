@@ -1,4 +1,5 @@
 import type { ChangeEvent, ClipboardEvent, KeyboardEvent } from "react";
+import type { CSSProperties } from "react";
 import React, { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/Register.css";
@@ -77,51 +78,75 @@ export default function RegisterOTP() {
   };
 
   return (
-    <>
-      <div className="register-wrapper">
-        <div className="image-side">
-          <img src="/images/bg_login.jpg" alt="otp background" />
-        </div>
-
-        <div className="form-otp">
-          <div className="form-container">
-            <h3>Xác thực đăng ký</h3>
-            <form onSubmit={handleVerify} className="form">
-              <div className="input-group">
-                <label className="label">
-                  Nhập mã OTP đã được gửi đến email của bạn
-                </label>
-                <div className="otp-inputs" onPaste={handlePaste}>
-                  {otp.map((value, index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      className="otp-input"
-                      value={value}
-                      onChange={(event) => handleChange(index, event)}
-                      onKeyDown={(event) => handleKeyDown(index, event)}
-                      ref={(element) => (inputRefs.current[index] = element)}
-                      required={index === 0}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <button type="submit" className="btn-auth">
-                Xác nhận
-              </button>
-              <div className="text-login">
-                Bạn đã có tài khoản?{" "}
-                <a href="#" className="link-login">
-                  Đăng nhập
-                </a>
-              </div>
-            </form>
+    <div style={styles.wrapper}>
+      <div style={styles.formContainer}>
+        <h3 style={styles.title}>Xác thực đăng ký</h3>
+        <form onSubmit={handleVerify} className="form">
+          <div className="input-group">
+            <label className="label">
+              Nhập mã OTP đã được gửi đến email của bạn
+            </label>
+            <div className="otp-inputs" onPaste={handlePaste}>
+              {otp.map((value, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  className="otp-input"
+                  value={value}
+                  onChange={(event) => handleChange(index, event)}
+                  onKeyDown={(event) => handleKeyDown(index, event)}
+                  ref={(element) => (inputRefs.current[index] = element)}
+                  required={index === 0}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+
+          <button type="submit" className="btn-auth">
+            Xác nhận
+          </button>
+          <div className="text-login">
+            Bạn đã có tài khoản?{" "}
+            <a href="/login" className="link-login">
+              Đăng nhập
+            </a>
+          </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 }
+
+// styles
+const styles: Record<string, CSSProperties> = {
+  wrapper: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    width: "100%",
+    fontFamily: "sans-serif",
+    backgroundImage: "url('/images/bg_tmdt.png')",
+    backgroundSize: "100% 100%",
+    backgroundAttachment: "fixed",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+  },
+  formContainer: {
+    width: "100%",
+    maxWidth: "480px",
+    backgroundColor: "#ffffff",
+    padding: "40px",
+    borderRadius: "24px",
+    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
+    margin: "20px",
+  },
+  title: {
+    marginBottom: "20px",
+    fontSize: "32px",
+    textAlign: "center",
+    color: "#1A1A2E",
+  },
+};

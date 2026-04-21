@@ -121,8 +121,8 @@ export default function Profile() {
                     </div>
 
                     {/* CONTENT */}
-                    <div className="col-md-9">
-                        <div className="card p-4 w-100">
+                    <div className="col-12 col-md d-flex flex-column" style={{ marginLeft: "-60px", height: "fit-content", marginBottom: "20px" }}>
+                        <div className="card p-4 w-100 flex-grow-1" style={{ border: "none" }}>
 
                             <h5 className="profile-title mb-4">Hồ sơ cá nhân</h5>
 
