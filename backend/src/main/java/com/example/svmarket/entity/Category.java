@@ -26,4 +26,8 @@ public class Category {
 
     @OneToMany(mappedBy = "category")
     private List<Listing> listings;
+
+    @Column(name = "image_public_id")
+    private String imagePublicId;
+
 }

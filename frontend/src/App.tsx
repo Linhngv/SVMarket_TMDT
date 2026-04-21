@@ -20,6 +20,7 @@ import AdminPostList from "./pages/admin/PostManagement/AdminPostList";
 import AdminPostApproval from "./pages/admin/PostManagement/AdminPostApproval";
 import AdminViolationList from "./pages/admin/PostManagement/AdminViolationList";
 import AdminPackage from "./pages/admin/AdminPackage";
+import AdminCategory from "./pages/admin/CategoryManagement/AdminCategoryList";
 
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
       <Route path="/admin/vi-pham" element={<AdminViolationList />} />
 
       <Route path="/admin/packages" element={<AdminPackage/>}/>
+      <Route path="/admin/categories" element={<AdminCategory />} />
 
       <Route path="*" element={<div>Trang đang được phát triển.</div>} />
     </Routes>
