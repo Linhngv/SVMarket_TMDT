@@ -223,7 +223,7 @@ const menuGroups = [
     label: "Quản lý người dùng",
     items: [
       { id: "admin/users", label: "Danh sách người dùng", icon: <IconUserList size={24} /> },
-      { id: "admin/status", label: "Cập nhật trạng thái", icon: <IconStatusUpdate size={24} /> },
+      // { id: "admin/status", label: "Cập nhật trạng thái", icon: <IconStatusUpdate size={24} /> },
     ],
   },
   {
@@ -272,7 +272,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <aside className="admin-sidebar" style={{ minWidth: "280px", width: "280px", flexShrink: 0 }}>
+    <aside className="admin-sidebar" style={{ minWidth: "300px", width: "300px", flexShrink: 0 }}>
 
       {/* LOGO */}
       <div className="admin-sidebar-logo">
