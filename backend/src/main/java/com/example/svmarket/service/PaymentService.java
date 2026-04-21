@@ -181,6 +181,8 @@ public class PaymentService {
         String[] parts = orderInfo.split("-");
         Integer orderId = Integer.parseInt(parts[3]);
 
+        Order order = orderRepository.findById(orderId).orElseThrow();
+
         Payment payment = paymentRepository
                 .findTopByOrderIdOrderByIdDesc(orderId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy payment"));
@@ -190,6 +192,9 @@ public class PaymentService {
         payment.setTransactionId(params.get("vnp_TransactionNo"));
 
         paymentRepository.save(payment);
+
+        order.setStatus(OrderStatus.PAID);
+        orderRepository.save(order);
     }
 
 }

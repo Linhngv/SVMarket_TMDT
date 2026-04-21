@@ -81,10 +81,19 @@ export default function TransactionModal({
         </div>
 
         <div className="modal-actions">
-          <button className="btn-accept" onClick={onAccept}>
+          <button
+            className="btn-accept"
+            onClick={onAccept}
+            disabled={transaction.status !== "Chờ xác nhận"}
+          >
             Chấp nhận bán
           </button>
-          <button className="btn-reject" onClick={onReject}>
+
+          <button
+            className="btn-reject"
+            onClick={onReject}
+            disabled={transaction.status !== "Chờ xác nhận"}
+          >
             Từ chối
           </button>
         </div>
