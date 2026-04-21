@@ -1,0 +1,3 @@
+// khi chạy đăng nhập với gg thì vào file .env này lấy mã gắn vào file application.properties để chạy nhé
+spring.security.oauth2.client.registration.google.client-id=917276161991-9h5ra55tv9me928crbvn3j51223tjjrt.apps.googleusercontent.com
+spring.security.oauth2.client.registration.google.client-secret=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
