@@ -15,6 +15,10 @@ export default function AdminCategory() {
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     // Modal state
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
@@ -55,6 +59,15 @@ export default function AdminCategory() {
     const filteredCategories = categories.filter(c =>
         c.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentCategories = filteredCategories.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
 
     const handleOpenAdd = () => {
         setEditMode(false);
@@ -263,10 +276,10 @@ export default function AdminCategory() {
                                 <tbody>
                                     {loading ? (
                                         <tr><td colSpan={4} className="text-center py-4 text-muted">Đang tải...</td></tr>
-                                    ) : filteredCategories.length === 0 ? (
+                                    ) : currentCategories.length === 0 ? (
                                         <tr><td colSpan={4} className="text-center py-4 text-muted">Không tìm thấy danh mục nào</td></tr>
                                     ) : (
-                                        filteredCategories.map((cat) => (
+                                        currentCategories.map((cat) => (
                                             <tr key={cat.id}>
                                                 <td>#{cat.id}</td>
                                                 <td>
@@ -289,6 +302,34 @@ export default function AdminCategory() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* PAGINATION */}
+                        {totalPages > 1 && (
+                            <div className="d-flex justify-content-center align-items-center mt-4 text-muted small">
+                                <div className="d-flex flex-wrap justify-content-center gap-2">
+                                    <button 
+                                        className="btn btn-sm rounded-circle border bg-white d-flex align-items-center justify-content-center"
+                                        style={{ width: "32px", height: "32px" }}
+                                        disabled={currentPage === 1}
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    >‹</button>
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                        <button 
+                                            key={page}
+                                            className={`btn btn-sm rounded-circle border d-flex align-items-center justify-content-center ${currentPage === page ? 'text-white' : 'bg-white text-dark'}`}
+                                            style={currentPage === page ? { backgroundColor: '#1B7A4A', borderColor: '#1B7A4A', width: "32px", height: "32px" } : { width: "32px", height: "32px" }}
+                                            onClick={() => setCurrentPage(page)}
+                                        >{page}</button>
+                                    ))}
+                                    <button 
+                                        className="btn btn-sm rounded-circle border bg-white d-flex align-items-center justify-content-center"
+                                        style={{ width: "32px", height: "32px" }}
+                                        disabled={currentPage === totalPages}
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    >›</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

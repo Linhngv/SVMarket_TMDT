@@ -21,6 +21,8 @@ import AdminPostApproval from "./pages/admin/PostManagement/AdminPostApproval";
 import AdminViolationList from "./pages/admin/PostManagement/AdminViolationList";
 import AdminPackage from "./pages/admin/AdminPackage";
 import AdminCategory from "./pages/admin/CategoryManagement/AdminCategoryList";
+import AdminUserList from "./pages/admin/UserManagement/AdminUserList";
+import AdminUserStatus from "./pages/admin/UserManagement/AdminUserStatus";
 
 
 function App() {
@@ -55,6 +57,8 @@ function App() {
 
       <Route path="/admin/packages" element={<AdminPackage/>}/>
       <Route path="/admin/categories" element={<AdminCategory />} />
+      <Route path="/admin/users" element={<AdminUserList />} />
+      <Route path="/admin/status/:id" element={<AdminUserStatus />} />
 
       <Route path="*" element={<div>Trang đang được phát triển.</div>} />
     </Routes>

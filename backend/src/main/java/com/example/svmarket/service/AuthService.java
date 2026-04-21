@@ -85,7 +85,11 @@ public class AuthService {
             return new LoginResponse(null, "Tài khoản không tồn tại", null, null, null);
         }
 
-        // 2. Kiểm tra mật khẩu (BCrypt + fallback dữ liệu cũ)
+        if ("Đã khóa".equals(user.getStatus())) {
+            return new LoginResponse(null, "Tài khoản của bạn đã bị khóa", null, null, null);
+        }
+
+        // 2. Kiểm tra mật khẩu 
         boolean isMatch = passwordEncoder.matches(password, user.getPassword())
                 || user.getPassword().equals(password);
 
