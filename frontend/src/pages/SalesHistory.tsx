@@ -100,7 +100,7 @@ export default function SalesHistory() {
         setSales((prev) =>
           prev.map((sale) =>
             String(sale.id) === String(id)
-              ? { ...sale, status: "SHIPPED" }
+              ? { ...sale, status: "ACCEPTED" }
               : sale,
           ),
         );

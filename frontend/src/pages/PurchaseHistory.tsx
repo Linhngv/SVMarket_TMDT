@@ -64,7 +64,7 @@ export default function PurchaseHistory() {
     } catch (err) {
       console.error("Lỗi lấy chi tiết:", err);
     } finally {
-      setLoadingDetail(false); // ❗ FIX: không phải setLoading
+      setLoadingDetail(false); 
     }
   };
 

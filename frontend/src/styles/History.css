@@ -588,3 +588,8 @@
     transform: rotate(360deg);
   }
 }
+
+.btn-accept:disabled,
+.btn-reject:disabled {
+  opacity: 0.6;           
+}
