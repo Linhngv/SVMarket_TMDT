@@ -23,6 +23,7 @@ import AdminPackage from "./pages/admin/AdminPackage";
 import AdminCategory from "./pages/admin/CategoryManagement/AdminCategoryList";
 import AdminUserList from "./pages/admin/UserManagement/AdminUserList";
 import AdminUserStatus from "./pages/admin/UserManagement/AdminUserStatus";
+import ChangePassword from "./pages/ChangePassword";
 
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
         <Route path="/purchase-history" element={<PurchaseHistory />} />
         <Route path="/sales-history" element={<SalesHistory />} />
         <Route path="/my-packages" element={<MyPackages />} />
+        <Route path="/change-password" element={<ChangePassword />} />
       </Route>
 
       <Route path="/payment/:orderId" element={<Payment />} />
