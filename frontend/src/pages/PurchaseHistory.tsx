@@ -45,6 +45,7 @@ export default function PurchaseHistory() {
   const formatStatus = (status: string) => {
     switch (status) {
       case 'PENDING': return 'Chờ xác nhận';
+      case 'ACCEPTED': return 'Chờ thanh toán';
       case 'PAID': return 'Đã thanh toán';
       case 'SHIPPED': return 'Đang giao dịch';
       case 'COMPLETED': return 'Hoàn thành';

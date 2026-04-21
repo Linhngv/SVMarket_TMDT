@@ -144,7 +144,14 @@ export default function Products({ title }: Props) {
       <div className="product-header">
         <h5 className="product-title">{title}</h5>
 
-        <div className="filter-wrapper">
+        <div 
+          className="filter-wrapper"
+          style={
+            selected === "Giá thấp → cao" || selected === "Giá cao → thấp" 
+              ? { minWidth: "150px" } 
+              : undefined
+          }
+        >
           <div
             className="filter-btn"
             onClick={() => setOpenFilter(!openFilter)}
