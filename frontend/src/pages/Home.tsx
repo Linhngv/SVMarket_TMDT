@@ -2,6 +2,7 @@ import Header from "../components/Header";
 import Banner from "../components/Banner";
 import Categories from "../components/Categories";
 import Products from "../components/Products";
+import RecommendedProducts from "../components/RecommendedProducts";
 import Footer from "../components/Footer";
 
 
@@ -14,9 +15,9 @@ function Home() {
             <Banner />
 
             <div className="container-fluid px-4 mt-3">
-                <Categories />
+                <Categories />                
+                <RecommendedProducts />
                 <Products title="Tất cả bài đăng" />
-                <Products title="Đề xuất sản phẩm" />
             </div>
 
             <Footer />

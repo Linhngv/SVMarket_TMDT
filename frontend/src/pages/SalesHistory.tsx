@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Search, Eye, Pencil } from 'lucide-react';
-import TransactionModal from './TransactionModal';
+import { useState, useEffect } from "react";
+import { Search, Eye, Pencil } from "lucide-react";
+import TransactionModal from "./TransactionModal";
 import "../styles/History.css";
 
 interface SaleTransaction {
@@ -17,7 +17,7 @@ interface SaleTransaction {
 }
 
 export default function SalesHistory() {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [sales, setSales] = useState<SaleTransaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +28,7 @@ export default function SalesHistory() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch("http://localhost:8080/api/orders/sales", {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           const data = await res.json();
@@ -47,17 +47,25 @@ export default function SalesHistory() {
     (t) =>
       String(t.id).toLowerCase().includes(search.toLowerCase()) ||
       t.buyerName.toLowerCase().includes(search.toLowerCase()) ||
-      t.product.toLowerCase().includes(search.toLowerCase())
+      t.product.toLowerCase().includes(search.toLowerCase()),
   );
 
   const formatStatus = (status: string) => {
     switch (status) {
-      case 'PENDING': return 'Chờ xác nhận';
-      case 'PAID': return 'Đã thanh toán';
-      case 'SHIPPED': return 'Đang giao dịch';
-      case 'COMPLETED': return 'Hoàn thành';
-      case 'CANCELLED': return 'Đã hủy';
-      default: return status;
+      case "PENDING":
+        return "Chờ xác nhận";
+      case "ACCEPTED":
+        return "Chờ thanh toán";
+      case "PAID":
+        return "Đã thanh toán";
+      case "SHIPPED":
+        return "Đang giao dịch";
+      case "COMPLETED":
+        return "Hoàn thành";
+      case "CANCELLED":
+        return "Đã hủy";
+      default:
+        return status;
     }
   };
 
@@ -65,7 +73,14 @@ export default function SalesHistory() {
     if (!dateValue) return "";
     let date: Date;
     if (Array.isArray(dateValue)) {
-      date = new Date(dateValue[0], dateValue[1] - 1, dateValue[2], dateValue[3] || 0, dateValue[4] || 0, dateValue[5] || 0);
+      date = new Date(
+        dateValue[0],
+        dateValue[1] - 1,
+        dateValue[2],
+        dateValue[3] || 0,
+        dateValue[4] || 0,
+        dateValue[5] || 0,
+      );
     } else {
       date = new Date(dateValue);
     }
@@ -78,11 +93,17 @@ export default function SalesHistory() {
       const token = localStorage.getItem("token");
       const res = await fetch(`http://localhost:8080/api/orders/${id}/accept`, {
         method: "PUT",
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         alert("Đã chấp nhận đơn hàng!");
-        setSales(prev => prev.map(sale => String(sale.id) === String(id) ? { ...sale, status: "SHIPPED" } : sale));
+        setSales((prev) =>
+          prev.map((sale) =>
+            String(sale.id) === String(id)
+              ? { ...sale, status: "SHIPPED" }
+              : sale,
+          ),
+        );
         setSelectedTx(null);
       } else {
         alert("Có lỗi xảy ra khi cập nhật!");
@@ -93,13 +114,15 @@ export default function SalesHistory() {
   };
 
   // Định dạng lại các giá trị để phù hợp với hiển thị và Modal chi tiết
-  const formattedSales = filtered.map(row => ({
+  const formattedSales = filtered.map((row) => ({
     ...row,
     id: String(row.id),
     price: new Intl.NumberFormat("vi-VN").format(row.price) + "đ",
     status: formatStatus(row.status),
     requestDate: formatDate(row.requestDate),
-    imageUrl: row.imageUrl.startsWith("http") ? row.imageUrl : `http://localhost:8080${row.imageUrl}`
+    imageUrl: row.imageUrl.startsWith("http")
+      ? row.imageUrl
+      : `http://localhost:8080${row.imageUrl}`,
   }));
 
   const totalPages = Math.max(1, Math.ceil(formattedSales.length / 10));
@@ -132,26 +155,38 @@ export default function SalesHistory() {
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={5} className="text-center py-4">Đang tải dữ liệu...</td>
+              <td colSpan={5} className="text-center py-4">
+                Đang tải dữ liệu...
+              </td>
             </tr>
           ) : formattedSales.length === 0 ? (
             <tr>
-              <td colSpan={5} className="empty-row">Không có dữ liệu</td>
+              <td colSpan={5} className="empty-row">
+                Không có dữ liệu
+              </td>
             </tr>
           ) : (
             formattedSales.map((row) => (
               <tr key={row.id}>
-                <td className="id-cell" data-label="ID giao dịch">{row.id}</td>
+                <td className="id-cell" data-label="ID giao dịch">
+                  {row.id}
+                </td>
                 <td data-label="Người mua">{row.buyerName}</td>
                 <td data-label="Sản phẩm">{row.product}</td>
                 <td data-label="Trạng thái">
-                  <span className={`status-pill ${row.status === 'Hoàn thành' ? 'done' : row.status === 'Chờ xác nhận' ? 'pending' : 'shipping'}`}>
+                  <span
+                    className={`status-pill ${row.status === "Hoàn thành" ? "done" : row.status === "Chờ xác nhận" ? "pending" : "shipping"}`}
+                  >
                     {row.status}
                   </span>
                 </td>
                 <td data-label="Hành động">
                   <div className="action-btns">
-                    <button className="icon-btn" onClick={() => setSelectedTx(row)} title="Xem chi tiết">
+                    <button
+                      className="icon-btn"
+                      onClick={() => setSelectedTx(row)}
+                      title="Xem chi tiết"
+                    >
                       <Eye size={16} />
                     </button>
                     <button className="icon-btn" title="Chỉnh sửa">
@@ -173,7 +208,9 @@ export default function SalesHistory() {
         >
           Trước
         </button>
-        <span className="page-info">Trang {page}/{totalPages}</span>
+        <span className="page-info">
+          Trang {page}/{totalPages}
+        </span>
         <button
           className="page-btn filled"
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}

@@ -10,6 +10,7 @@ import java.util.List;
 import com.example.svmarket.entity.Listing;
 import com.example.svmarket.entity.Order;
 import com.example.svmarket.entity.OrderDetail;
+import com.example.svmarket.entity.ListingStatus;
 import com.example.svmarket.entity.OrderStatus;
 import com.example.svmarket.entity.Notification;
 import com.example.svmarket.entity.NotificationType;
@@ -158,8 +159,13 @@ public class OrderService {
             throw new RuntimeException("Bạn không có quyền thao tác trên đơn hàng này");
         }
 
-        order.setStatus(OrderStatus.SHIPPED);
+        order.setStatus(OrderStatus.ACCEPTED);
         orderRepository.save(order);
+
+        // Tạm ẩn bài đăng thành HIDDEN (hoặc INACTIVE) để người khác không thể đặt mua trong lúc chờ thanh toán
+        Listing listing = order.getOrderDetails().get(0).getListing();
+        listing.setStatus(ListingStatus.HIDDEN); 
+        listingRepository.save(listing);
 
         // Tạo thông báo gửi đến người mua
         String productTitle = order.getOrderDetails().get(0).getListing().getTitle();

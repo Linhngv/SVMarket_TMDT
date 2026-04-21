@@ -272,7 +272,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <aside className="admin-sidebar">
+    <aside className="admin-sidebar" style={{ minWidth: "280px", width: "280px", flexShrink: 0 }}>
 
       {/* LOGO */}
       <div className="admin-sidebar-logo">
