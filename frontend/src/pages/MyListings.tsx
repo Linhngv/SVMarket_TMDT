@@ -9,6 +9,7 @@ import {
   ListingSummary,
 } from "../services/listingService";
 import "../styles/ListingManagement.css";
+import { useAuth } from "../context/AuthContext";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -42,6 +43,30 @@ export default function MyListings() {
   const [openStatusMenuId, setOpenStatusMenuId] = useState<number | null>(null);
   const [updatingStatusId, setUpdatingStatusId] = useState<number | null>(null);
 
+  const { token } = useAuth();
+  const [postInfo, setPostInfo] = useState<any>(null);
+
+  useEffect(() => {
+    loadListings();
+
+    const fetchPostLimit = async () => {
+      try {
+        const res = await fetch(
+          "http://localhost:8080/api/listings/post-limit",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+
+        const data = await res.json();
+        setPostInfo(data);
+      } catch (err) {
+        console.error("Lỗi lấy post limit", err);
+      }
+    };
+
+    fetchPostLimit();
+  }, []);
   // Tai danh sach bai dang cua nguoi dung khi vao trang.
   const loadListings = async () => {
     try {
@@ -132,6 +157,14 @@ export default function MyListings() {
     <section className="listing-panel">
       <div className="listing-panel-header">
         <h2>Danh sach bai dang</h2>
+
+        {postInfo && (
+          <div
+            className={`post-limit-badge ${postInfo.canPost ? "ok" : "error"}`}
+          >
+            {postInfo.message}
+          </div>
+        )}
       </div>
 
       <div className="listing-search-wrap">

@@ -68,4 +68,7 @@ public class Listing {
 
     @Column(name = "reject_reason", columnDefinition = "TEXT")
     private String rejectReason;
+
+    @Column(name = "last_push_at")
+    private LocalDateTime lastPushAt;
 }

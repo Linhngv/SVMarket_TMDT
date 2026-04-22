@@ -15,6 +15,9 @@ export type ListingSummary = {
   thumbnailUrl: string | null;
   sellerUniversity?: string | null;
   createdAt?: string;
+
+  priorityLevel?: number;
+  isFeatured?: boolean;
 };
 
 export type ListingDetail = {
@@ -98,6 +101,11 @@ export async function fetchActiveListings() {
   const response = await axios.get<ListingSummary[]>(API_BASE_URL);
   return response.data;
 }
+
+export const fetchFeaturedListings = async () => {
+  const res = await axios.get("http://localhost:8080/api/listings/featured");
+  return res.data;
+};
 
 // Lay chi tiet bai dang theo id de do du lieu vao form sua.
 export async function fetchMyListingById(id: number) {

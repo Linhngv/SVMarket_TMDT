@@ -51,6 +51,13 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Builder.Default
+    @Column(name = "free_posts_remaining")
+    private Integer freePostsRemaining = 3; // 3 lần đăng bài (mặc định)
+
+    @Column(name = "free_reset_date")
+    private LocalDateTime freeResetDate;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Address> addresses;
 

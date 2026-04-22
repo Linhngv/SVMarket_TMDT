@@ -1064,3 +1064,36 @@ body {
   width: 300px;
   margin-top: 80px;
 }
+
+
+.badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  color: white;
+}
+
+/* 👑 VIP */
+.badge.vip {
+  background: linear-gradient(45deg, #d4a017, #f59e0b);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+/* ⭐ nổi bật */
+.badge.featured {
+  background: #2d9e63;
+}
+
+/* 🔥 TOP */
+.badge.top {
+  top: 8px;
+  right: 8px;
+  left: auto;
+  background: #ef4444;
+}

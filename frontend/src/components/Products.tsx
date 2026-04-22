@@ -59,6 +59,8 @@ type CardItem = {
   price: string;
   university: string;
   image: string;
+
+  priorityLevel?: number;
 };
 
 export default function Products({ title }: Props) {
@@ -74,7 +76,7 @@ export default function Products({ title }: Props) {
       try {
         const data = await fetchActiveListings();
         // Nếu là Đề xuất sản phẩm, ta đảo ngược mảng để giao diện trông khác Tất cả bài đăng một chút
-        setActiveListings(title === "Đề xuất sản phẩm" ? [...data].reverse().slice(0, 4) : data);
+        setActiveListings(data);
       } catch (error) {
         console.error("Khong the tai danh sach bai dang hoat dong", error);
       }
@@ -112,11 +114,13 @@ export default function Products({ title }: Props) {
         ? listing.thumbnailUrl
         : `http://localhost:8080${listing.thumbnailUrl}`
       : "",
+
+    priorityLevel: listing.priorityLevel,
   }));
 
   const handleFavoriteClick = async (
     event: React.MouseEvent<HTMLDivElement>,
-    item: CardItem
+    item: CardItem,
   ) => {
     event.stopPropagation();
 
@@ -144,11 +148,11 @@ export default function Products({ title }: Props) {
       <div className="product-header">
         <h5 className="product-title">{title}</h5>
 
-        <div 
+        <div
           className="filter-wrapper"
           style={
-            selected === "Giá thấp → cao" || selected === "Giá cao → thấp" 
-              ? { minWidth: "150px" } 
+            selected === "Giá thấp → cao" || selected === "Giá cao → thấp"
+              ? { minWidth: "150px" }
               : undefined
           }
         >
@@ -194,7 +198,7 @@ export default function Products({ title }: Props) {
                 className="product-heart"
                 onClick={(event) => handleFavoriteClick(event, item)}
               >
-                {(item.id && favoriteIds.includes(item.id)) ? (
+                {item.id && favoriteIds.includes(item.id) ? (
                   <FaHeart />
                 ) : (
                   <FaRegHeart />
@@ -203,6 +207,21 @@ export default function Products({ title }: Props) {
 
               {/* IMAGE */}
               <div className="product-img-wrapper">
+                {/* VIP */}
+                {item.priorityLevel === 3 && (
+                  <div className="badge vip">VIP</div>
+                )}
+
+                {/* Gói sinh viên */}
+                {item.priorityLevel === 2 && (
+                  <div className="badge featured">NỔI BẬT</div>
+                )}
+
+                {/* TOP cho VIP */}
+                {item.priorityLevel === 3 && (
+                  <div className="badge top">TOP</div>
+                )}
+
                 {item.image && (
                   <img
                     src={item.image}
@@ -223,9 +242,7 @@ export default function Products({ title }: Props) {
 
               {/* INFO */}
               <div className="product-info">
-                <h6 className="product-item-title">
-                  {item.title}
-                </h6>
+                <h6 className="product-item-title">{item.title}</h6>
 
                 <p className="product-price">{item.price}</p>
 
