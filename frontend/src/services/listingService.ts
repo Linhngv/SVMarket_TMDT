@@ -13,6 +13,7 @@ export type ListingSummary = {
   price: number;
   status: string;
   thumbnailUrl: string | null;
+  sellerName?: string | null;
   sellerUniversity?: string | null;
   createdAt?: string;
 };
