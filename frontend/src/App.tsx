@@ -25,6 +25,8 @@ import AdminUserList from "./pages/admin/UserManagement/AdminUserList";
 import AdminUserStatus from "./pages/admin/UserManagement/AdminUserStatus";
 import ChangePassword from "./pages/ChangePassword";
 
+import SavedListings from "./pages/listing/SavedListings";
+
 
 function App() {
   return (
@@ -40,6 +42,8 @@ function App() {
       <Route path="/profile" element={<Profile />} />
 
       <Route path="/product/:id" element={<ProductDetail />} />
+
+      <Route path="/saved-listings" element={<SavedListings />} />
 
       <Route element={<UserAreaLayout />}>
         <Route path="/create-listing" element={<CreateListing />} />
