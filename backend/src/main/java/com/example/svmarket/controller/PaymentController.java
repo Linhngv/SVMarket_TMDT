@@ -37,24 +37,6 @@ public class PaymentController {
         return paymentService.createPaymentUrl(packageId, returnUrl);
     }
 
-//    @GetMapping("/callback")
-//    public void callback(@RequestParam Map<String, String> params,
-//                         HttpServletResponse response) throws IOException {
-//        String orderInfo = params.get("vnp_OrderInfo");
-//        String responseCode = params.get("vnp_ResponseCode");
-//        String[] parts = orderInfo.split("-");
-//
-//        String encodedReturnUrl = parts[5];
-//        String returnUrl = new String(Base64.getDecoder().decode(encodedReturnUrl));
-//
-//        if ("00".equals(responseCode)) {
-//            paymentService.handlePaymentSuccess(params);
-//            response.sendRedirect(returnUrl + "/my-packages?status=success");
-//        } else {
-//            response.sendRedirect(returnUrl + "/my-packages?status=failed");
-//        }
-//    }
-
     // Lấy thông tin gói đã dăng ký của người dùng
     @GetMapping("/my-packages")
     public ResponseEntity<?> getMyPackages() {
@@ -76,26 +58,42 @@ public class PaymentController {
     public void callback(@RequestParam Map<String, String> params,
                          HttpServletResponse response) throws IOException {
 
-        String responseCode = params.get("vnp_ResponseCode");
         String orderInfo = params.get("vnp_OrderInfo");
-
         String[] parts = orderInfo.split("-");
-
-        String type = parts[1]; // package | order
+        String type = parts[1];
         String encodedReturnUrl = parts[parts.length - 1];
         String returnUrl = new String(Base64.getDecoder().decode(encodedReturnUrl));
 
-        if ("00".equals(responseCode)) {
-
+        // Kiểm tra chữ ký VNPay trước khi xử lý
+        if (!paymentService.isValidSignature(params)) {
+            System.out.println("Chữ ký không hợp lệ!");
             if ("package".equals(type)) {
-                paymentService.handlePaymentSuccess(params);
-                response.sendRedirect(returnUrl + "/my-packages?status=success");
-
-            } else if ("order".equals(type)) {
-                paymentService.handleOrderPaymentSuccess(params);
-                response.sendRedirect(returnUrl + "/purchase-history?status=success");
+                response.sendRedirect(returnUrl + "/my-packages?status=failed");
+            } else {
+                response.sendRedirect(returnUrl + "/purchase-history?status=failed");
             }
+            return;
+        }
 
+        String responseCode = params.get("vnp_ResponseCode");
+
+        if ("00".equals(responseCode)) {
+            try {
+                if ("package".equals(type)) {
+                    paymentService.handlePaymentSuccess(params);
+                    response.sendRedirect(returnUrl + "/my-packages?status=success");
+                } else if ("order".equals(type)) {
+                    paymentService.handleOrderPaymentSuccess(params);
+                    response.sendRedirect(returnUrl + "/purchase-history?status=success");
+                }
+            } catch (Exception e) {
+                System.out.println("Lỗi xử lý callback: " + e.getMessage());
+                if ("package".equals(type)) {
+                    response.sendRedirect(returnUrl + "/my-packages?status=failed");
+                } else {
+                    response.sendRedirect(returnUrl + "/purchase-history?status=failed");
+                }
+            }
         } else {
             if ("package".equals(type)) {
                 response.sendRedirect(returnUrl + "/my-packages?status=failed");
@@ -104,4 +102,5 @@ public class PaymentController {
             }
         }
     }
+
 }
