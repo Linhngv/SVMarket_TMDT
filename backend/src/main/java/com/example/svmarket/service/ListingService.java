@@ -105,14 +105,18 @@ public class ListingService {
 
     // Tao bai dang moi cua user dang dang nhap.
     @Transactional
-    public ListingDetailResponse createMyListing(String email, ListingUpsertRequest request,
+    public ListingDetailResponse createMyListing(String email,
+                                                 ListingUpsertRequest request,
                                                  List<MultipartFile> images) {
+
         User seller = getUserByEmail(email);
 
-        resetFree(seller); // Reset lượt đăng free nếu hết hạn
-        checkPostLimit(seller); // Kiểm tra còn lượt đăng không
+        resetFree(seller);
 
         Category category = getCategoryById(request.getCategoryId());
+        PostSource postSource = request.getPostSource() != null
+                ? PostSource.valueOf(request.getPostSource())
+                : PostSource.FREE;
 
         Listing listing = Listing.builder()
                 .seller(seller)
@@ -122,17 +126,63 @@ public class ListingService {
                 .price(request.getPrice())
                 .deliveryAddress(request.getDeliveryAddress())
                 .conditionLevel(request.getConditionLevel())
-                .status(ListingStatus.PENDING) // Bắt buộc chờ duyệt khi đăng mới
+                .status(ListingStatus.PENDING)
                 .stock(1)
+                .postSource(postSource)
                 .build();
 
+        SellerPackage pkg = sellerPackageRepository
+                .findAvailablePackage(seller.getId(), LocalDateTime.now())
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+
+        // Free
+        if (postSource == PostSource.FREE) {
+
+            if (seller.getFreePostsRemaining() <= 0) {
+                throw new BadRequestException("Hết lượt đăng miễn phí");
+            }
+
+            seller.setFreePostsRemaining(seller.getFreePostsRemaining() - 1);
+            userRepository.save(seller);
+
+        } else { // PACKAGE
+
+            if (pkg == null) {
+                throw new BadRequestException("Bạn chưa đăng ký gói");
+            }
+
+            if (pkg.getRemainingPosts() <= 0) {
+                throw new BadRequestException("Gói đã hết lượt đăng");
+            }
+
+            if (pkg.getRemainingPushes() <= 0) {
+                throw new BadRequestException("Gói đã hết lượt đẩy");
+            }
+
+            // trừ lượt đăng
+            pkg.setRemainingPosts(pkg.getRemainingPosts() - 1);
+
+            // trừ lượt đẩy
+            pkg.setRemainingPushes(pkg.getRemainingPushes() - 1);
+
+            // set push để được ưu tiên
+            listing.setLastPushAt(LocalDateTime.now());
+
+            if (pkg.getRemainingPosts() <= 0 && pkg.getRemainingPushes() <= 0) {
+                pkg.setStatus(PackageStatus.EXPIRED);
+            }
+
+            sellerPackageRepository.save(pkg);
+        }
+
+
         Listing savedListing = listingRepository.save(listing);
-
-        consumePostSlot(seller); // Trừ lượt đăng
-
         List<String> imageUrls = saveImages(savedListing, images);
 
-        // Tạo thông báo cho Admin
+
         List<User> admins = userRepository.findByRole(Role.ADMIN);
         for (User admin : admins) {
             Notification notification = Notification.builder()
@@ -172,51 +222,6 @@ public class ListingService {
             user.setFreeResetDate(LocalDateTime.now().plusMonths(1));
             userRepository.save(user);
         }
-    }
-
-    // Check còn lượt đăng không (free hoặc package)
-    public void checkPostLimit(User seller) {
-        resetFree(seller);
-
-        if (seller.getFreePostsRemaining() > 0) return;
-
-        SellerPackage pkg = sellerPackageRepository
-                .findAvailablePackage(seller.getId(), LocalDateTime.now())
-                .stream()
-                .findFirst()
-                .orElse(null);
-
-        if (pkg == null || pkg.getRemainingPosts() <= 0) {
-            throw new BadRequestException("Hết lượt đăng. Vui lòng mua gói.");
-        }
-    }
-
-    // Trừ lượt đăng
-    // TH: Còn lượt free mà đăng ký gói thì ưu tiên trừ lượt đăng của free.
-    // Nếu hết free miễn phí thì dùng lượt đăng của gói đã đăng ký
-    public void consumePostSlot(User seller) {
-
-        // FREE
-        if (seller.getFreePostsRemaining() > 0) {
-            seller.setFreePostsRemaining(seller.getFreePostsRemaining() - 1);
-            userRepository.save(seller);
-            return;
-        }
-
-        // PACKAGE
-        SellerPackage pkg = sellerPackageRepository
-                .findAvailablePackage(seller.getId(), LocalDateTime.now())
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new BadRequestException("Không còn lượt đăng"));
-
-        pkg.setRemainingPosts(pkg.getRemainingPosts() - 1);
-
-        if (pkg.getRemainingPosts() <= 0 && pkg.getRemainingPushes() <= 0) {
-            pkg.setStatus(PackageStatus.EXPIRED);
-        }
-
-        sellerPackageRepository.save(pkg);
     }
 
     public SellerPackage getPkg(Listing listing) {
@@ -271,6 +276,12 @@ public class ListingService {
 
     // Lấy mức độ ưu tiên theo gói đã đăng ký
     public int getPriority(Listing listing) {
+
+        // FREE: không có ưu tiên
+        if (listing.getPostSource() == PostSource.FREE) {
+            return 0;
+        }
+
         SellerPackage pkg = sellerPackageRepository
                 .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
                 .stream().findFirst()
@@ -479,6 +490,7 @@ public class ListingService {
     }
 
     public ListingSummaryResponse toSummaryResponse(Listing listing) {
+
         String thumbnail = listing.getImages() != null && !listing.getImages().isEmpty()
                 ? listing.getImages().get(0).getUrl()
                 : null;
@@ -493,16 +505,23 @@ public class ListingService {
         response.setSellerName(listing.getSeller() != null ? listing.getSeller().getFullName() : null);
         response.setCreatedAt(listing.getCreatedAt());
 
-        SellerPackage pkg = sellerPackageRepository
-                .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
-                .stream()
-                .findFirst()
-                .orElse(null);
+        if (listing.getPostSource() == PostSource.PACKAGE) {
+            SellerPackage pkg = sellerPackageRepository
+                    .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
 
-        int priority = pkg != null ? pkg.getPackagePlan().getPriorityLevel() : 0;
+            int priority = pkg != null ? pkg.getPackagePlan().getPriorityLevel() : 0;
 
-        response.setPriorityLevel(priority);
-        response.setIsFeatured(pkg != null && Boolean.TRUE.equals(pkg.getPackagePlan().getIsFeatured()));
+            response.setPriorityLevel(priority);
+            response.setIsFeatured(pkg != null && Boolean.TRUE.equals(pkg.getPackagePlan().getIsFeatured()));
+
+        } else {
+            // FREE
+            response.setPriorityLevel(0);
+            response.setIsFeatured(false);
+        }
 
         return response;
     }

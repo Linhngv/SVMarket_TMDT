@@ -10,6 +10,7 @@ import {
   toggleFavoriteListing,
 } from "../services/favoriteService";
 import { useAuth } from "../context/AuthContext";
+import type { CardItem } from "../types/CardItem";
 
 function formatRelativeTime(value?: string) {
   if (!value) {
@@ -48,17 +49,6 @@ function formatCurrency(value: number) {
   return `${new Intl.NumberFormat("vi-VN").format(value)}đ`;
 }
 
-type CardItem = {
-  key: string | number;
-  id?: number;
-  title: string;
-  price: string;
-  university: string;
-  image: string;
-
-  priorityLevel?: number;
-};
-
 export default function RecommendedProducts() {
   const [activeListings, setActiveListings] = useState<ListingSummary[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
@@ -67,7 +57,7 @@ export default function RecommendedProducts() {
 
   useEffect(() => {
     const load = async () => {
-      const data = await fetchFeaturedListings(); // 🔥 đúng
+      const data = await fetchFeaturedListings();
       setActiveListings(data);
     };
     load();
@@ -159,19 +149,11 @@ export default function RecommendedProducts() {
 
               {/* IMAGE */}
               <div className="product-img-wrapper">
-                {/* VIP */}
                 {item.priorityLevel === 3 && (
-                  <div className="badge vip">VIP</div>
-                )}
-
-                {/*Gói sinh viên */}
-                {item.priorityLevel === 2 && (
-                  <div className="badge featured">NỔI BẬT</div>
-                )}
-
-                {/* VIP */}
-                {item.priorityLevel === 3 && (
-                  <div className="badge top">TOP</div>
+                  <div className="badge hot">
+                    <span className="flame"></span>
+                    TOP
+                  </div>
                 )}
 
                 {item.image ? (

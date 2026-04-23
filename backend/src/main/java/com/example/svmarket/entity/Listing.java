@@ -71,4 +71,8 @@ public class Listing {
 
     @Column(name = "last_push_at")
     private LocalDateTime lastPushAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "post_source", length = 20)
+    private PostSource postSource; // người đăng bài chọn đăng free hay gói
 }

@@ -208,9 +208,9 @@ export default function PackagePlans() {
                         year: "numeric",
                       })}
                     </strong>
-                    {!isExpired && (
+                    {/* {!isExpired && (
                       <span className="days-left"> — còn {daysLeft} ngày</span>
-                    )}
+                    )} */}
                   </div>
 
                   {/* Lượt đăng tin */}

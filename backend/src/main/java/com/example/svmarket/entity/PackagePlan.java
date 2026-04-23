@@ -54,11 +54,7 @@ public class PackagePlan {
     // Mức độ ưu tiên sort (1 = thấp, 2 = trung, 3 = cao nhất)
     @Column(name = "priority_level", nullable = false)
     private Integer priorityLevel;
-
-    // Có nổi bật không
-    @Column(name = "is_highlight")
-    private Boolean isHighlight;
-
+    
     //Có vào mục đề xuất không
     @Column(name = "is_featured")
     private Boolean isFeatured;

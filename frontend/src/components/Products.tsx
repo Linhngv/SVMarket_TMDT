@@ -10,6 +10,7 @@ import {
   toggleFavoriteListing,
 } from "../services/favoriteService";
 import { useAuth } from "../context/AuthContext";
+import type { CardItem } from "../types/CardItem";
 
 type Props = {
   title: string;
@@ -52,17 +53,6 @@ function formatCurrency(value: number) {
   return `${new Intl.NumberFormat("vi-VN").format(value)}đ`;
 }
 
-type CardItem = {
-  key: string | number;
-  id?: number;
-  title: string;
-  price: string;
-  university: string;
-  image: string;
-
-  priorityLevel?: number;
-};
-
 export default function Products({ title }: Props) {
   const [openFilter, setOpenFilter] = useState(false);
   const [selected, setSelected] = useState("Mới nhất");
@@ -75,10 +65,9 @@ export default function Products({ title }: Props) {
     const loadActiveListings = async () => {
       try {
         const data = await fetchActiveListings();
-        // Nếu là Đề xuất sản phẩm, ta đảo ngược mảng để giao diện trông khác Tất cả bài đăng một chút
         setActiveListings(data);
       } catch (error) {
-        console.error("Khong the tai danh sach bai dang hoat dong", error);
+        console.error("Không thể tải danh sách bài đăng hoạt động", error);
       }
     };
 
@@ -193,7 +182,6 @@ export default function Products({ title }: Props) {
               className="product-card"
               onClick={() => navigate(`/product/${item.id}`)}
             >
-              {/* HEART ICON */}
               <div
                 className="product-heart"
                 onClick={(event) => handleFavoriteClick(event, item)}
@@ -205,21 +193,22 @@ export default function Products({ title }: Props) {
                 )}
               </div>
 
-              {/* IMAGE */}
               <div className="product-img-wrapper">
-                {/* VIP */}
+                {/* Hiển thị cho gói VIP */}
                 {item.priorityLevel === 3 && (
-                  <div className="badge vip">VIP</div>
+                  <div className="badge hot">
+                    <span className="flame"></span>
+                    TOP
+                  </div>
                 )}
 
-                {/* Gói sinh viên */}
+                {/* Hiển thị cho Gói Sinh viên */}
                 {item.priorityLevel === 2 && (
-                  <div className="badge featured">NỔI BẬT</div>
-                )}
-
-                {/* TOP cho VIP */}
-                {item.priorityLevel === 3 && (
-                  <div className="badge top">TOP</div>
+                  <>
+                    <div className="featured-bottom">
+                      <span>Tin ưu tiên</span>
+                    </div>
+                  </>
                 )}
 
                 {item.image && (
@@ -231,7 +220,6 @@ export default function Products({ title }: Props) {
                   />
                 )}
 
-                {/* PLACEHOLDER */}
                 {!item.image && (
                   <div className="product-img-placeholder">
                     <FaImage size={24} />
@@ -239,14 +227,13 @@ export default function Products({ title }: Props) {
                   </div>
                 )}
               </div>
-
-              {/* INFO */}
+    
               <div className="product-info">
-                <h6 className="product-item-title">{item.title}</h6>
+                <h6 className="product-item-title" title={item.title}>{item.title}</h6>
 
-                <p className="product-price">{item.price}</p>
+                <p className="product-price" title={item.price}>{item.price}</p>
 
-                <small className="product-meta">{item.university}</small>
+                <small className="product-meta" title={item.university}>{item.university}</small>
 
                 <div className="product-action">
                   <button className="product-status-btn">Đã qua sử dụng</button>
