@@ -45,10 +45,12 @@ public class ListingController {
         return listingService.getCategories();
     }
 
-    // Lay danh sach bai dang dang hoat dong cho trang chu.
+
+    // Lay danh sach bai dang dang hoat dong cho trang chu hoặc tìm kiếm theo từ khóa.
+    // Nếu có query param ?keyword=... thì tìm kiếm theo keyword, ngược lại trả về tất cả bài đăng active.
     @GetMapping
-    public List<ListingSummaryResponse> getActiveListings() {
-        return listingService.getActiveListings();
+    public List<ListingSummaryResponse> getActiveListingsOrSearch(@RequestParam(value = "keyword", required = false) String keyword) {
+        return listingService.searchActiveListings(keyword);
     }
 
     // Ho tro route cu /active cho frontend.
