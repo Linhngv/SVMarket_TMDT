@@ -70,20 +70,17 @@ export default function Products({
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadActiveListings = async () => {
-      try {
-        const data = await fetchActiveListings();
-        setActiveListings(data);
-      } catch (error) {
-        console.error("Không thể tải danh sách bài đăng hoạt động", error);
-      }
-    };
+  const loadActiveListings = async (keyword?: string) => {
+  try {
+    const data = await fetchActiveListings(keyword);
+    setActiveListings(data);
+    } catch (error) {
+      console.error("Không thể tải danh sách bài đăng hoạt động", error);
+    }
+  };
 
-  // Tải lại khi đổi title hoặc khi searchKeyword thay đổi
   useEffect(() => {
     loadActiveListings(searchKeyword);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, searchKeyword]);
 
   useEffect(() => {

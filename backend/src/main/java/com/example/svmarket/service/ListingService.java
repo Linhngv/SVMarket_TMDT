@@ -309,6 +309,7 @@ public class ListingService {
         return listing.getLastPushAt()
                 .plusHours(hours)
                 .isAfter(LocalDateTime.now());
+    }
 
     /**
      * Tìm kiếm bài đăng đang hoạt động theo từ khóa (title hoặc description)
