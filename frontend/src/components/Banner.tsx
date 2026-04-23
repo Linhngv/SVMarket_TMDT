@@ -1,4 +1,11 @@
-export default function Banner() {
+// Banner nhận props để cập nhật từ khóa tìm kiếm toàn cục
+export default function Banner({
+  searchKeyword,
+  setSearchKeyword,
+}: {
+  searchKeyword: string;
+  setSearchKeyword: (v: string) => void;
+}) {
   return (
     <div className="banner">
       <h4>
@@ -14,10 +21,16 @@ export default function Banner() {
           <input
             className="form-control search-input-home"
             placeholder="Tìm giáo trình, đồ KTX, đồng phục..."
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setSearchKeyword(searchKeyword.trim());
+              }
+            }}
           />
 
           <div className="select-wrapper">
-
             {/* ICON LEFT (location-dot) */}
             <span className="icon-left">
               <svg
@@ -50,10 +63,14 @@ export default function Banner() {
                 <path d="M31.3 192h257.4c28.4 0 42.7 34.5 22.6 54.6L182.6 375.3c-12.5 12.5-32.8 12.5-45.3 0L8.7 246.6C-11.4 226.5 2.9 192 31.3 192z" />
               </svg>
             </span>
-
           </div>
-
-          <button className="btn search-btn">Tìm kiếm</button>
+          <button
+            className="btn search-btn ms-2"
+            type="button"
+            onClick={() => setSearchKeyword(searchKeyword.trim())}
+          >
+            Tìm kiếm
+          </button>
         </div>
       </div>
     </div>

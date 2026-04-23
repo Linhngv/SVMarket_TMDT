@@ -67,11 +67,14 @@ export default function Header({
         try {
           const token = localStorage.getItem("token");
           if (!token) return;
-          const res = await fetch("http://localhost:8080/api/notifications/my", {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
+          const res = await fetch(
+            "http://localhost:8080/api/notifications/my",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
           if (res.ok) {
             const data = await res.json();
             setNotifications(data);
@@ -87,15 +90,16 @@ export default function Header({
   }, [resolvedIsLoggedIn]);
 
   const rawAvatar = avatarUrl || user?.avatar;
-  const avatar = rawAvatar && rawAvatar.trim() !== ""
-    ? (rawAvatar.startsWith("/images/") || rawAvatar.startsWith("http")
-      ? rawAvatar
-      : `http://localhost:8080/${rawAvatar.replace(/^\/+/, "")}`)
-    : "/images/avatar_default.jpg";
+  const avatar =
+    rawAvatar && rawAvatar.trim() !== ""
+      ? rawAvatar.startsWith("/images/") || rawAvatar.startsWith("http")
+        ? rawAvatar
+        : `http://localhost:8080/${rawAvatar.replace(/^\/+/, "")}`
+      : "/images/avatar_default.jpg";
 
   const resolvedUserName = userName || user?.fullName;
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   // Hàm gọi API đánh dấu tất cả là đã đọc
   const handleMarkAllAsRead = async () => {
@@ -103,14 +107,17 @@ export default function Header({
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await fetch("http://localhost:8080/api/notifications/mark-read", {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch(
+        "http://localhost:8080/api/notifications/mark-read",
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (res.ok) {
         // Cập nhật lại UI ngay lập tức
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       }
     } catch (error) {
       console.error("Lỗi đánh dấu đã đọc:", error);
@@ -123,11 +130,16 @@ export default function Header({
       try {
         const token = localStorage.getItem("token");
         if (token) {
-          await fetch(`http://localhost:8080/api/notifications/${note.id}/read`, {
-            method: "PUT",
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setNotifications(prev => prev.map(n => n.id === note.id ? { ...n, isRead: true } : n));
+          await fetch(
+            `http://localhost:8080/api/notifications/${note.id}/read`,
+            {
+              method: "PUT",
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+          setNotifications((prev) =>
+            prev.map((n) => (n.id === note.id ? { ...n, isRead: true } : n)),
+          );
         }
       } catch (error) {
         console.error("Lỗi đánh dấu đã đọc:", error);
@@ -148,7 +160,14 @@ export default function Header({
     if (!dateValue) return "";
     let date: Date;
     if (Array.isArray(dateValue)) {
-      date = new Date(dateValue[0], dateValue[1] - 1, dateValue[2], dateValue[3] || 0, dateValue[4] || 0, dateValue[5] || 0);
+      date = new Date(
+        dateValue[0],
+        dateValue[1] - 1,
+        dateValue[2],
+        dateValue[3] || 0,
+        dateValue[4] || 0,
+        dateValue[5] || 0,
+      );
     } else {
       date = new Date(dateValue);
     }
@@ -290,9 +309,7 @@ export default function Header({
               <Bell size={18} />
 
               {/* CHẤM ĐỎ */}
-              {unreadCount > 0 && (
-                <span className="notification-dot"></span>
-              )}
+              {unreadCount > 0 && <span className="notification-dot"></span>}
             </div>
 
             {/* DROPDOWN HIỂN THỊ THÔNG BÁO */}
@@ -302,36 +319,56 @@ export default function Header({
                 <div className="notification-arrow"></div>
 
                 <div className="notification-item">
-                  <h6>
-                    Thông báo
-                  </h6>
+                  <h6>Thông báo</h6>
                   {unreadCount > 0 && (
-                    <span
-                      onClick={handleMarkAllAsRead}
-                    >
+                    <span onClick={handleMarkAllAsRead}>
                       Đánh dấu là đã đọc
                     </span>
                   )}
                 </div>
 
                 {notifications.length === 0 ? (
-                  <p className="text-muted text-center m-0">Không có thông báo nào</p>
+                  <p className="text-muted text-center m-0">
+                    Không có thông báo nào
+                  </p>
                 ) : (
-                  notifications.map(note => (
+                  notifications.map((note) => (
                     <div
                       key={note.id}
                       className="notification-note"
-                      style={{ backgroundColor: note.isRead ? "transparent" : "var(--light-green)" }}
+                      style={{
+                        backgroundColor: note.isRead
+                          ? "transparent"
+                          : "var(--light-green)",
+                      }}
                       onClick={() => handleNotificationClick(note)}
                     >
                       {/* Nút tròn màu xanh lá */}
-                      <div className="dot-green" style={{ backgroundColor: note.isRead ? "transparent" : "var(--primary)" }}></div>
+                      <div
+                        className="dot-green"
+                        style={{
+                          backgroundColor: note.isRead
+                            ? "transparent"
+                            : "var(--primary)",
+                        }}
+                      ></div>
 
                       {/* Nội dung thông báo */}
                       <div className="notification-content">
                         {note.content.includes(" muốn mua ") ? (
                           <>
-                            <strong>{note.content.substring(0, note.content.indexOf(" muốn mua "))}</strong> muốn mua <strong>{note.content.substring(note.content.indexOf(" muốn mua ") + 10)}</strong>
+                            <strong>
+                              {note.content.substring(
+                                0,
+                                note.content.indexOf(" muốn mua "),
+                              )}
+                            </strong>{" "}
+                            muốn mua{" "}
+                            <strong>
+                              {note.content.substring(
+                                note.content.indexOf(" muốn mua ") + 10,
+                              )}
+                            </strong>
                           </>
                         ) : (
                           note.content
@@ -441,7 +478,7 @@ function SavedListingsPopup({
 
       <div className="saved-listings-header">
         <h6>Tin đăng đã lưu</h6>
-        <button type="button" onClick={() => onNavigate("/my-listings")}>
+        <button type="button" onClick={() => onNavigate("/saved-listings")}>
           Xem tất cả
         </button>
       </div>

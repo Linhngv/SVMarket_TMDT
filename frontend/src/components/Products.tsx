@@ -53,7 +53,16 @@ function formatCurrency(value: number) {
   return `${new Intl.NumberFormat("vi-VN").format(value)}đ`;
 }
 
-export default function Products({ title }: Props) {
+
+// Nhận props searchKeyword từ Home
+export default function Products({
+  title,
+  searchKeyword,
+}: {
+  title: string;
+  searchKeyword: string;
+}) {
+
   const [openFilter, setOpenFilter] = useState(false);
   const [selected, setSelected] = useState("Mới nhất");
   const [activeListings, setActiveListings] = useState<ListingSummary[]>([]);
@@ -71,8 +80,11 @@ export default function Products({ title }: Props) {
       }
     };
 
-    loadActiveListings();
-  }, [title]);
+  // Tải lại khi đổi title hoặc khi searchKeyword thay đổi
+  useEffect(() => {
+    loadActiveListings(searchKeyword);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, searchKeyword]);
 
   useEffect(() => {
     if (!isLoggedIn) {

@@ -274,6 +274,7 @@ public class ListingService {
                 .toList();
     }
 
+
     // Lấy mức độ ưu tiên theo gói đã đăng ký
     public int getPriority(Listing listing) {
 
@@ -308,6 +309,21 @@ public class ListingService {
         return listing.getLastPushAt()
                 .plusHours(hours)
                 .isAfter(LocalDateTime.now());
+
+    /**
+     * Tìm kiếm bài đăng đang hoạt động theo từ khóa (title hoặc description)
+     * @param keyword từ khóa tìm kiếm
+     * @return danh sách bài đăng phù hợp
+     */
+    public List<ListingSummaryResponse> searchActiveListings(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return getActiveListings();
+        }
+        // Tìm kiếm theo title hoặc description chứa keyword (không phân biệt hoa thường)
+        List<Listing> listings = listingRepository
+                .findByStatusAndTitleContainingIgnoreCaseOrStatusAndDescriptionContainingIgnoreCase(
+                        ListingStatus.ACTIVE, keyword, ListingStatus.ACTIVE, keyword);
+        return listings.stream().map(this::toSummaryResponse).toList();
     }
 
     // Them/bo luu bai dang theo user dang nhap.

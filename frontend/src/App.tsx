@@ -20,6 +20,12 @@ import AdminPostList from "./pages/admin/PostManagement/AdminPostList";
 import AdminPostApproval from "./pages/admin/PostManagement/AdminPostApproval";
 import AdminViolationList from "./pages/admin/PostManagement/AdminViolationList";
 import AdminPackage from "./pages/admin/AdminPackage";
+import AdminCategory from "./pages/admin/CategoryManagement/AdminCategoryList";
+import AdminUserList from "./pages/admin/UserManagement/AdminUserList";
+import AdminUserStatus from "./pages/admin/UserManagement/AdminUserStatus";
+import ChangePassword from "./pages/ChangePassword";
+
+import SavedListings from "./pages/listing/SavedListings";
 
 
 function App() {
@@ -37,6 +43,8 @@ function App() {
 
       <Route path="/product/:id" element={<ProductDetail />} />
 
+      <Route path="/saved-listings" element={<SavedListings />} />
+
       <Route element={<UserAreaLayout />}>
         <Route path="/create-listing" element={<CreateListing />} />
         <Route path="/my-listings" element={<MyListings />} />
@@ -44,6 +52,7 @@ function App() {
         <Route path="/purchase-history" element={<PurchaseHistory />} />
         <Route path="/sales-history" element={<SalesHistory />} />
         <Route path="/my-packages" element={<MyPackages />} />
+        <Route path="/change-password" element={<ChangePassword />} />
       </Route>
 
       <Route path="/payment/:orderId" element={<Payment />} />
@@ -53,6 +62,9 @@ function App() {
       <Route path="/admin/vi-pham" element={<AdminViolationList />} />
 
       <Route path="/admin/packages" element={<AdminPackage/>}/>
+      <Route path="/admin/categories" element={<AdminCategory />} />
+      <Route path="/admin/users" element={<AdminUserList />} />
+      <Route path="/admin/status/:id" element={<AdminUserStatus />} />
 
       <Route path="*" element={<div>Trang đang được phát triển.</div>} />
     </Routes>

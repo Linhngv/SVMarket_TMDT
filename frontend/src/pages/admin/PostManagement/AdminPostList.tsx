@@ -13,6 +13,11 @@ interface Post {
 export default function AdminPostList() {
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     // Hàm giúp xác định màu hiển thị badge trạng thái
     const getStatusClass = (status: string) => {
@@ -31,6 +36,8 @@ export default function AdminPostList() {
             case "HIDDEN":
             case "DELETED":
                 return "bg-secondary";
+            case "SOLD":
+                return "bg-dark text-white";
             default:
                 return "bg-secondary";
         }
@@ -42,9 +49,18 @@ export default function AdminPostList() {
             case "PENDING":
                 return "Chờ duyệt";
             case "ACTIVE":
+            case "APPROVED":
                 return "Đã duyệt";
             case "REJECTED":
                 return "Vi phạm";
+            case "HIDDEN":
+                return "Tạm ẩn";
+            case "INACTIVE":
+                return "Không hoạt động";
+            case "SOLD":
+                return "Đã bán";
+            case "DELETED":
+                return "Đã xóa";
             default:
                 return status;
         }
@@ -88,6 +104,20 @@ export default function AdminPostList() {
         fetchListings();
     }, []);
 
+    const filteredPosts = posts.filter(post =>
+        post.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.author?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    useEffect(() => {
+        setCurrentPage(1); // Reset trang về 1 khi tìm kiếm
+    }, [searchTerm]);
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentPosts = filteredPosts.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
+
     return (
         <div className="admin-container d-flex">
 
@@ -109,8 +139,11 @@ export default function AdminPostList() {
                         {/* SEARCH */}
                         <div className="d-flex gap-3 mb-4 flex-wrap">
                             <input
+                                type="text"
                                 className="form-control search-input"
                                 placeholder="Tìm theo tiêu đề hoặc người đăng ..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             />
                             <button className="btn admin-btn-search px-4">Tìm kiếm</button>
                         </div>
@@ -132,14 +165,14 @@ export default function AdminPostList() {
                                         <tr>
                                             <td colSpan={4} className="text-center py-4">Đang tải dữ liệu...</td>
                                         </tr>
-                                    ) : (!posts || posts.length === 0) ? (
+                                    ) : (!currentPosts || currentPosts.length === 0) ? (
                                         <tr>
                                             <td colSpan={4} className="text-center py-4">
                                                 Chưa có bài đăng nào
                                             </td>
                                         </tr>
                                     ) : (
-                                        posts.map((post) => (
+                                        currentPosts.map((post) => (
                                             <tr key={post.id}>
                                                 <td>{post.id}</td>
                                                 <td>{post.title}</td>
@@ -155,6 +188,34 @@ export default function AdminPostList() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* PAGINATION */}
+                        {totalPages > 1 && (
+                            <div className="d-flex justify-content-center align-items-center mt-4 text-muted small">
+                                <div className="d-flex flex-wrap justify-content-center gap-2">
+                                    <button 
+                                        className="btn btn-sm rounded-circle border bg-white d-flex align-items-center justify-content-center"
+                                        style={{ width: "32px", height: "32px" }}
+                                        disabled={currentPage === 1}
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    >‹</button>
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                        <button 
+                                            key={page}
+                                            className={`btn btn-sm rounded-circle border d-flex align-items-center justify-content-center ${currentPage === page ? 'text-white' : 'bg-white text-dark'}`}
+                                            style={currentPage === page ? { backgroundColor: '#1B7A4A', borderColor: '#1B7A4A', width: "32px", height: "32px" } : { width: "32px", height: "32px" }}
+                                            onClick={() => setCurrentPage(page)}
+                                        >{page}</button>
+                                    ))}
+                                    <button 
+                                        className="btn btn-sm rounded-circle border bg-white d-flex align-items-center justify-content-center"
+                                        style={{ width: "32px", height: "32px" }}
+                                        disabled={currentPage === totalPages}
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    >›</button>
+                                </div>
+                            </div>
+                        )}
 
                     </div>
                 </div>

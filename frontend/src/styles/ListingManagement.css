@@ -1,3 +1,149 @@
+/* SAVED LISTINGS PAGE - Giao diện giống ảnh */
+.saved-listings-main-wrapper {
+  width: 100%;
+  min-height: 70vh;
+  background: #f5f6fa;
+  padding: 32px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.saved-listings-container {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  width: 96%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 32px 32px 32px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+}
+
+.saved-listings-wide {
+  max-width: 1200px;
+  width: 96%;
+}
+
+.saved-listings-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 28px;
+  color: #22223b;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.saved-listings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.saved-listings-empty-large {
+  font-size: 1.2rem;
+  color: #6b7280;
+  text-align: center;
+  margin: 40px 0;
+}
+
+.saved-listing-row {
+  display: flex;
+  align-items: flex-start;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 18px 22px;
+  gap: 18px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.saved-listing-img {
+  width: 70px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  margin-right: 18px;
+}
+
+.saved-listing-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.saved-listing-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #22223b;
+  margin-bottom: 2px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.saved-listing-price {
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+
+.saved-listing-meta {
+  font-size: 18px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.saved-listing-meta-author {
+  font-weight: 500;
+  color: #16a34a;
+}
+.saved-listing-meta-university {
+  color: #666;
+}
+.saved-listing-meta-date {
+  color: #888;
+  font-size: 0.93rem;
+}
+
+.saved-listing-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: 18px;
+  margin-top: 35px;
+}
+.chat-btn {
+  background: #fff;
+  color: #15803d;
+  border: 2px solid #15803d;
+  border-radius: 25px;
+  /* padding: 2px 20px; */
+  width: 80px;
+  height: 1px;
+  font-size: 18px;
+  cursor: pointer;
+  font-weight: 600;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+.chat-btn:hover {
+  background: #16a34a;
+  color: #fff;
+}
+.heart-icon {
+  color: #ef4444;
+  font-size: 2.2rem;
+  margin-top: 8px;
+  transition: transform 0.1s;
+}
+.heart-icon-active:hover {
+  transform: scale(1.15);
+  filter: brightness(1.2);
+}
 .listing-panel {
   background: var(--white);
   border-radius: 6px;

@@ -19,13 +19,11 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
 
     Optional<Listing> findByIdAndSellerId(Integer id, Integer sellerId);
 
-    @Query("SELECT COUNT(l) FROM Listing l " +
-            "WHERE l.seller.id = :sellerId " +
-            "AND l.status NOT IN :statuses")
-    long countBySellerIdAndStatusNotIn(
-            @Param("sellerId") Integer sellerId,
-            @Param("statuses") List<ListingStatus> statuses
-    );
-
     List<Listing> findByStatus(ListingStatus status);
+
+    /**
+     * Tìm kiếm bài đăng theo trạng thái và từ khóa (title hoặc description chứa keyword, không phân biệt hoa thường)
+     */
+    List<Listing> findByStatusAndTitleContainingIgnoreCaseOrStatusAndDescriptionContainingIgnoreCase(
+            ListingStatus status1, String keyword1, ListingStatus status2, String keyword2);
 }

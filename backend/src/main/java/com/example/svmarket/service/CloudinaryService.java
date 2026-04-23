@@ -56,6 +56,25 @@ public class CloudinaryService {
         }
     }
 
+    // Upload category image to Cloudinary and return public_id + secure_url.
+    public UploadedImage uploadCategoryImage(MultipartFile file) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "svmarket/categories",
+                            "resource_type", "image"));
+
+            String publicId = (String) result.get("public_id");
+            String secureUrl = (String) result.get("secure_url");
+
+            return new UploadedImage(publicId, secureUrl);
+        } catch (IOException exception) {
+            throw new RuntimeException("Không thể tải ảnh danh mục lên Cloudinary", exception);
+        }
+    }
+
     // Xoa mot anh tren Cloudinary theo public_id.
     public void deleteImage(String publicId) {
         if (publicId == null || publicId.isBlank()) {

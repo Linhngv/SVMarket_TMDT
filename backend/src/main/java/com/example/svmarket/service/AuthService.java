@@ -12,6 +12,7 @@ import com.example.svmarket.dto.LoginRequest;
 import com.example.svmarket.dto.LoginResponse;
 import com.example.svmarket.dto.RegisterOtpRequest;
 import com.example.svmarket.dto.RegisterRequest;
+import com.example.svmarket.dto.ChangePasswordRequest;
 import com.example.svmarket.dto.ResetPasswordRequest;
 import com.example.svmarket.dto.VerifyPasswordOtpRequest;
 import com.example.svmarket.entity.PasswordResetOTP;
@@ -85,7 +86,11 @@ public class AuthService {
             return new LoginResponse(null, "Tài khoản không tồn tại", null, null, null);
         }
 
-        // 2. Kiểm tra mật khẩu (BCrypt + fallback dữ liệu cũ)
+        if ("Đã khóa".equals(user.getStatus())) {
+            return new LoginResponse(null, "Tài khoản của bạn đã bị khóa", null, null, null);
+        }
+
+        // 2. Kiểm tra mật khẩu 
         boolean isMatch = passwordEncoder.matches(password, user.getPassword())
                 || user.getPassword().equals(password);
 
@@ -256,5 +261,22 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         otpRepository.delete(otpEntity);
+    }
+
+    public void changePassword(String email, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Tài khoản không tồn tại"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())
+                && !user.getPassword().equals(request.getCurrentPassword())) {
+            throw new BadRequestException("Mật khẩu hiện tại không đúng");
+        }
+
+        if (!request.getNewPassword().matches(PASSWORD_POLICY_REGEX)) {
+            throw new BadRequestException("Mật khẩu phải có chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }
