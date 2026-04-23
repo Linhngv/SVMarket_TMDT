@@ -94,9 +94,14 @@ export async function fetchMyListings() {
   return response.data;
 }
 
-// Lay danh sach bai dang dang hoat dong cho trang chu.
-export async function fetchActiveListings() {
-  const response = await axios.get<ListingSummary[]>(API_BASE_URL);
+// Lấy danh sách bài đăng đang hoạt động cho trang chủ hoặc tìm kiếm theo từ khóa.
+// Nếu keyword truyền vào là rỗng hoặc không có thì trả về tất cả bài đăng active.
+export async function fetchActiveListings(keyword?: string) {
+  const url =
+    keyword && keyword.trim() !== ""
+      ? `${API_BASE_URL}?keyword=${encodeURIComponent(keyword)}`
+      : API_BASE_URL;
+  const response = await axios.get<ListingSummary[]>(url);
   return response.data;
 }
 

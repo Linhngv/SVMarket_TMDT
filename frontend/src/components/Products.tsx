@@ -61,7 +61,14 @@ type CardItem = {
   image: string;
 };
 
-export default function Products({ title }: Props) {
+// Nhận props searchKeyword từ Home
+export default function Products({
+  title,
+  searchKeyword,
+}: {
+  title: string;
+  searchKeyword: string;
+}) {
   const [openFilter, setOpenFilter] = useState(false);
   const [selected, setSelected] = useState("Mới nhất");
   const [activeListings, setActiveListings] = useState<ListingSummary[]>([]);
@@ -69,19 +76,23 @@ export default function Products({ title }: Props) {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadActiveListings = async () => {
-      try {
-        const data = await fetchActiveListings();
-        // Nếu là Đề xuất sản phẩm, ta đảo ngược mảng để giao diện trông khác Tất cả bài đăng một chút
-        setActiveListings(title === "Đề xuất sản phẩm" ? [...data].reverse().slice(0, 4) : data);
-      } catch (error) {
-        console.error("Khong the tai danh sach bai dang hoat dong", error);
-      }
-    };
+  // Hàm tải danh sách bài đăng, có thể truyền vào từ khóa tìm kiếm
+  const loadActiveListings = async (keyword?: string) => {
+    try {
+      const data = await fetchActiveListings(keyword);
+      setActiveListings(
+        title === "Đề xuất sản phẩm" ? [...data].reverse().slice(0, 4) : data,
+      );
+    } catch (error) {
+      console.error("Khong the tai danh sach bai dang hoat dong", error);
+    }
+  };
 
-    loadActiveListings();
-  }, [title]);
+  // Tải lại khi đổi title hoặc khi searchKeyword thay đổi
+  useEffect(() => {
+    loadActiveListings(searchKeyword);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, searchKeyword]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -116,7 +127,7 @@ export default function Products({ title }: Props) {
 
   const handleFavoriteClick = async (
     event: React.MouseEvent<HTMLDivElement>,
-    item: CardItem
+    item: CardItem,
   ) => {
     event.stopPropagation();
 
@@ -141,14 +152,13 @@ export default function Products({ title }: Props) {
 
   return (
     <div className="product-section mt-4">
-      <div className="product-header">
-        <h5 className="product-title">{title}</h5>
-
-        <div 
+      <div className="product-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h5 className="product-title mb-0">{title}</h5>
+        <div
           className="filter-wrapper"
           style={
-            selected === "Giá thấp → cao" || selected === "Giá cao → thấp" 
-              ? { minWidth: "150px" } 
+            selected === "Giá thấp → cao" || selected === "Giá cao → thấp"
+              ? { minWidth: "150px" }
               : undefined
           }
         >
@@ -194,7 +204,7 @@ export default function Products({ title }: Props) {
                 className="product-heart"
                 onClick={(event) => handleFavoriteClick(event, item)}
               >
-                {(item.id && favoriteIds.includes(item.id)) ? (
+                {item.id && favoriteIds.includes(item.id) ? (
                   <FaHeart />
                 ) : (
                   <FaRegHeart />
@@ -223,9 +233,7 @@ export default function Products({ title }: Props) {
 
               {/* INFO */}
               <div className="product-info">
-                <h6 className="product-item-title">
-                  {item.title}
-                </h6>
+                <h6 className="product-item-title">{item.title}</h6>
 
                 <p className="product-price">{item.price}</p>
 

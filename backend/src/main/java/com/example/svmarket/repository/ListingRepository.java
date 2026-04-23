@@ -16,4 +16,10 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
     Optional<Listing> findByIdAndStatus(Integer id, ListingStatus status);
 
     Optional<Listing> findByIdAndSellerId(Integer id, Integer sellerId);
+
+    /**
+     * Tìm kiếm bài đăng theo trạng thái và từ khóa (title hoặc description chứa keyword, không phân biệt hoa thường)
+     */
+    List<Listing> findByStatusAndTitleContainingIgnoreCaseOrStatusAndDescriptionContainingIgnoreCase(
+            ListingStatus status1, String keyword1, ListingStatus status2, String keyword2);
 }
