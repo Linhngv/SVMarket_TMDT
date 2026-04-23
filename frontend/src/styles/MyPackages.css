@@ -229,3 +229,88 @@
 .btn-buy.primary:hover {
   background: var(--dark-green);
 }
+
+/* ===== ACTIVE PACKAGES ===== */
+.active-packages-section {
+  margin-bottom: 2.5rem;
+}
+
+.active-packages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.active-pkg-card {
+  background: #fff;
+  border: 1.5px solid #e0e7ff;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.07);
+}
+
+.active-pkg-card.expired {
+  border-color: #fecaca;
+  background: #fff7f7;
+  opacity: 0.8;
+}
+
+.active-pkg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.active-pkg-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1e1b4b;
+}
+
+.active-pkg-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.tag-active  { background: #dcfce7; color: #15803d; }
+.tag-expired { background: #fee2e2; color: #b91c1c; }
+
+.active-pkg-expiry {
+  font-size: 0.88rem;
+  color: #475569;
+}
+
+.days-left {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* Progress bars */
+.usage-item { display: flex; flex-direction: column; gap: 5px; }
+
+.usage-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #374151;
+}
+
+.usage-count strong { color: #1e1b4b; }
+
+.usage-bar-bg {
+  height: 7px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.usage-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}

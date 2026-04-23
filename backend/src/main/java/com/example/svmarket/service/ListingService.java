@@ -1,9 +1,13 @@
 package com.example.svmarket.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import com.example.svmarket.entity.*;
+import com.example.svmarket.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,22 +18,7 @@ import com.example.svmarket.dto.FavoriteToggleResponse;
 import com.example.svmarket.dto.ListingDetailResponse;
 import com.example.svmarket.dto.ListingSummaryResponse;
 import com.example.svmarket.dto.ListingUpsertRequest;
-import com.example.svmarket.entity.Category;
-import com.example.svmarket.entity.Image;
-import com.example.svmarket.entity.Listing;
-import com.example.svmarket.entity.ListingFavorite;
-import com.example.svmarket.entity.ListingStatus;
-import com.example.svmarket.entity.Notification;
-import com.example.svmarket.entity.NotificationType;
-import com.example.svmarket.entity.Role;
-import com.example.svmarket.entity.User;
 import com.example.svmarket.exception.BadRequestException;
-import com.example.svmarket.repository.CategoryRepository;
-import com.example.svmarket.repository.ImageRepository;
-import com.example.svmarket.repository.ListingFavoriteRepository;
-import com.example.svmarket.repository.ListingRepository;
-import com.example.svmarket.repository.NotificationRepository;
-import com.example.svmarket.repository.UserRepository;
 import com.example.svmarket.service.CloudinaryService.UploadedImage;
 
 @Service
@@ -58,6 +47,9 @@ public class ListingService {
     @Autowired
     private CloudinaryService cloudinaryService;
 
+    @Autowired
+    private SellerPackageRepository sellerPackageRepository;
+
     // Lay danh sach danh muc de hien thi dropdown o form.
     public List<CategoryOptionResponse> getCategories() {
         return categoryRepository.findAll()
@@ -66,12 +58,65 @@ public class ListingService {
                 .toList();
     }
 
+    public Map<String, Object> getPostLimit(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
+
+        // Reset free nếu hết hạn miễn phí lượt đăng
+        if (user.getFreeResetDate() == null ||
+                user.getFreeResetDate().isBefore(LocalDateTime.now())) {
+
+            user.setFreePostsRemaining(3);
+            user.setFreeResetDate(LocalDateTime.now().plusMonths(1));
+            userRepository.save(user);
+        }
+
+        SellerPackage pkg = sellerPackageRepository
+                .findAvailablePackage(user.getId(), LocalDateTime.now())
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        int freeRemaining = user.getFreePostsRemaining();
+        int packageRemaining = pkg != null ? pkg.getRemainingPosts() : 0;
+
+        boolean canPost = (freeRemaining > 0) || (packageRemaining > 0);
+
+        int remaining = freeRemaining > 0 ? freeRemaining : packageRemaining;
+
+        String message;
+        if (freeRemaining > 0) {
+            message = "Bạn còn " + freeRemaining + " lượt đăng miễn phí";
+        } else if (packageRemaining > 0) {
+            message = "Bạn còn " + packageRemaining + " lượt đăng từ gói";
+        } else {
+            message = "Hết lượt đăng. Vui lòng mua gói tin.";
+        }
+
+        return Map.of(
+                "canPost", canPost,
+                "freeRemaining", freeRemaining,
+                "packageRemaining", packageRemaining,
+                "remaining", remaining,
+                "message", message
+        );
+    }
+
     // Tao bai dang moi cua user dang dang nhap.
     @Transactional
-    public ListingDetailResponse createMyListing(String email, ListingUpsertRequest request,
-            List<MultipartFile> images) {
+    public ListingDetailResponse createMyListing(String email,
+                                                 ListingUpsertRequest request,
+                                                 List<MultipartFile> images) {
+
         User seller = getUserByEmail(email);
+
+        resetFree(seller);
+
         Category category = getCategoryById(request.getCategoryId());
+        PostSource postSource = request.getPostSource() != null
+                ? PostSource.valueOf(request.getPostSource())
+                : PostSource.FREE;
 
         Listing listing = Listing.builder()
                 .seller(seller)
@@ -81,14 +126,63 @@ public class ListingService {
                 .price(request.getPrice())
                 .deliveryAddress(request.getDeliveryAddress())
                 .conditionLevel(request.getConditionLevel())
-                .status(ListingStatus.PENDING) // Bắt buộc chờ duyệt khi đăng mới
+                .status(ListingStatus.PENDING)
                 .stock(1)
+                .postSource(postSource)
                 .build();
+
+        SellerPackage pkg = sellerPackageRepository
+                .findAvailablePackage(seller.getId(), LocalDateTime.now())
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+
+        // Free
+        if (postSource == PostSource.FREE) {
+
+            if (seller.getFreePostsRemaining() <= 0) {
+                throw new BadRequestException("Hết lượt đăng miễn phí");
+            }
+
+            seller.setFreePostsRemaining(seller.getFreePostsRemaining() - 1);
+            userRepository.save(seller);
+
+        } else { // PACKAGE
+
+            if (pkg == null) {
+                throw new BadRequestException("Bạn chưa đăng ký gói");
+            }
+
+            if (pkg.getRemainingPosts() <= 0) {
+                throw new BadRequestException("Gói đã hết lượt đăng");
+            }
+
+            if (pkg.getRemainingPushes() <= 0) {
+                throw new BadRequestException("Gói đã hết lượt đẩy");
+            }
+
+            // trừ lượt đăng
+            pkg.setRemainingPosts(pkg.getRemainingPosts() - 1);
+
+            // trừ lượt đẩy
+            pkg.setRemainingPushes(pkg.getRemainingPushes() - 1);
+
+            // set push để được ưu tiên
+            listing.setLastPushAt(LocalDateTime.now());
+
+            if (pkg.getRemainingPosts() <= 0 && pkg.getRemainingPushes() <= 0) {
+                pkg.setStatus(PackageStatus.EXPIRED);
+            }
+
+            sellerPackageRepository.save(pkg);
+        }
+
 
         Listing savedListing = listingRepository.save(listing);
         List<String> imageUrls = saveImages(savedListing, images);
 
-        // Tạo thông báo cho Admin
+
         List<User> admins = userRepository.findByRole(Role.ADMIN);
         for (User admin : admins) {
             Notification notification = Notification.builder()
@@ -104,6 +198,39 @@ public class ListingService {
         return toDetailResponse(savedListing, imageUrls);
     }
 
+    // Lấy danh sách nổi bật
+    public List<ListingSummaryResponse> getFeaturedListings() {
+        return listingRepository.findByStatus(ListingStatus.ACTIVE)
+                .stream()
+                .filter(l -> {
+                    SellerPackage pkg = getPkg(l);
+                    return pkg != null && Boolean.TRUE.equals(pkg.getPackagePlan().getIsFeatured());
+                })
+                .sorted((a, b) -> Integer.compare(getPriority(b), getPriority(a)))
+                .limit(4)
+                .map(this::toSummaryResponse)
+                .toList();
+    }
+
+
+    // Reset lượt đăng free mỗi tháng
+    public void resetFree(User user) {
+        if (user.getFreeResetDate() == null ||
+                user.getFreeResetDate().isBefore(LocalDateTime.now())) {
+
+            user.setFreePostsRemaining(3);
+            user.setFreeResetDate(LocalDateTime.now().plusMonths(1));
+            userRepository.save(user);
+        }
+    }
+
+    public SellerPackage getPkg(Listing listing) {
+        return sellerPackageRepository
+                .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
+                .stream().findFirst()
+                .orElse(null);
+    }
+
     // Lay danh sach bai dang cua user hien tai.
     public List<ListingSummaryResponse> getMyListings(String email) {
         User seller = getUserByEmail(email);
@@ -116,11 +243,72 @@ public class ListingService {
 
     // Lay danh sach bai dang dang hoat dong de hien thi o trang chu.
     public List<ListingSummaryResponse> getActiveListings() {
-        return listingRepository.findByStatusOrderByCreatedAtDesc(ListingStatus.ACTIVE)
-                .stream()
+        List<Listing> listings = listingRepository.findByStatus(ListingStatus.ACTIVE);
+
+        return listings.stream()
+                .sorted((a, b) -> {
+
+                    int priorityA = getPriority(a);
+                    int priorityB = getPriority(b);
+
+                    // Ưu tiên gói (Cơ bản, sinh viên, vip)
+                    if (priorityA != priorityB) {
+                        return Integer.compare(priorityB, priorityA);
+                    }
+
+
+                    boolean pushA = isPushActive(a);
+                    boolean pushB = isPushActive(b);
+
+                    if (pushA != pushB) {
+                        return pushB ? 1 : -1;
+                    }
+
+                    if (a.getLastPushAt() != null && b.getLastPushAt() != null) {
+                        return b.getLastPushAt().compareTo(a.getLastPushAt());
+                    }
+
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                })
                 .map(this::toSummaryResponse)
                 .toList();
     }
+
+
+    // Lấy mức độ ưu tiên theo gói đã đăng ký
+    public int getPriority(Listing listing) {
+
+        // FREE: không có ưu tiên
+        if (listing.getPostSource() == PostSource.FREE) {
+            return 0;
+        }
+
+        SellerPackage pkg = sellerPackageRepository
+                .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
+                .stream().findFirst()
+                .orElse(null);
+
+        if (pkg == null) return 0;
+
+        return pkg.getPackagePlan().getPriorityLevel();
+    }
+
+    // Kiểm tra xem còn trong thời gian được đẩy hay không?
+    private boolean isPushActive(Listing listing) {
+        if (listing.getLastPushAt() == null) return false;
+
+        SellerPackage pkg = sellerPackageRepository
+                .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
+                .stream().findFirst()
+                .orElse(null);
+
+        if (pkg == null) return false;
+
+        int hours = pkg.getPackagePlan().getPushHours();
+
+        return listing.getLastPushAt()
+                .plusHours(hours)
+                .isAfter(LocalDateTime.now());
 
     /**
      * Tìm kiếm bài đăng đang hoạt động theo từ khóa (title hoặc description)
@@ -212,9 +400,9 @@ public class ListingService {
     // Cap nhat bai dang cua user hien tai, co the thay anh moi.
     @Transactional
     public ListingDetailResponse updateMyListing(String email,
-            Integer listingId,
-            ListingUpsertRequest request,
-            List<MultipartFile> images) {
+                                                 Integer listingId,
+                                                 ListingUpsertRequest request,
+                                                 List<MultipartFile> images) {
         User seller = getUserByEmail(email);
         Listing listing = getMyListingByIdAndSellerId(listingId, seller.getId());
 
@@ -317,7 +505,8 @@ public class ListingService {
                 .build();
     }
 
-    private ListingSummaryResponse toSummaryResponse(Listing listing) {
+    public ListingSummaryResponse toSummaryResponse(Listing listing) {
+
         String thumbnail = listing.getImages() != null && !listing.getImages().isEmpty()
                 ? listing.getImages().get(0).getUrl()
                 : null;
@@ -331,6 +520,25 @@ public class ListingService {
         response.setSellerUniversity(listing.getSeller() != null ? listing.getSeller().getUniversity() : null);
         response.setSellerName(listing.getSeller() != null ? listing.getSeller().getFullName() : null);
         response.setCreatedAt(listing.getCreatedAt());
+
+        if (listing.getPostSource() == PostSource.PACKAGE) {
+            SellerPackage pkg = sellerPackageRepository
+                    .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
+
+            int priority = pkg != null ? pkg.getPackagePlan().getPriorityLevel() : 0;
+
+            response.setPriorityLevel(priority);
+            response.setIsFeatured(pkg != null && Boolean.TRUE.equals(pkg.getPackagePlan().getIsFeatured()));
+
+        } else {
+            // FREE
+            response.setPriorityLevel(0);
+            response.setIsFeatured(false);
+        }
+
         return response;
     }
 
@@ -371,4 +579,7 @@ public class ListingService {
         imageRepository.saveAll(imageEntities);
         return imageUrls;
     }
+
+
+
 }

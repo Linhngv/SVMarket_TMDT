@@ -18,6 +18,7 @@ const DEFAULT_VALUES: ListingFormValues = {
   conditionLevel: "Da qua su dung",
   description: "",
   status: "ACTIVE",
+  postSource: "FREE",
 };
 
 export default function CreateListing() {
@@ -81,6 +82,11 @@ export default function CreateListing() {
         description: values.description.trim(),
         status: values.status,
         images,
+        postSource: values.postSource,
+      });
+
+      console.log("POST DATA:", {
+        ...values,
       });
 
       alert("Thêm bài đăng thành công");

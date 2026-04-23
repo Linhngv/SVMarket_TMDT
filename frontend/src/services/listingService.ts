@@ -16,6 +16,9 @@ export type ListingSummary = {
   sellerName?: string | null;
   sellerUniversity?: string | null;
   createdAt?: string;
+
+  priorityLevel?: number;
+  isFeatured?: boolean;
 };
 
 export type ListingDetail = {
@@ -47,6 +50,7 @@ export type ListingFormPayload = {
   description: string;
   status: string;
   images: File[];
+  postSource: "FREE" | "PACKAGE";
 };
 
 function getAuthHeader() {
@@ -69,6 +73,7 @@ function buildListingFormData(payload: ListingFormPayload) {
   formData.append("conditionLevel", payload.conditionLevel);
   formData.append("description", payload.description);
   formData.append("status", payload.status);
+  formData.append("postSource", payload.postSource);
 
   payload.images.forEach((image) => {
     formData.append("images", image);
@@ -104,6 +109,12 @@ export async function fetchActiveListings(keyword?: string) {
   const response = await axios.get<ListingSummary[]>(url);
   return response.data;
 }
+
+// Lấy danh sách đăng tin cho phép xuất hiện ở đề xuất
+export const fetchFeaturedListings = async () => {
+  const res = await axios.get("http://localhost:8080/api/listings/featured");
+  return res.data;
+};
 
 // Lay chi tiet bai dang theo id de do du lieu vao form sua.
 export async function fetchMyListingById(id: number) {

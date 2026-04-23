@@ -1,9 +1,18 @@
 package com.example.svmarket.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
+import com.example.svmarket.entity.ListingStatus;
+import com.example.svmarket.entity.SellerPackage;
+import com.example.svmarket.entity.User;
+import com.example.svmarket.repository.*;
+import com.example.svmarket.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +47,15 @@ public class ListingController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private SellerPackageRepository sellerPackageRepository;
+
+    @Autowired
+    ListingRepository listingRepository;
 
     // Lay danh sach danh muc de frontend do vao dropdown.
     @GetMapping("/categories")
@@ -134,5 +152,15 @@ public class ListingController {
     private String extractEmail(String bearerToken) {
         String token = bearerToken.replace("Bearer ", "");
         return jwtUtil.extractEmail(token);
+    }
+
+    @GetMapping("/post-limit")
+    public ResponseEntity<?> getPostLimit(@AuthenticationPrincipal String email) {
+        return ResponseEntity.ok(listingService.getPostLimit(email));
+    }
+
+    @GetMapping("/featured")
+    public List<ListingSummaryResponse> getFeaturedListings() {
+        return listingService.getFeaturedListings();
     }
 }

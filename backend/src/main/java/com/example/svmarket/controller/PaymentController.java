@@ -37,15 +37,6 @@ public class PaymentController {
         return paymentService.createPaymentUrl(packageId, returnUrl);
     }
 
-    // Lấy thông tin gói đã dăng ký của người dùng
-    @GetMapping("/my-packages")
-    public ResponseEntity<?> getMyPackages() {
-        User currentUser = jwtUtil.getCurrentUser();
-        List<SellerPackage> list = sellerPackageRepository.findBySellerId(currentUser.getId());
-        return ResponseEntity.ok(list);
-    }
-
-
     // Tạo URL thanh toán cho đơn hàng
     @GetMapping("/create-order")
     public ResponseEntity<String> createOrderPayment(@RequestParam Integer orderId, @RequestParam String returnUrl) throws Exception {

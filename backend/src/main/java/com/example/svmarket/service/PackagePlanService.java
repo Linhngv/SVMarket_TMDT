@@ -45,7 +45,6 @@ public class PackagePlanService {
         if (p.getPushLimit() == null) p.setPushLimit(0);
         if (p.getPushHours() == null) p.setPushHours(0);
         if (p.getPriorityLevel() == null) p.setPriorityLevel(1);
-        if (p.getIsHighlight() == null) p.setIsHighlight(false);
         if (p.getIsFeatured() == null) p.setIsFeatured(false);
         
         return packagePlanRepository.save(p);
@@ -66,7 +65,6 @@ public class PackagePlanService {
         p.setPushLimit(newData.getPushLimit() != null ? newData.getPushLimit() : 0);
         p.setPushHours(newData.getPushHours() != null ? newData.getPushHours() : 0);
         p.setPriorityLevel(newData.getPriorityLevel() != null ? newData.getPriorityLevel() : 1);
-        p.setIsHighlight(newData.getIsHighlight() != null ? newData.getIsHighlight() : false);
         p.setIsFeatured(newData.getIsFeatured() != null ? newData.getIsFeatured() : false);
 
         return packagePlanRepository.save(p);

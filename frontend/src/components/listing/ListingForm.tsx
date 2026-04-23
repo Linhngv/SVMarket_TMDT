@@ -10,6 +10,7 @@ export type ListingFormValues = {
   conditionLevel: string;
   description: string;
   status: string;
+  postSource: "FREE" | "PACKAGE";
 };
 
 type ListingFormProps = {
@@ -212,6 +213,40 @@ export default function ListingForm({
             rows={4}
             placeholder="Mô tả tình trạng, lý do bán, phụ kiện kèm theo..."
           />
+        </div>
+
+        <div className="field-group full-width">
+          <label>Loại đăng</label>
+
+          <div className="post-source-grid">
+            {/* FREE */}
+            <div
+              className={`post-card ${
+                values.postSource === "FREE" ? "active" : ""
+              }`}
+              onClick={() => onChange({ ...values, postSource: "FREE" })}
+            >
+              <div className="post-radio" />
+              <div>
+                <strong>Đăng miễn phí</strong>
+                <p>Không ưu tiên hiển thị</p>
+              </div>
+            </div>
+
+            {/* PACKAGE */}
+            <div
+              className={`post-card ${
+                values.postSource === "PACKAGE" ? "active" : ""
+              }`}
+              onClick={() => onChange({ ...values, postSource: "PACKAGE" })}
+            >
+              <div className="post-radio" />
+              <div>
+                <strong>Đăng bằng gói</strong>
+                <p>Ưu tiên hiển thị + đẩy tin</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -10,6 +10,7 @@ import {
   toggleFavoriteListing,
 } from "../services/favoriteService";
 import { useAuth } from "../context/AuthContext";
+import type { CardItem } from "../types/CardItem";
 
 type Props = {
   title: string;
@@ -52,14 +53,6 @@ function formatCurrency(value: number) {
   return `${new Intl.NumberFormat("vi-VN").format(value)}đ`;
 }
 
-type CardItem = {
-  key: string | number;
-  id?: number;
-  title: string;
-  price: string;
-  university: string;
-  image: string;
-};
 
 // Nhận props searchKeyword từ Home
 export default function Products({
@@ -69,6 +62,7 @@ export default function Products({
   title: string;
   searchKeyword: string;
 }) {
+
   const [openFilter, setOpenFilter] = useState(false);
   const [selected, setSelected] = useState("Mới nhất");
   const [activeListings, setActiveListings] = useState<ListingSummary[]>([]);
@@ -76,17 +70,15 @@ export default function Products({
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  // Hàm tải danh sách bài đăng, có thể truyền vào từ khóa tìm kiếm
-  const loadActiveListings = async (keyword?: string) => {
-    try {
-      const data = await fetchActiveListings(keyword);
-      setActiveListings(
-        title === "Đề xuất sản phẩm" ? [...data].reverse().slice(0, 4) : data,
-      );
-    } catch (error) {
-      console.error("Khong the tai danh sach bai dang hoat dong", error);
-    }
-  };
+  useEffect(() => {
+    const loadActiveListings = async () => {
+      try {
+        const data = await fetchActiveListings();
+        setActiveListings(data);
+      } catch (error) {
+        console.error("Không thể tải danh sách bài đăng hoạt động", error);
+      }
+    };
 
   // Tải lại khi đổi title hoặc khi searchKeyword thay đổi
   useEffect(() => {
@@ -123,6 +115,8 @@ export default function Products({
         ? listing.thumbnailUrl
         : `http://localhost:8080${listing.thumbnailUrl}`
       : "",
+
+    priorityLevel: listing.priorityLevel,
   }));
 
   const handleFavoriteClick = async (
@@ -152,8 +146,9 @@ export default function Products({
 
   return (
     <div className="product-section mt-4">
-      <div className="product-header d-flex align-items-center justify-content-between flex-wrap gap-2">
-        <h5 className="product-title mb-0">{title}</h5>
+      <div className="product-header">
+        <h5 className="product-title">{title}</h5>
+
         <div
           className="filter-wrapper"
           style={
@@ -199,7 +194,6 @@ export default function Products({
               className="product-card"
               onClick={() => navigate(`/product/${item.id}`)}
             >
-              {/* HEART ICON */}
               <div
                 className="product-heart"
                 onClick={(event) => handleFavoriteClick(event, item)}
@@ -211,8 +205,24 @@ export default function Products({
                 )}
               </div>
 
-              {/* IMAGE */}
               <div className="product-img-wrapper">
+                {/* Hiển thị cho gói VIP */}
+                {item.priorityLevel === 3 && (
+                  <div className="badge hot">
+                    <span className="flame"></span>
+                    TOP
+                  </div>
+                )}
+
+                {/* Hiển thị cho Gói Sinh viên */}
+                {item.priorityLevel === 2 && (
+                  <>
+                    <div className="featured-bottom">
+                      <span>Tin ưu tiên</span>
+                    </div>
+                  </>
+                )}
+
                 {item.image && (
                   <img
                     src={item.image}
@@ -222,7 +232,6 @@ export default function Products({
                   />
                 )}
 
-                {/* PLACEHOLDER */}
                 {!item.image && (
                   <div className="product-img-placeholder">
                     <FaImage size={24} />
@@ -230,14 +239,13 @@ export default function Products({
                   </div>
                 )}
               </div>
-
-              {/* INFO */}
+    
               <div className="product-info">
-                <h6 className="product-item-title">{item.title}</h6>
+                <h6 className="product-item-title" title={item.title}>{item.title}</h6>
 
-                <p className="product-price">{item.price}</p>
+                <p className="product-price" title={item.price}>{item.price}</p>
 
-                <small className="product-meta">{item.university}</small>
+                <small className="product-meta" title={item.university}>{item.university}</small>
 
                 <div className="product-action">
                   <button className="product-status-btn">Đã qua sử dụng</button>
