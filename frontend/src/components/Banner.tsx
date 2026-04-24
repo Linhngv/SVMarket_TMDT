@@ -1,3 +1,9 @@
+import { useEffect, useRef, useState } from "react";
+import {
+  fetchActiveListings,
+  ListingSummary,
+} from "../services/listingService";
+
 // Banner nhận props để cập nhật từ khóa tìm kiếm toàn cục
 export default function Banner({
   searchKeyword,
@@ -6,6 +12,68 @@ export default function Banner({
   searchKeyword: string;
   setSearchKeyword: (v: string) => void;
 }) {
+  // State cho input người dùng đang nhập
+  const [inputValue, setInputValue] = useState("");
+  // Danh sách sản phẩm để gợi ý
+  const [allProducts, setAllProducts] = useState<ListingSummary[]>([]);
+  // Gợi ý từ khóa
+  const [suggestions, setSuggestions] = useState<ListingSummary[]>([]);
+  // Hiển thị khung gợi ý
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Lấy danh sách sản phẩm 1 lần khi mount
+  useEffect(() => {
+    fetchActiveListings().then(setAllProducts);
+  }, []);
+
+  // Khi input thay đổi, cập nhật gợi ý
+  useEffect(() => {
+    if (inputValue.trim() === "") {
+      setSuggestions([]);
+      return;
+    }
+    const lower = inputValue.toLowerCase();
+    setSuggestions(
+      allProducts
+        .filter(
+          (item) =>
+            item.title.toLowerCase().includes(lower) ||
+            (item.sellerName && item.sellerName.toLowerCase().includes(lower)),
+        )
+        .slice(0, 8),
+    );
+  }, [inputValue, allProducts]);
+
+  // Khi searchKeyword thay đổi (bấm tìm kiếm), cập nhật inputValue
+  useEffect(() => {
+    setInputValue(searchKeyword);
+  }, [searchKeyword]);
+
+  // Đóng suggestions khi click ngoài
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (!inputRef.current?.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // Xử lý chọn gợi ý
+  const handleSelectSuggestion = (item: ListingSummary) => {
+    setInputValue(item.title);
+    setShowSuggestions(false);
+    // Không tìm kiếm ngay, chỉ cập nhật input
+  };
+
+  // Xử lý tìm kiếm khi bấm nút hoặc Enter
+  const handleSearch = () => {
+    setShowSuggestions(false);
+    setSearchKeyword(inputValue.trim());
+  };
+
   return (
     <div className="banner">
       <h4>
@@ -17,18 +85,88 @@ export default function Banner({
       </p>
 
       <div className="search-box mt-3">
-        <div className="search-wrapper">
+        <div className="search-wrapper" style={{ position: "relative" }}>
           <input
+            ref={inputRef}
             className="form-control search-input-home"
             placeholder="Tìm giáo trình, đồ KTX, đồng phục..."
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                setSearchKeyword(searchKeyword.trim());
-              }
+            value={inputValue}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              setShowSuggestions(true);
             }}
+            onFocus={() => setShowSuggestions(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearch();
+            }}
+            autoComplete="off"
           />
+
+          {/* Gợi ý từ khóa */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div
+              style={{
+                position: "absolute",
+                top: "calc(100% + 15px)",
+                left: 0,
+                right: 0,
+                background: "#fff",
+                border: "1px solid #eee",
+                zIndex: 10,
+                maxHeight: 320,
+                overflowY: "auto",
+                borderRadius: 8,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              }}
+            >
+              <div
+                style={{
+                  padding: 12,
+                  fontWeight: 600,
+                  color: "#030000",
+                  fontSize: 18,
+                }}
+              >
+                Có phải bạn muốn tìm ?
+              </div>
+              {suggestions.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: 10,
+                    cursor: "pointer",
+                  }}
+                  onMouseDown={() => handleSelectSuggestion(item)}
+                >
+                  {item.thumbnailUrl && (
+                    <img
+                      src={
+                        item.thumbnailUrl.startsWith("http")
+                          ? item.thumbnailUrl
+                          : `http://localhost:8080${item.thumbnailUrl}`
+                      }
+                      alt={item.title}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        objectFit: "cover",
+                        borderRadius: 6,
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
+                  <span
+                    style={{ fontSize: 16, fontWeight: 500, color: "black" }}
+                  >
+                    {item.title}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="select-wrapper">
             {/* ICON LEFT (location-dot) */}
@@ -67,7 +205,7 @@ export default function Banner({
           <button
             className="btn search-btn ms-2"
             type="button"
-            onClick={() => setSearchKeyword(searchKeyword.trim())}
+            onClick={handleSearch}
           >
             Tìm kiếm
           </button>
