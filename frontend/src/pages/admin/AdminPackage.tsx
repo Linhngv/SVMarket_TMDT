@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import AdminTopBar from "../../components/admin/AdminTopBar";
 import { Search, Plus, Upload, Download, Edit, Filter } from "lucide-react";
@@ -18,6 +18,20 @@ interface PackagePlan {
     status: "ACTIVE" | "INACTIVE" | "EXPIRED";
 }
 
+interface PackagePlanFormData {
+    id: number;
+    name: string;
+    price: number | "";
+    postLimit: number | "";
+    pushLimit: number | "";
+    pushHours: number | "";
+    priorityLevel: number | "";
+    isHighlight: boolean;
+    isFeatured: boolean;
+    durationDays: number | "";
+    status: "ACTIVE" | "INACTIVE" | "EXPIRED";
+}
+
 export default function AdminPackage() {
     const [packages, setPackages] = useState<PackagePlan[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -28,19 +42,23 @@ export default function AdminPackage() {
     // popup add/edit
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
-    const [formData, setFormData] = useState<PackagePlan>({
+    const [formData, setFormData] = useState<PackagePlanFormData>({
         id: 0,
         name: "",
-        price: 0,
-        postLimit: 0,
-        pushLimit: 0,
-        pushHours: 0,
+        price: "",
+        postLimit: "",
+        pushLimit: "",
+        pushHours: "",
         priorityLevel: 1,
         isHighlight: false,
         isFeatured: false,
         durationDays: 30,
         status: "ACTIVE"
     });
+    const [originalData, setOriginalData] = useState<PackagePlanFormData | null>(null);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
+    const fileImportRef = useRef<HTMLInputElement>(null);
 
     // phan trang
     const [currentPage, setCurrentPage] = useState(1);
@@ -107,16 +125,18 @@ export default function AdminPackage() {
         setFormData({ 
             id: 0, 
             name: "", 
-            price: 0, 
-            postLimit: 0, 
-            pushLimit: 0, 
-            pushHours: 0, 
+            price: "", 
+            postLimit: "", 
+            pushLimit: "", 
+            pushHours: "", 
             priorityLevel: 1, 
             isHighlight: false, 
             isFeatured: false, 
             durationDays: 30, 
             status: "ACTIVE" 
         });
+        setOriginalData(null);
+        setIsSubmitted(false);
         setShowModal(true);
     };
 
@@ -124,21 +144,49 @@ export default function AdminPackage() {
     const handleOpenEdit = (pkg: PackagePlan) => {
         setEditMode(true);
         setFormData({ ...pkg });
+        setOriginalData({ ...pkg });
+        setIsSubmitted(false);
         setShowModal(true);
     };
 
     // xu ly du lieu tu form va goi API luu
     const handleSave = async () => {
+        setIsSubmitted(true);
+        // Kiểm tra dữ liệu không được để trống
+        if (
+            !formData.name.trim() ||
+            formData.price === "" ||
+            formData.durationDays === "" ||
+            formData.postLimit === "" ||
+            formData.pushLimit === "" ||
+            formData.pushHours === "" ||
+            formData.priorityLevel === ""
+        ) {
+            return;
+        }
+
+        if (editMode && originalData) {
+            const isChanged = Object.keys(originalData).some(key => {
+                const k = key as keyof PackagePlanFormData;
+                return formData[k] !== originalData[k];
+            });
+
+            if (!isChanged) {
+                setShowModal(false);
+                return;
+            }
+        }
+
         const token = localStorage.getItem("token");
         const payload = {
             name: formData.name,
-            price: formData.price,
-            durationDays: formData.durationDays,
+            price: Number(formData.price) || 0,
+            durationDays: Number(formData.durationDays) || 0,
             status: formData.status,
-            postLimit: formData.postLimit,
-            pushLimit: formData.pushLimit,
-            pushHours: formData.pushHours,
-            priorityLevel: formData.priorityLevel,
+            postLimit: Number(formData.postLimit) || 0,
+            pushLimit: Number(formData.pushLimit) || 0,
+            pushHours: Number(formData.pushHours) || 0,
+            priorityLevel: Number(formData.priorityLevel) || 1,
             isHighlight: formData.isHighlight,
             isFeatured: formData.isFeatured
         };
@@ -171,6 +219,59 @@ export default function AdminPackage() {
         }
     };
 
+    const handleExport = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await fetch("http://localhost:8080/api/package-plans/admin/packages/export", {
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "packages.xlsx";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } else {
+                alert("Lỗi khi xuất file");
+            }
+        } catch (error) {
+            console.error("Lỗi xuất file", error);
+        }
+    };
+
+    const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("file", file);
+        const token = localStorage.getItem("token");
+
+        try {
+            const res = await fetch("http://localhost:8080/api/package-plans/admin/packages/import", {
+                method: "POST",
+                headers: token ? { "Authorization": `Bearer ${token}` } : {},
+                body: formData
+            });
+            if (res.ok) {
+                alert("Nhập dữ liệu thành công!");
+                fetchPackages();
+            } else {
+                const err = await res.text();
+                alert("Lỗi nhập dữ liệu: " + err);
+            }
+        } catch (error) {
+            console.error("Lỗi nhập file:", error);
+            alert("Lỗi kết nối máy chủ khi nhập file");
+        } finally {
+            if (fileImportRef.current) fileImportRef.current.value = "";
+        }
+    };
+
     return (
         <div className="admin-container d-flex">
             {/* SIDEBAR */}
@@ -189,11 +290,18 @@ export default function AdminPackage() {
                             <h3 className="page-title m-0">Danh sách gói tin</h3>
                             
                             <div className="d-flex gap-2">
-                                <button className="btn btn-outline-secondary d-flex align-items-center gap-2">
+                                <input 
+                                    type="file" 
+                                    accept=".xlsx, .xls" 
+                                    className="d-none" 
+                                    ref={fileImportRef} 
+                                    onChange={handleImport} 
+                                />
+                                <button className="btn btn-outline-secondary d-flex align-items-center gap-2" onClick={() => fileImportRef.current?.click()}>
                                     <Upload size={18} />
                                     Import
                                 </button>
-                                <button className="btn btn-outline-secondary d-flex align-items-center gap-2">
+                                <button className="btn btn-outline-secondary d-flex align-items-center gap-2" onClick={handleExport}>
                                     <Download size={18} />
                                     Export
                                 </button>
@@ -290,33 +398,26 @@ export default function AdminPackage() {
 
                         {/* PAGINATION */}
                         {totalPages > 1 && (
-                            <div className="d-flex justify-content-between align-items-center mt-3">
-                                <span className="text-muted small">
-                                    Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, totalElements)} trong tổng số {totalElements} gói tin
-                                </span>
-                                <nav>
-                                    <ul className="pagination mb-0">
-                                        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => paginate(currentPage - 1)}>
-                                                Trước
-                                            </button>
-                                        </li>
-                                        
-                                        {[...Array(totalPages)].map((_, i) => (
-                                            <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
-                                                <button className="page-link" onClick={() => paginate(i + 1)}>
-                                                    {i + 1}
-                                                </button>
-                                            </li>
-                                        ))}
-
-                                        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                                            <button className="page-link" onClick={() => paginate(currentPage + 1)}>
-                                                Sau
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </nav>
+                            <div className="d-flex justify-content-center align-items-center mt-4 flex-wrap gap-3">
+                                <div className="d-flex align-items-center gap-3">
+                                    <button 
+                                        className="btn btn-pagination-prev" 
+                                        onClick={() => paginate(Math.max(1, currentPage - 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        Trước
+                                    </button>
+                                    <span className="fw-medium pagination-text">
+                                        Trang {currentPage}/{totalPages}
+                                    </span>
+                                    <button 
+                                        className="btn btn-pagination-next" 
+                                        onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        Kế tiếp
+                                    </button>
+                                </div>
                             </div>
                         )}
 
@@ -334,60 +435,57 @@ export default function AdminPackage() {
                                 </div>
                                 <div className="modal-body">
                                     <div className="mb-3">
-                                        <label className="form-label fw-medium">Tên gói tin</label>
+                                        <label className="form-label fw-medium">Tên gói tin <span className="text-danger">*</span></label>
                                         <input type="text" className="form-control" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="Nhập tên gói..." />
+                                        {isSubmitted && formData.name.trim() === "" && <div className="text-danger small mt-1">Vui lòng nhập tên gói tin</div>}
                                     </div>
                                     <div className="row mb-3">
                                         <div className="col-md-6">
-                                            <label className="form-label fw-medium">Giá (VND)</label>
-                                            <input type="number" className="form-control" value={formData.price} onChange={(e) => setFormData({...formData, price: parseInt(e.target.value) || 0})} placeholder="VD: 50000" />
+                                            <label className="form-label fw-medium">Giá (VND) <span className="text-danger">*</span></label>
+                                            <input type="number" className="form-control" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value === "" ? "" : Number(e.target.value)})} placeholder="VD: 50000" />
+                                            {isSubmitted && formData.price === "" && <div className="text-danger small mt-1">Vui lòng nhập giá</div>}
                                         </div>
                                         <div className="col-md-6">
-                                            <label className="form-label fw-medium">Thời hạn (Ngày)</label>
-                                            <input type="number" className="form-control" value={formData.durationDays} onChange={(e) => setFormData({...formData, durationDays: parseInt(e.target.value) || 0})} placeholder="VD: 30" />
+                                            <label className="form-label fw-medium">Thời hạn (Ngày) <span className="text-danger">*</span></label>
+                                            <input type="number" className="form-control" value={formData.durationDays} onChange={(e) => setFormData({...formData, durationDays: e.target.value === "" ? "" : Number(e.target.value)})} placeholder="VD: 30" />
+                                            {isSubmitted && formData.durationDays === "" && <div className="text-danger small mt-1">Vui lòng nhập thời hạn</div>}
                                         </div>
                                     </div>
 
-                                    {!editMode && (
-                                        <>
-                                            <div className="row mb-3">
-                                                <div className="col-md-6">
-                                                    <label className="form-label fw-medium">Số bài đăng tối đa</label>
-                                                    <input type="number" className="form-control" value={formData.postLimit} onChange={(e) => setFormData({...formData, postLimit: parseInt(e.target.value) || 0})} placeholder="VD: 10" />
-                                                </div>
-                                                <div className="col-md-6">
-                                                    <label className="form-label fw-medium">Số lượt đẩy tin</label>
-                                                    <input type="number" className="form-control" value={formData.pushLimit} onChange={(e) => setFormData({...formData, pushLimit: parseInt(e.target.value) || 0})} placeholder="VD: 5" />
-                                                </div>
-                                            </div>
-                                            <div className="row mb-3">
-                                                <div className="col-md-6">
-                                                    <label className="form-label fw-medium">Hiệu lực đẩy tin (Giờ)</label>
-                                                    <input type="number" className="form-control" value={formData.pushHours} onChange={(e) => setFormData({...formData, pushHours: parseInt(e.target.value) || 0})} placeholder="VD: 24" />
-                                                </div>
-                                                <div className="col-md-6">
-                                                    <label className="form-label fw-medium">Mức độ ưu tiên (1-3)</label>
-                                                    <input type="number" className="form-control" value={formData.priorityLevel} min={1} max={3} onChange={(e) => setFormData({...formData, priorityLevel: parseInt(e.target.value) || 1})} />
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
+                                    <div className="row mb-3">
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-medium">Số bài đăng tối đa <span className="text-danger">*</span></label>
+                                            <input type="number" className="form-control" value={formData.postLimit} onChange={(e) => setFormData({...formData, postLimit: e.target.value === "" ? "" : Number(e.target.value)})} placeholder="VD: 10" />
+                                            {isSubmitted && formData.postLimit === "" && <div className="text-danger small mt-1">Vui lòng nhập số bài đăng</div>}
+                                        </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-medium">Số lượt đẩy tin <span className="text-danger">*</span></label>
+                                            <input type="number" className="form-control" value={formData.pushLimit} onChange={(e) => setFormData({...formData, pushLimit: e.target.value === "" ? "" : Number(e.target.value)})} placeholder="VD: 5" />
+                                            {isSubmitted && formData.pushLimit === "" && <div className="text-danger small mt-1">Vui lòng nhập số lượt đẩy</div>}
+                                        </div>
+                                    </div>
+                                    <div className="row mb-3">
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-medium">Hiệu lực đẩy tin (Giờ) <span className="text-danger">*</span></label>
+                                            <input type="number" className="form-control" value={formData.pushHours} onChange={(e) => setFormData({...formData, pushHours: e.target.value === "" ? "" : Number(e.target.value)})} placeholder="VD: 24" />
+                                            {isSubmitted && formData.pushHours === "" && <div className="text-danger small mt-1">Vui lòng nhập hiệu lực đẩy</div>}
+                                        </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-medium">Mức độ ưu tiên (1-3) <span className="text-danger">*</span></label>
+                                            <input type="number" className="form-control" value={formData.priorityLevel} min={1} max={3} onChange={(e) => setFormData({...formData, priorityLevel: e.target.value === "" ? "" : Number(e.target.value)})} />
+                                            {isSubmitted && formData.priorityLevel === "" && <div className="text-danger small mt-1">Vui lòng nhập mức độ ưu tiên</div>}
+                                        </div>
+                                    </div>
 
                                     <div className="row mb-3">
-                                        {!editMode && (
-                                            <div className="col-md-6">
-                                                <label className="form-label fw-medium d-block">Tùy chọn hiển thị</label>
-                                                <div className="form-check form-check-inline mt-2">
-                                                    <input className="form-check-input" type="checkbox" checked={formData.isHighlight} onChange={(e) => setFormData({...formData, isHighlight: e.target.checked})} id="isHighlight" />
-                                                    <label className="form-check-label" htmlFor="isHighlight">Nổi bật</label>
-                                                </div>
-                                                <div className="form-check form-check-inline mt-2">
-                                                    <input className="form-check-input" type="checkbox" checked={formData.isFeatured} onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})} id="isFeatured" />
-                                                    <label className="form-check-label" htmlFor="isFeatured">Đề xuất</label>
-                                                </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label fw-medium d-block">Tùy chọn hiển thị</label>
+                                            <div className="form-check form-check-inline mt-2">
+                                                <input className="form-check-input" type="checkbox" checked={formData.isFeatured} onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})} id="isFeatured" />
+                                                <label className="form-check-label" htmlFor="isFeatured">Đề xuất</label>
                                             </div>
-                                        )}
-                                        <div className={!editMode ? "col-md-6" : "col-12"}>
+                                        </div>
+                                        <div className="col-md-6">
                                             <label className="form-label fw-medium">Trạng thái</label>
                                             <select className="form-select" value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value as "ACTIVE" | "INACTIVE" | "EXPIRED"})}>
                                                 <option value="ACTIVE">Đang hoạt động</option>

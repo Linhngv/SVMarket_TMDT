@@ -99,15 +99,14 @@ public class ListingService {
                 "freeRemaining", freeRemaining,
                 "packageRemaining", packageRemaining,
                 "remaining", remaining,
-                "message", message
-        );
+                "message", message);
     }
 
     // Tao bai dang moi cua user dang dang nhap.
     @Transactional
     public ListingDetailResponse createMyListing(String email,
-                                                 ListingUpsertRequest request,
-                                                 List<MultipartFile> images) {
+            ListingUpsertRequest request,
+            List<MultipartFile> images) {
 
         User seller = getUserByEmail(email);
 
@@ -136,7 +135,6 @@ public class ListingService {
                 .stream()
                 .findFirst()
                 .orElse(null);
-
 
         // Free
         if (postSource == PostSource.FREE) {
@@ -178,10 +176,8 @@ public class ListingService {
             sellerPackageRepository.save(pkg);
         }
 
-
         Listing savedListing = listingRepository.save(listing);
         List<String> imageUrls = saveImages(savedListing, images);
-
 
         List<User> admins = userRepository.findByRole(Role.ADMIN);
         for (User admin : admins) {
@@ -211,7 +207,6 @@ public class ListingService {
                 .map(this::toSummaryResponse)
                 .toList();
     }
-
 
     // Reset lượt đăng free mỗi tháng
     public void resetFree(User user) {
@@ -256,7 +251,6 @@ public class ListingService {
                         return Integer.compare(priorityB, priorityA);
                     }
 
-
                     boolean pushA = isPushActive(a);
                     boolean pushB = isPushActive(b);
 
@@ -274,7 +268,6 @@ public class ListingService {
                 .toList();
     }
 
-
     // Lấy mức độ ưu tiên theo gói đã đăng ký
     public int getPriority(Listing listing) {
 
@@ -288,21 +281,24 @@ public class ListingService {
                 .stream().findFirst()
                 .orElse(null);
 
-        if (pkg == null) return 0;
+        if (pkg == null)
+            return 0;
 
         return pkg.getPackagePlan().getPriorityLevel();
     }
 
     // Kiểm tra xem còn trong thời gian được đẩy hay không?
     private boolean isPushActive(Listing listing) {
-        if (listing.getLastPushAt() == null) return false;
+        if (listing.getLastPushAt() == null)
+            return false;
 
         SellerPackage pkg = sellerPackageRepository
                 .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
                 .stream().findFirst()
                 .orElse(null);
 
-        if (pkg == null) return false;
+        if (pkg == null)
+            return false;
 
         int hours = pkg.getPackagePlan().getPushHours();
 
@@ -311,20 +307,50 @@ public class ListingService {
                 .isAfter(LocalDateTime.now());
     }
 
-    /**
-     * Tìm kiếm bài đăng đang hoạt động theo từ khóa (title hoặc description)
-     * @param keyword từ khóa tìm kiếm
-     * @return danh sách bài đăng phù hợp
-     */
-    public List<ListingSummaryResponse> searchActiveListings(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
+    // Lọc tổng hợp kết hợp từ khóa, trường đại học, danh mục và sắp xếp
+    public List<ListingSummaryResponse> filterListingsCustom(String keyword, String university, Integer categoryId, String sortBy) {
+        String kw = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+        String uni = (university == null || university.isBlank()) ? null : university.trim();
+        String sort = (sortBy == null || sortBy.isBlank()) ? "newest" : sortBy.trim();
+
+        return listingRepository.filterListingsCustom(kw, uni, categoryId, sort)
+                .stream()
+                .map(this::toSummaryResponse)
+                .toList();
+    }
+
+    // Lọc bài đăng theo trường đại học và sắp xếp theo độ ưu tiên gói tin
+    public List<ListingSummaryResponse> filterByUniversity(String university) {
+        if (university == null || university.isBlank()) {
             return getActiveListings();
         }
-        // Tìm kiếm theo title hoặc description chứa keyword (không phân biệt hoa thường)
-        List<Listing> listings = listingRepository
-                .findByStatusAndTitleContainingIgnoreCaseOrStatusAndDescriptionContainingIgnoreCase(
-                        ListingStatus.ACTIVE, keyword, ListingStatus.ACTIVE, keyword);
-        return listings.stream().map(this::toSummaryResponse).toList();
+
+        List<Listing> listings = listingRepository.findByUniversityCustom(ListingStatus.ACTIVE, university.trim());
+
+        return listings.stream()
+                .sorted((a, b) -> {
+                    int priorityA = getPriority(a);
+                    int priorityB = getPriority(b);
+
+                    // Ưu tiên gói (Cơ bản, sinh viên, vip)
+                    if (priorityA != priorityB) {
+                        return Integer.compare(priorityB, priorityA);
+                    }
+
+                    boolean pushA = isPushActive(a);
+                    boolean pushB = isPushActive(b);
+
+                    if (pushA != pushB) {
+                        return pushB ? 1 : -1;
+                    }
+
+                    if (a.getLastPushAt() != null && b.getLastPushAt() != null) {
+                        return b.getLastPushAt().compareTo(a.getLastPushAt());
+                    }
+
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                })
+                .map(this::toSummaryResponse).toList();
     }
 
     // Them/bo luu bai dang theo user dang nhap.
@@ -401,9 +427,9 @@ public class ListingService {
     // Cap nhat bai dang cua user hien tai, co the thay anh moi.
     @Transactional
     public ListingDetailResponse updateMyListing(String email,
-                                                 Integer listingId,
-                                                 ListingUpsertRequest request,
-                                                 List<MultipartFile> images) {
+            Integer listingId,
+            ListingUpsertRequest request,
+            List<MultipartFile> images) {
         User seller = getUserByEmail(email);
         Listing listing = getMyListingByIdAndSellerId(listingId, seller.getId());
 
@@ -581,6 +607,19 @@ public class ListingService {
         return imageUrls;
     }
 
+    // loc bai bai dang theo truong
+    public List<ListingSummaryResponse> getListingsByUniversity(String university) {
+        return listingRepository.findByUniversity(university)
+                .stream()
+                .map(this::toSummaryResponse)
+                .toList();
+    }
 
-
+    // loc bai dang theo danh muc
+    public List<ListingSummaryResponse> getListingsByCategory(Integer categoryId) {
+        return listingRepository.findByCategoryId(categoryId)
+                .stream()
+                .map(this::toSummaryResponse)
+                .toList();
+    }
 }

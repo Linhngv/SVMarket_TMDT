@@ -99,13 +99,15 @@ export async function fetchMyListings() {
   return response.data;
 }
 
-// Lấy danh sách bài đăng đang hoạt động cho trang chủ hoặc tìm kiếm theo từ khóa.
-// Nếu keyword truyền vào là rỗng hoặc không có thì trả về tất cả bài đăng active.
-export async function fetchActiveListings(keyword?: string) {
-  const url =
-    keyword && keyword.trim() !== ""
-      ? `${API_BASE_URL}?keyword=${encodeURIComponent(keyword)}`
-      : API_BASE_URL;
+// Lấy danh sách bài đăng có hỗ trợ lọc và sắp xếp tổng hợp
+export async function fetchActiveListings(keyword?: string, university?: string, categoryId?: number, sortBy?: string) {
+  const params = new URLSearchParams();
+  if (keyword && keyword.trim() !== "") params.append("keyword", keyword.trim());
+  if (university && university.trim() !== "") params.append("university", university.trim());
+  if (categoryId) params.append("categoryId", String(categoryId));
+  if (sortBy) params.append("sortBy", sortBy);
+
+  const url = params.toString() ? `${API_BASE_URL}?${params.toString()}` : API_BASE_URL;
   const response = await axios.get<ListingSummary[]>(url);
   return response.data;
 }
@@ -174,4 +176,33 @@ export async function deleteListing(id: number) {
   await axios.delete(`${API_BASE_URL}/my/${id}`, {
     headers: getAuthHeader(),
   });
+}
+
+//loc bai dang theo truong
+export async function fetchListingsByUniversity(university: string) {
+  if (!university || university.trim() === "") {
+    return fetchActiveListings(); // fallback
+  }
+
+  const response = await axios.get<ListingSummary[]>(
+    `${API_BASE_URL}/by-university?university=${encodeURIComponent(university)}`
+  );
+
+  return response.data;
+}
+
+// loc bai dang theo danh muc su dung Fetch API
+export async function fetchListingsByCategory(categoryId: number): Promise<ListingSummary[]> {
+  if (!categoryId) {
+    return fetchActiveListings(); // fallback
+  }
+
+  const response = await fetch(`${API_BASE_URL}/by-category?categoryId=${categoryId}`);
+  
+  if (!response.ok) {
+    throw new Error(`Lỗi tải danh mục: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data as ListingSummary[];
 }

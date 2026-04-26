@@ -11,6 +11,7 @@ import java.util.List;
 
 @Service
 public class UniversityService {
+
     private List<UniversityJson> universities;
 
     @PostConstruct
@@ -27,15 +28,15 @@ public class UniversityService {
 
     public String findUniversityByEmail(String email) {
 
-        String domain =
-                email.substring(email.indexOf("@") + 1)
+        String domain
+                = email.substring(email.indexOf("@") + 1)
                         .toLowerCase();
 
         return universities.stream()
                 .filter(x -> x.getAbbr() != null)
                 .filter(x -> {
-                    String abbr =
-                            x.getAbbr()
+                    String abbr
+                            = x.getAbbr()
                                     .split("/")[0]
                                     .trim()
                                     .toLowerCase();
@@ -45,5 +46,10 @@ public class UniversityService {
                 .map(UniversityJson::getName)
                 .findFirst()
                 .orElse(null);
+    }
+
+    //danh sach tat ca truong
+    public List<UniversityJson> getAllUniversities() {
+        return universities;
     }
 }

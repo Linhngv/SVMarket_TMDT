@@ -24,6 +24,7 @@ import AdminCategory from "./pages/admin/CategoryManagement/AdminCategoryList";
 import AdminUserList from "./pages/admin/UserManagement/AdminUserList";
 import AdminUserStatus from "./pages/admin/UserManagement/AdminUserStatus";
 import ChangePassword from "./pages/ChangePassword";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 import SavedListings from "./pages/listing/SavedListings";
 
@@ -65,6 +66,7 @@ function App() {
       <Route path="/admin/categories" element={<AdminCategory />} />
       <Route path="/admin/users" element={<AdminUserList />} />
       <Route path="/admin/status/:id" element={<AdminUserStatus />} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
       <Route path="*" element={<div>Trang đang được phát triển.</div>} />
     </Routes>

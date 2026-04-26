@@ -7,7 +7,12 @@ type Category = {
     image?: string;
 };
 
-export default function Categories() {
+type CategoriesProps = {
+    selectedCategoryId?: number;
+    onSelectCategory?: (id: number) => void;
+};
+
+export default function Categories({ selectedCategoryId, onSelectCategory }: CategoriesProps) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -38,15 +43,23 @@ export default function Categories() {
                     <p>Đang tải danh mục...</p>
                 ) : (
                     categories.map((item) => (
-                        <div key={item.id} className="category-item">
+                        <div 
+                            key={item.id} 
+                            className="category-item"
+                            onClick={() => onSelectCategory && onSelectCategory(item.id)}
+                            style={{ cursor: "pointer", transition: "all 0.2s" }}
+                        >
                             {item.image ? (
                                 <img 
                                     src={item.image.startsWith("http") ? item.image : `http://localhost:8080${item.image}`} 
                                     alt={item.name} 
-                                    style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }}
+                                    style={{ 
+                                        width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px",
+                                        border: selectedCategoryId === item.id ? "3px solid #1B7A4A" : "2px solid transparent"
+                                    }}
                                 />
                             ) : (
-                                <div className="category-img-placeholder">
+                                <div className="category-img-placeholder" style={{ border: selectedCategoryId === item.id ? "3px solid #1B7A4A" : "2px solid transparent", borderRadius: "8px" }}>
                                     <FaImage size={24} />
                                     <span>Ảnh sản phẩm</span>
                                 </div>
