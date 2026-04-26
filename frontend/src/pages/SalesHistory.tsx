@@ -175,7 +175,15 @@ export default function SalesHistory() {
                 <td data-label="Sản phẩm">{row.product}</td>
                 <td data-label="Trạng thái">
                   <span
-                    className={`status-pill ${row.status === "Hoàn thành" ? "done" : row.status === "Chờ xác nhận" ? "pending" : "shipping"}`}
+                    className={`status-pill ${
+                      row.status === "Hoàn thành"
+                        ? "done"
+                        : row.status === "Chờ xác nhận"
+                          ? "pending"
+                          : row.status === "Đã thanh toán"
+                            ? "paid"
+                            : "shipping"
+                    }`}
                   >
                     {row.status}
                   </span>

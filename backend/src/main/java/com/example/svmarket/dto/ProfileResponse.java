@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProfileResponse {
+    private Integer id;
+    private String email;
     private String fullName;
     private String avatar;
     private String university;

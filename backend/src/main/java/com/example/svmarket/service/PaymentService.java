@@ -27,6 +27,7 @@ public class PaymentService {
     @Autowired private JwtUtil jwtUtil;
     @Autowired private OrderRepository orderRepository;
     @Autowired private PaymentRepository paymentRepository;
+    @Autowired private ListingRepository listingRepository;
 
     public String createVnpayUrl(String orderInfo, long amount) throws Exception {
         String vnp_TxnRef = String.valueOf(System.currentTimeMillis());
@@ -142,6 +143,15 @@ public class PaymentService {
             throw new RuntimeException("Số tiền đơn hàng không hợp lệ");
         }
 
+        // Khởi tạo bản ghi Payment ở trạng thái PENDING trước khi sang VNPay
+        Payment pendingPayment = Payment.builder()
+                .order(order)
+                .amount(order.getTotalAmount())
+                .status(PaymentStatus.PENDING)
+                .paymentMethod("VNPay")
+                .build();
+        paymentRepository.save(pendingPayment);
+
         String encodedReturnUrl = Base64.getEncoder().encodeToString(returnUrl.getBytes());
         String orderInfo = "type-order-orderId-" + orderId +
                 "-userId-" + user.getId() +
@@ -186,6 +196,15 @@ public class PaymentService {
 
         order.setStatus(OrderStatus.PAID);
         orderRepository.save(order);
+
+        // Cập nhật trạng thái bài đăng thành SOLD (Đã bán)
+        if (order.getOrderDetails() != null && !order.getOrderDetails().isEmpty()) {
+            Listing listing = order.getOrderDetails().get(0).getListing();
+            if (listing != null) {
+                listing.setStatus(ListingStatus.SOLD);
+                listingRepository.save(listing);
+            }
+        }
     }
 
     public static Map<String, String> buildQueryAndHash(Map<String, String> params) throws Exception {

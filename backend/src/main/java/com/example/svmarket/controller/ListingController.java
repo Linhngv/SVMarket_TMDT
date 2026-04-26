@@ -25,12 +25,12 @@ import com.example.svmarket.dto.FavoriteToggleResponse;
 import com.example.svmarket.dto.ListingDetailResponse;
 import com.example.svmarket.dto.ListingSummaryResponse;
 import com.example.svmarket.dto.ListingUpsertRequest;
-import com.example.svmarket.dto.UniversityJson;
+// import com.example.svmarket.dto.UniversityJson;
 import com.example.svmarket.repository.ListingRepository;
-import com.example.svmarket.repository.SellerPackageRepository;
-import com.example.svmarket.repository.UserRepository;
+// import com.example.svmarket.repository.SellerPackageRepository;
+// import com.example.svmarket.repository.UserRepository;
 import com.example.svmarket.service.ListingService;
-import com.example.svmarket.service.UniversityService;
+// import com.example.svmarket.service.UniversityService;
 import com.example.svmarket.util.JwtUtil;
 
 import jakarta.validation.Valid;
@@ -46,11 +46,11 @@ public class ListingController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
-    private UserRepository userRepository;
+    // @Autowired
+    // private UserRepository userRepository;
 
-    @Autowired
-    private SellerPackageRepository sellerPackageRepository;
+    // @Autowired
+    // private SellerPackageRepository sellerPackageRepository;
 
     @Autowired
     ListingRepository listingRepository;

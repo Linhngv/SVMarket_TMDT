@@ -36,6 +36,7 @@ export default function PurchaseHistory() {
       fetchPurchases();
     } else if (status === "failed") {
       alert("Thanh toán thất bại!");
+      window.history.replaceState({}, "", "/purchase-history");
     }
   }, []);
 
@@ -190,7 +191,15 @@ export default function PurchaseHistory() {
                 <td data-label="Ngày">{row.date}</td>
                 <td data-label="Trạng thái">
                   <span
-                    className={`status-pill ${row.status === "Hoàn thành" ? "done" : row.status === "Chờ xác nhận" ? "pending" : "shipping"}`}
+                    className={`status-pill ${
+                      row.status === "Hoàn thành"
+                        ? "done"
+                        : row.status === "Chờ xác nhận"
+                          ? "pending"
+                          : row.status === "Đã thanh toán"
+                            ? "paid"
+                            : "shipping"
+                    }`}
                   >
                     {row.status}
                   </span>
@@ -279,7 +288,7 @@ export default function PurchaseHistory() {
                         <div className="order-item-title">
                           {item.listingTitle}
                         </div>
-                        <div className="order-item-meta">
+                        <div className="order-item-meta d-flex justify-content-between">
                           <span>SL: {item.quantity}</span>
                           <span className="order-item-price">
                             {new Intl.NumberFormat("vi-VN").format(item.price)}đ

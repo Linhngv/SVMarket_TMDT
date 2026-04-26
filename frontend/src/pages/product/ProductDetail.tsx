@@ -107,6 +107,8 @@ export default function ProductDetail() {
   const description = product?.description || "Chưa có mô tả cho bài đăng này.";
   const condition = product?.conditionLevel || "Chưa cập nhật";
   const location = product?.deliveryAddress || "Chưa cập nhật địa điểm";
+  const sellerId = (product as any)?.sellerId;
+  const sellerAvatar = (product as any)?.sellerAvatar;
 
   const galleryImages =
     product?.imageUrls && product.imageUrls.length > 0
@@ -179,7 +181,7 @@ export default function ProductDetail() {
                       src={imageSrc}
                       className="gallery-img"
                       alt={title}
-                    style={{ objectFit: "contain" }}
+                      style={{ objectFit: "contain" }}
                       onError={(event) => {
                         event.currentTarget.src = "/images/detail.png";
                       }}
@@ -212,7 +214,16 @@ export default function ProductDetail() {
 
                   <div className="seller-row">
                     <div className="seller-avatar">
-                      {sellerName.slice(0, 2).toUpperCase()}
+                      {sellerAvatar ? (
+                        <img
+                          src={sellerAvatar.startsWith("http") || sellerAvatar.startsWith("/images/") ? sellerAvatar : `http://localhost:8080${sellerAvatar}`}
+                          alt={sellerName}
+                          style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = "/images/avatar_default.jpg"; }}
+                        />
+                      ) : (
+                        sellerName.slice(0, 2).toUpperCase()
+                      )}
                     </div>
 
                     <div className="seller-meta">
@@ -234,7 +245,9 @@ export default function ProductDetail() {
                       <p className="seller-school">{sellerUniversity}</p>
                     </div>
 
-                    <button className="seller-page-btn">Xem trang</button>
+                    <button className="seller-page-btn" onClick={() => { if (sellerId) navigate(`/seller-profile/${sellerId}`); }}>
+                      Xem trang
+                    </button>
                   </div>
 
                   <div className="detail-action-row">

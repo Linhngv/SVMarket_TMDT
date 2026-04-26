@@ -5,5 +5,6 @@ public enum NotificationType {
     MESSAGE,
     PAYMENT,
     REVIEW,
+    REVIEW_REPLY,
     SYSTEM
 }

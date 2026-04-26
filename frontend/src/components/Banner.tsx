@@ -37,17 +37,14 @@ export default function Banner({
   useEffect(() => {
     fetchActiveListings().then(setAllProducts);
 
-    console.log("--- Bắt đầu gọi API lấy danh sách trường đại học ---");
     fetch("http://localhost:8080/api/universities")
       .then((res) => {
-        console.log("Trạng thái HTTP API universities trả về:", res.status);
         if (!res.ok) {
           throw new Error(`Lỗi HTTP: ${res.status} - Không load được danh sách trường đại học từ API`);
         }
         return res.json();
       })
       .then((data) => {
-        console.log("Dữ liệu Universities nhận được:", data);
         // Kiểm tra nếu data bị null thì gán mảng rỗng để không bị sập web
         setUniversities(Array.isArray(data) ? data : []);
       })

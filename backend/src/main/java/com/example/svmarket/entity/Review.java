@@ -5,9 +5,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Max;
-
 @Entity
 @Table(name = "reviews")
 @Getter
@@ -16,7 +13,6 @@ import jakarta.validation.constraints.Max;
 @AllArgsConstructor
 @Builder
 public class Review {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -29,22 +25,23 @@ public class Review {
     @JoinColumn(name = "listing_id")
     private Listing listing;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reviewer_id")
     private User reviewer;
 
-    @Min(1)
-    @Max(5)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reviewee_id")
+    private User reviewee;
+
     private Integer rating;
 
     @Column(columnDefinition = "TEXT")
     private String comment;
 
-    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
-
 }

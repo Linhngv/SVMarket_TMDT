@@ -41,8 +41,8 @@ const menuGroups: SidebarGroup[] = [
   {
     label: "Quản lý đánh giá",
     items: [
-      { id: "nguoi-ban", label: "Người bán", path: "/reviews/seller" },
-      { id: "nguoi-mua", label: "Người mua", path: "/reviews/buyer" },
+      { id: "seller-reviews", label: "Người bán", path: "/reviews/seller" },
+      { id: "buyer-reviews", label: "Người mua", path: "/reviews/buyer" },
     ],
   },
   {
