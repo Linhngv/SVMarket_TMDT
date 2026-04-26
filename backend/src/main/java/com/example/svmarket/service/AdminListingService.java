@@ -84,6 +84,8 @@ public class AdminListingService {
                 .thumbnailUrl(!imageUrls.isEmpty() ? imageUrls.get(0) : null)
                 .createdAt(listing.getCreatedAt())
                 .rejectReason(listing.getRejectReason())
+                .sellerId(listing.getSeller() != null ? listing.getSeller().getId() : null)
+                .sellerAvatar(listing.getSeller() != null ? listing.getSeller().getAvatar() : null)
                 .build();
     }
 

@@ -1,14 +1,14 @@
 package com.example.svmarket.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
+// import java.util.stream.Collectors;
 
-import com.example.svmarket.dto.OrderDetailResponse;
-import com.example.svmarket.dto.OrderItemResponse;
-import com.example.svmarket.entity.Order;
-import com.example.svmarket.entity.Payment;
-import com.example.svmarket.entity.User;
-import com.example.svmarket.repository.OrderRepository;
+// import com.example.svmarket.dto.OrderDetailResponse;
+// import com.example.svmarket.dto.OrderItemResponse;
+// import com.example.svmarket.entity.Order;
+// import com.example.svmarket.entity.Payment;
+// import com.example.svmarket.entity.User;
+// import com.example.svmarket.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -34,8 +34,8 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    @Autowired
-    private OrderRepository orderRepository;
+    // @Autowired
+    // private OrderRepository orderRepository;
 
     @Autowired
     private JwtUtil jwtUtil;

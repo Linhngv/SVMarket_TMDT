@@ -25,8 +25,11 @@ import AdminUserList from "./pages/admin/UserManagement/AdminUserList";
 import AdminUserStatus from "./pages/admin/UserManagement/AdminUserStatus";
 import ChangePassword from "./pages/ChangePassword";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
+import SellerProfile from "./pages/SellerProfile";
 import SavedListings from "./pages/listing/SavedListings";
+import SellerReviews from "./pages/SellerReviews";
+import BuyerReviews from "./pages/BuyerReviews";
+import MyReview from "./pages/MyReview";
 
 
 function App() {
@@ -41,8 +44,9 @@ function App() {
       <Route path="/faq" element={<FAQ />} />
       <Route path="/about" element={<About />} />
       <Route path="/profile" element={<Profile />} />
-
+      <Route path="/seller-profile/:id" element={<SellerProfile />} />
       <Route path="/product/:id" element={<ProductDetail />} />
+      <Route path="/my-review" element={<MyReview />} />
 
       <Route path="/saved-listings" element={<SavedListings />} />
 
@@ -52,6 +56,8 @@ function App() {
         <Route path="/my-listings/:id/edit" element={<EditListing />} />
         <Route path="/purchase-history" element={<PurchaseHistory />} />
         <Route path="/sales-history" element={<SalesHistory />} />
+        <Route path="/reviews/seller" element={<SellerReviews />} />
+        <Route path="/reviews/buyer" element={<BuyerReviews />} />
         <Route path="/my-packages" element={<MyPackages />} />
         <Route path="/change-password" element={<ChangePassword />} />
       </Route>
@@ -62,7 +68,7 @@ function App() {
       <Route path="/admin/duyet-bai" element={<AdminPostApproval />} />
       <Route path="/admin/vi-pham" element={<AdminViolationList />} />
 
-      <Route path="/admin/packages" element={<AdminPackage/>}/>
+      <Route path="/admin/packages" element={<AdminPackage />} />
       <Route path="/admin/categories" element={<AdminCategory />} />
       <Route path="/admin/users" element={<AdminUserList />} />
       <Route path="/admin/status/:id" element={<AdminUserStatus />} />

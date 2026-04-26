@@ -219,12 +219,17 @@
 }
 
 .detail-action-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(14px, 2vw, 34px);
   margin-top: clamp(24px, 3vw, 38px);
   width: 100%;
   max-width: 640px;
+  display: flex;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.detail-action-row button {
+  flex: 1;
+  white-space: nowrap;
 }
 
 .buy-btn,
@@ -611,4 +616,8 @@
     flex-direction: column;
     gap: 10px;
   }
+}
+
+.seller-page-btn {
+  margin-right: 25px;
 }

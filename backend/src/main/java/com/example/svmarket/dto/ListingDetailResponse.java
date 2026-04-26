@@ -27,4 +27,6 @@ public class ListingDetailResponse {
     private String thumbnailUrl;
     private LocalDateTime createdAt;
     private String rejectReason;
+    private Integer sellerId;
+    private String sellerAvatar;
 }

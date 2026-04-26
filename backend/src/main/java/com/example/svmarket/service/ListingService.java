@@ -510,6 +510,8 @@ public class ListingService {
                 .description(listing.getDescription())
                 .status(listing.getStatus() != null ? listing.getStatus().name() : ListingStatus.ACTIVE.name())
                 .imageUrls(imageUrls)
+                .sellerId(listing.getSeller() != null ? listing.getSeller().getId() : null)
+                .sellerAvatar(listing.getSeller() != null ? listing.getSeller().getAvatar() : null)
                 .build();
     }
 
@@ -529,6 +531,8 @@ public class ListingService {
                 .sellerUniversity(listing.getSeller() != null ? listing.getSeller().getUniversity() : null)
                 .thumbnailUrl(!imageUrls.isEmpty() ? imageUrls.get(0) : null)
                 .createdAt(listing.getCreatedAt())
+                .sellerId(listing.getSeller() != null ? listing.getSeller().getId() : null)
+                .sellerAvatar(listing.getSeller() != null ? listing.getSeller().getAvatar() : null)
                 .build();
     }
 

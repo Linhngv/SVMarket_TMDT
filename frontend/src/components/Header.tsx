@@ -152,6 +152,12 @@ export default function Header({
     } else if (note.type === "ORDER") {
       navigate("/sales-history");
       setShowNotifications(false);
+    } else if (note.type === "REVIEW") {
+      navigate("/reviews/buyer");
+      setShowNotifications(false);
+    } else if (note.type === "REVIEW_REPLY") {
+      navigate("/reviews/seller");
+      setShowNotifications(false);
     }
   };
 
@@ -579,8 +585,16 @@ function ProfilePopup({
           <PopupSection
             title="Tiện ích"
             items={[
-              { label: "Đơn hàng đã mua", icon: <FileText size={16} /> },
-              { label: "Đánh giá từ tôi", icon: <Star size={16} /> },
+              {
+                label: "Đơn hàng đã mua",
+                icon: <FileText size={16} />,
+                onClick: () => { navigate("/purchase-history"); onClose(); }
+              },
+              { 
+                label: "Đánh giá từ tôi", 
+                icon: <Star size={16} />,
+                onClick: () => { navigate("/my-review"); onClose(); }
+              },
             ]}
           />
 
@@ -588,7 +602,10 @@ function ProfilePopup({
             title="Dịch vụ trả phí"
             items={[
               { label: "Lịch sử giao dịch", icon: <History size={16} /> },
-              { label: "Gói đăng tin", icon: <Package size={16} /> },
+              {
+                label: "Gói đăng tin", icon: <Package size={16} />,
+                onClick: () => { navigate("/my-packages"); onClose(); }
+              },
             ]}
           />
 

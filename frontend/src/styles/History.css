@@ -116,6 +116,11 @@
   color: #1e40af;
 }
 
+.status-pill.paid {
+  background: #E8F5EE;
+  color: #2D9E63;
+}
+
 .status-pill.pending {
   background: #fef3c7;
   color: #92400e;

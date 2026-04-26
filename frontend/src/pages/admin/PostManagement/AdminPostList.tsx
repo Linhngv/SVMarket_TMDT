@@ -156,7 +156,7 @@ export default function AdminPostList() {
                                         <th>ID</th>
                                         <th>Tiêu đề</th>
                                         <th>Người đăng</th>
-                                        <th>Trạng thái</th>
+                                        <th className="text-center">Trạng thái</th>
                                     </tr>
                                 </thead>
 
@@ -174,13 +174,15 @@ export default function AdminPostList() {
                                     ) : (
                                         currentPosts.map((post) => (
                                             <tr key={post.id}>
-                                                <td>{post.id}</td>
-                                                <td>{post.title}</td>
-                                                <td>{post.author}</td>
-                                                <td>
-                                                    <span className={`badge ${getStatusClass(post.status)} status-badge rounded-pill py-2 px-3`}>
-                                                        {getStatusLabel(post.status)}
-                                                    </span>
+                                                <td style={{ paddingTop: "10px", paddingBottom: "10px" }}>{post.id}</td>
+                                                <td style={{ paddingTop: "10px", paddingBottom: "10px" }}>{post.title}</td>
+                                                <td style={{ paddingTop: "10px", paddingBottom: "10px" }}>{post.author}</td>
+                                                <td className="align-middle text-center" style={{ paddingTop: "10px", paddingBottom: "10px" }}>
+                                                    <div className="d-flex align-items-center justify-content-center m-0">
+                                                        <span className={`badge ${getStatusClass(post.status)} status-badge rounded-pill py-2 px-3 m-0`} style={{ fontSize: "14px", fontWeight: "500" }}>
+                                                            {getStatusLabel(post.status)}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))
@@ -193,21 +195,21 @@ export default function AdminPostList() {
                         {totalPages > 1 && (
                             <div className="d-flex justify-content-center align-items-center mt-4 text-muted small">
                                 <div className="d-flex flex-wrap justify-content-center gap-2">
-                                    <button 
+                                    <button
                                         className="btn btn-sm rounded-circle border bg-white d-flex align-items-center justify-content-center"
                                         style={{ width: "32px", height: "32px" }}
                                         disabled={currentPage === 1}
                                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                     >‹</button>
                                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                        <button 
+                                        <button
                                             key={page}
                                             className={`btn btn-sm rounded-circle border d-flex align-items-center justify-content-center ${currentPage === page ? 'text-white' : 'bg-white text-dark'}`}
                                             style={currentPage === page ? { backgroundColor: '#1B7A4A', borderColor: '#1B7A4A', width: "32px", height: "32px" } : { width: "32px", height: "32px" }}
                                             onClick={() => setCurrentPage(page)}
                                         >{page}</button>
                                     ))}
-                                    <button 
+                                    <button
                                         className="btn btn-sm rounded-circle border bg-white d-flex align-items-center justify-content-center"
                                         style={{ width: "32px", height: "32px" }}
                                         disabled={currentPage === totalPages}

@@ -1,10 +1,10 @@
 package com.example.svmarket.controller;
 
-import com.example.svmarket.entity.SellerPackage;
-import com.example.svmarket.entity.User;
-import com.example.svmarket.repository.SellerPackageRepository;
+// import com.example.svmarket.entity.SellerPackage;
+// import com.example.svmarket.entity.User;
+// import com.example.svmarket.repository.SellerPackageRepository;
 import com.example.svmarket.service.PaymentService;
-import com.example.svmarket.util.JwtUtil;
+// import com.example.svmarket.util.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.Base64;
-import java.util.List;
+// import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,11 +26,11 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
-    @Autowired
-    private SellerPackageRepository sellerPackageRepository;
+    // @Autowired
+    // private SellerPackageRepository sellerPackageRepository;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    // @Autowired
+    // private JwtUtil jwtUtil;
 
     @GetMapping("/create")
     public String createPayment(@RequestParam Integer packageId,  @RequestParam String returnUrl) throws Exception {

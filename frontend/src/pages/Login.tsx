@@ -54,7 +54,6 @@ export default function Login() {
       });
 
       const data = await res.json();
-      console.log("LOGIN RESPONSE:", data);
 
       if (res.ok && data.token) {
         login(data.token);
