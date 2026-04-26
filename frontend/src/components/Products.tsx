@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import {
   fetchActiveListings,
   ListingSummary,
+  fetchListingsByUniversity,
+  fetchListingsByCategory,
 } from "../services/listingService";
 import {
   fetchMyFavoriteListingIds,
@@ -58,9 +60,13 @@ function formatCurrency(value: number) {
 export default function Products({
   title,
   searchKeyword,
+  university,
+  categoryId,
 }: {
   title: string;
   searchKeyword: string;
+  university: string;
+  categoryId?: number;
 }) {
 
   const [openFilter, setOpenFilter] = useState(false);
@@ -70,18 +76,25 @@ export default function Products({
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  const loadActiveListings = async (keyword?: string) => {
-  try {
-    const data = await fetchActiveListings(keyword);
-    setActiveListings(data);
+  const getSortByParam = (label: string) => {
+    if (label === "Giá thấp → cao") return "price_asc";
+    if (label === "Giá cao → thấp") return "price_desc";
+    return "newest";
+  };
+
+  const loadActiveListings = async (keyword?: string, uni?: string, catId?: number, sortLabel?: string) => {
+    try {
+      const sortBy = getSortByParam(sortLabel || "Mới nhất");
+      const data = await fetchActiveListings(keyword, uni, catId, sortBy);
+      setActiveListings(data);
     } catch (error) {
       console.error("Không thể tải danh sách bài đăng hoạt động", error);
     }
   };
 
   useEffect(() => {
-    loadActiveListings(searchKeyword);
-  }, [title, searchKeyword]);
+    loadActiveListings(searchKeyword, university, categoryId, selected);
+  }, [title, searchKeyword, university, categoryId, selected]);
 
   useEffect(() => {
     if (!isLoggedIn) {

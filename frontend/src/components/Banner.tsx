@@ -8,9 +8,13 @@ import {
 export default function Banner({
   searchKeyword,
   setSearchKeyword,
+  university,
+  setUniversity,
 }: {
   searchKeyword: string;
   setSearchKeyword: (v: string) => void;
+  university: string;
+  setUniversity: (v: string) => void;
 }) {
   // State cho input người dùng đang nhập
   const [inputValue, setInputValue] = useState("");
@@ -22,11 +26,33 @@ export default function Banner({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // State lưu danh sách trường đại học
+  const [universities, setUniversities] = useState<any[]>([]);
+  // State lưu trường đại học người dùng chọn
+  const [selectedUniversity, setSelectedUniversity] = useState<string>("");
+  const [showUniDropdown, setShowUniDropdown] = useState(false);
+  const uniRef = useRef<HTMLDivElement>(null);
+
   // Lấy danh sách sản phẩm 1 lần khi mount
   useEffect(() => {
     fetchActiveListings().then(setAllProducts);
-  }, []);
 
+    console.log("--- Bắt đầu gọi API lấy danh sách trường đại học ---");
+    fetch("http://localhost:8080/api/universities")
+      .then((res) => {
+        console.log("Trạng thái HTTP API universities trả về:", res.status);
+        if (!res.ok) {
+          throw new Error(`Lỗi HTTP: ${res.status} - Không load được danh sách trường đại học từ API`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Dữ liệu Universities nhận được:", data);
+        // Kiểm tra nếu data bị null thì gán mảng rỗng để không bị sập web
+        setUniversities(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => console.error("Chi tiết lỗi gọi API Universities:", err));
+  }, []);
   // Khi input thay đổi, cập nhật gợi ý
   useEffect(() => {
     if (inputValue.trim() === "") {
@@ -60,6 +86,7 @@ export default function Banner({
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+  
 
   // Xử lý chọn gợi ý
   const handleSelectSuggestion = (item: ListingSummary) => {
@@ -183,10 +210,17 @@ export default function Banner({
             </span>
 
             {/* SELECT */}
-            <select className="form-select search-select">
-              <option>Chọn khu vực</option>
-              <option>Hồ Chí Minh</option>
-              <option>Hà Nội</option>
+            <select
+              className="form-select search-select"
+              value={university}
+              onChange={(e) => setUniversity(e.target.value)}
+            >
+              <option value="">Chọn trường đại học</option>
+              {universities.map((uni, idx) => (
+                <option key={idx} value={uni.name || uni}>
+                  {uni.name || uni}
+                </option>
+              ))}
             </select>
 
             {/* ICON RIGHT (caret-down) */}

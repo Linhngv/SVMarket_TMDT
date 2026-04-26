@@ -46,3 +46,43 @@
     z-index: 1050; 
     backdrop-filter: blur(2px); 
 }
+
+/* Phân trang - Nút Trước */
+.btn-pagination-prev{
+    background: #ffffff;
+    color: #1B7A4A !important;
+    border-radius: 20px;
+    border: 1px solid #1B7A4A;
+    padding: 5px 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-pagination-prev:hover:not(:disabled) {
+    background-color: #1B7A4A;
+    color: #ffffff !important;
+}
+
+/* Phân trang - Chữ ở giữa */
+.pagination-text {
+    color: #1B7A4A !important;
+}
+
+/* Phân trang - Nút Kế tiếp */
+.btn-pagination-next{
+    background: #1B7A4A;
+    color: #ffffff !important;
+    border-radius: 20px;
+    border: 1px solid #1B7A4A;
+    padding: 5px 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-pagination-next:hover:not(:disabled) {
+    background-color: #145e38;
+}
+
+/* Khi nút không thể ấn được */
+.btn-pagination-prev:disabled,
+.btn-pagination-next:disabled {
+    cursor: not-allowed;
+}

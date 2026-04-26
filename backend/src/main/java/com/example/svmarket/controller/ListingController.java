@@ -1,14 +1,7 @@
 package com.example.svmarket.controller;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
-import com.example.svmarket.entity.ListingStatus;
-import com.example.svmarket.entity.SellerPackage;
-import com.example.svmarket.entity.User;
-import com.example.svmarket.repository.*;
-import com.example.svmarket.service.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +25,12 @@ import com.example.svmarket.dto.FavoriteToggleResponse;
 import com.example.svmarket.dto.ListingDetailResponse;
 import com.example.svmarket.dto.ListingSummaryResponse;
 import com.example.svmarket.dto.ListingUpsertRequest;
+import com.example.svmarket.dto.UniversityJson;
+import com.example.svmarket.repository.ListingRepository;
+import com.example.svmarket.repository.SellerPackageRepository;
+import com.example.svmarket.repository.UserRepository;
 import com.example.svmarket.service.ListingService;
+import com.example.svmarket.service.UniversityService;
 import com.example.svmarket.util.JwtUtil;
 
 import jakarta.validation.Valid;
@@ -63,12 +61,14 @@ public class ListingController {
         return listingService.getCategories();
     }
 
-
-    // Lay danh sach bai dang dang hoat dong cho trang chu hoặc tìm kiếm theo từ khóa.
-    // Nếu có query param ?keyword=... thì tìm kiếm theo keyword, ngược lại trả về tất cả bài đăng active.
+    // Lọc tổng hợp: từ khóa, trường đại học, danh mục và sắp xếp giá
     @GetMapping
-    public List<ListingSummaryResponse> getActiveListingsOrSearch(@RequestParam(value = "keyword", required = false) String keyword) {
-        return listingService.searchActiveListings(keyword);
+    public List<ListingSummaryResponse> filterListings(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "university", required = false) String university,
+            @RequestParam(value = "categoryId", required = false) Integer categoryId,
+            @RequestParam(value = "sortBy", required = false) String sortBy) {
+        return listingService.filterListingsCustom(keyword, university, categoryId, sortBy);
     }
 
     // Ho tro route cu /active cho frontend.
@@ -77,10 +77,16 @@ public class ListingController {
         return listingService.getActiveListings();
     }
 
+    // Lọc bài đăng theo trường đại học
+    @GetMapping("/university")
+    public List<ListingSummaryResponse> filterListingsByUniversity(@RequestParam("name") String name) {
+        return listingService.filterByUniversity(name);
+    }
+
     // Them/bo luu bai dang theo user dang nhap.
     @PostMapping("/{id}/favorite")
     public FavoriteToggleResponse toggleFavoriteListing(@RequestHeader("Authorization") String token,
-                                                        @PathVariable Integer id) {
+            @PathVariable Integer id) {
         String email = extractEmail(token);
         return listingService.toggleFavoriteListing(email, id);
     }
@@ -109,8 +115,8 @@ public class ListingController {
     @PostMapping(value = "/my", consumes = { "multipart/form-data" })
     @ResponseStatus(HttpStatus.CREATED)
     public ListingDetailResponse createMyListing(@RequestHeader("Authorization") String token,
-                                                 @Valid @ModelAttribute ListingUpsertRequest request,
-                                                 @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+            @Valid @ModelAttribute ListingUpsertRequest request,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         String email = extractEmail(token);
         return listingService.createMyListing(email, request, images);
     }
@@ -125,7 +131,7 @@ public class ListingController {
     // Lay chi tiet 1 bai dang de xem/sua.
     @GetMapping("/my/{id}")
     public ListingDetailResponse getMyListingById(@RequestHeader("Authorization") String token,
-                                                   @PathVariable Integer id) {
+            @PathVariable Integer id) {
         String email = extractEmail(token);
         return listingService.getMyListingById(email, id);
     }
@@ -133,9 +139,9 @@ public class ListingController {
     // Cap nhat bai dang cua nguoi dang nhap.
     @PutMapping(value = "/my/{id}", consumes = { "multipart/form-data" })
     public ListingDetailResponse updateMyListing(@RequestHeader("Authorization") String token,
-                                                 @PathVariable Integer id,
-                                                 @Valid @ModelAttribute ListingUpsertRequest request,
-                                                 @RequestParam(value = "images", required = false) List<MultipartFile> images) {
+            @PathVariable Integer id,
+            @Valid @ModelAttribute ListingUpsertRequest request,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images) {
         String email = extractEmail(token);
         return listingService.updateMyListing(email, id, request, images);
     }
@@ -144,7 +150,7 @@ public class ListingController {
     @DeleteMapping("/my/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteMyListing(@RequestHeader("Authorization") String token,
-                                @PathVariable Integer id) {
+            @PathVariable Integer id) {
         String email = extractEmail(token);
         listingService.deleteMyListing(email, id);
     }
@@ -162,5 +168,19 @@ public class ListingController {
     @GetMapping("/featured")
     public List<ListingSummaryResponse> getFeaturedListings() {
         return listingService.getFeaturedListings();
+    }
+
+    // loc bai dang theo truong
+    @GetMapping("/by-university")
+    public List<ListingSummaryResponse> getByUniversity(
+            @RequestParam String university) {
+        return listingService.getListingsByUniversity(university);
+    }
+
+    // loc bai dang theo danh muc
+    @GetMapping("/by-category")
+    public List<ListingSummaryResponse> getByCategory(
+            @RequestParam Integer categoryId) {
+        return listingService.getListingsByCategory(categoryId);
     }
 }

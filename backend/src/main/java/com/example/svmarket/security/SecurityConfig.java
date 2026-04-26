@@ -127,6 +127,8 @@ public class SecurityConfig {
                 // BỎ cấu hình STATELESS đi vì OAuth2 Login mặc định cần Session để lưu state khi chuyển hướng sang Google
 
                 .authorizeHttpRequests(auth -> auth
+                        // university 
+                        .requestMatchers("/api/universities/**").permitAll()
                         // AUTH
                         .requestMatchers("/api/auth/**").permitAll()
 
