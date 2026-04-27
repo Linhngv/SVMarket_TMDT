@@ -1,4 +1,6 @@
 import axios from "axios";
+import type {PushHistory} from "../types/PushHistory";
+
 
 const API_BASE_URL = "http://localhost:8080/api/listings";
 
@@ -19,6 +21,7 @@ export type ListingSummary = {
 
   priorityLevel?: number;
   isFeatured?: boolean;
+  pushing?: boolean;
 };
 
 export type ListingDetail = {
@@ -205,4 +208,46 @@ export async function fetchListingsByCategory(categoryId: number): Promise<Listi
 
   const data = await response.json();
   return data as ListingSummary[];
+}
+
+
+// Lấy danh sách bài đăng (có mua gói) đã được phê duyệt bài
+export async function fetchPushHistory() {
+  const res = await fetch(`${API_BASE_URL}/history`, {
+    headers: getAuthHeader(),
+  });
+
+  if (!res.ok) {
+    throw new Error("Không lấy được lịch sử");
+  }
+
+  return res.json();
+}
+
+// Xử lý đẩy tin bài đăng lại khi nhấn nút "Đẩy lại"
+export async function pushListing(listingId: number) {
+  const res = await fetch(`${API_BASE_URL}/${listingId}/push`, {
+    method: "POST",
+    headers: getAuthHeader(),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Đẩy tin thất bại");
+  }
+
+  return data;
+}
+
+export async function fetchPostLimit() {
+  const res = await fetch(`${API_BASE_URL}/post-limit`, {
+    headers: getAuthHeader(),
+  });
+
+  if (!res.ok) {
+    throw new Error("Không lấy được post limit");
+  }
+
+  return res.json();
 }

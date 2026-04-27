@@ -1,4 +1,6 @@
 import { Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Home from "./pages/Home";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
@@ -31,51 +33,53 @@ import SellerReviews from "./pages/SellerReviews";
 import BuyerReviews from "./pages/BuyerReviews";
 import MyReview from "./pages/MyReview";
 
-
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/verify-otp" element={<RegisterOTP />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
+    <>
+      <ToastContainer position="top-right" autoClose={3000} />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<RegisterOTP />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
-      <Route path="/faq" element={<FAQ />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/seller-profile/:id" element={<SellerProfile />} />
-      <Route path="/product/:id" element={<ProductDetail />} />
-      <Route path="/my-review" element={<MyReview />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/seller-profile/:id" element={<SellerProfile />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/my-review" element={<MyReview />} />
 
-      <Route path="/saved-listings" element={<SavedListings />} />
+        <Route path="/saved-listings" element={<SavedListings />} />
 
-      <Route element={<UserAreaLayout />}>
-        <Route path="/create-listing" element={<CreateListing />} />
-        <Route path="/my-listings" element={<MyListings />} />
-        <Route path="/my-listings/:id/edit" element={<EditListing />} />
-        <Route path="/purchase-history" element={<PurchaseHistory />} />
-        <Route path="/sales-history" element={<SalesHistory />} />
-        <Route path="/reviews/seller" element={<SellerReviews />} />
-        <Route path="/reviews/buyer" element={<BuyerReviews />} />
-        <Route path="/my-packages" element={<MyPackages />} />
-        <Route path="/change-password" element={<ChangePassword />} />
-      </Route>
+        <Route element={<UserAreaLayout />}>
+          <Route path="/create-listing" element={<CreateListing />} />
+          <Route path="/my-listings" element={<MyListings />} />
+          <Route path="/my-listings/:id/edit" element={<EditListing />} />
+          <Route path="/purchase-history" element={<PurchaseHistory />} />
+          <Route path="/sales-history" element={<SalesHistory />} />
+          <Route path="/reviews/seller" element={<SellerReviews />} />
+          <Route path="/reviews/buyer" element={<BuyerReviews />} />
+          <Route path="/my-packages" element={<MyPackages />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+        </Route>
 
-      <Route path="/payment/:orderId" element={<Payment />} />
+        <Route path="/payment/:orderId" element={<Payment />} />
 
-      <Route path="/admin/posts" element={<AdminPostList />} />
-      <Route path="/admin/duyet-bai" element={<AdminPostApproval />} />
-      <Route path="/admin/vi-pham" element={<AdminViolationList />} />
+        <Route path="/admin/posts" element={<AdminPostList />} />
+        <Route path="/admin/duyet-bai" element={<AdminPostApproval />} />
+        <Route path="/admin/vi-pham" element={<AdminViolationList />} />
 
-      <Route path="/admin/packages" element={<AdminPackage />} />
-      <Route path="/admin/categories" element={<AdminCategory />} />
-      <Route path="/admin/users" element={<AdminUserList />} />
-      <Route path="/admin/status/:id" element={<AdminUserStatus />} />
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/packages" element={<AdminPackage />} />
+        <Route path="/admin/categories" element={<AdminCategory />} />
+        <Route path="/admin/users" element={<AdminUserList />} />
+        <Route path="/admin/status/:id" element={<AdminUserStatus />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
-      <Route path="*" element={<div>Trang đang được phát triển.</div>} />
-    </Routes>
+        <Route path="*" element={<div>Trang đang được phát triển.</div>} />
+      </Routes>
+    </>
   );
 }
 

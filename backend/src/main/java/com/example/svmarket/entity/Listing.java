@@ -75,4 +75,8 @@ public class Listing {
     @Enumerated(EnumType.STRING)
     @Column(name = "post_source", length = 20)
     private PostSource postSource; // người đăng bài chọn đăng free hay gói
+
+    @ManyToOne
+    @JoinColumn(name = "seller_package_id")
+    private SellerPackage sellerPackage;
 }

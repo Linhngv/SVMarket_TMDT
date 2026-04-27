@@ -1075,6 +1075,7 @@ body {
   font-weight: 700;
   border-radius: 999px;
   color: white;
+  background: linear-gradient(135deg, #ff3d00, #ff9800);
   letter-spacing: 0.5px;
 }
 
@@ -1084,7 +1085,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #ff3d00, #ff9800);
+
   color: var(--white);
   font-size: 12px;
   font-weight: 700;

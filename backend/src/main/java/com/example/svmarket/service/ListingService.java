@@ -1,11 +1,10 @@
 package com.example.svmarket.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import com.example.svmarket.dto.*;
 import com.example.svmarket.entity.*;
 import com.example.svmarket.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.svmarket.dto.CategoryOptionResponse;
-import com.example.svmarket.dto.FavoriteToggleResponse;
-import com.example.svmarket.dto.ListingDetailResponse;
-import com.example.svmarket.dto.ListingSummaryResponse;
-import com.example.svmarket.dto.ListingUpsertRequest;
 import com.example.svmarket.exception.BadRequestException;
 import com.example.svmarket.service.CloudinaryService.UploadedImage;
 
@@ -160,19 +154,10 @@ public class ListingService {
                 throw new BadRequestException("Gói đã hết lượt đẩy");
             }
 
-            // trừ lượt đăng
-            pkg.setRemainingPosts(pkg.getRemainingPosts() - 1);
-
-            // trừ lượt đẩy
-            pkg.setRemainingPushes(pkg.getRemainingPushes() - 1);
-
-            // set push để được ưu tiên
-            listing.setLastPushAt(LocalDateTime.now());
-
             if (pkg.getRemainingPosts() <= 0 && pkg.getRemainingPushes() <= 0) {
                 pkg.setStatus(PackageStatus.EXPIRED);
             }
-
+            listing.setSellerPackage(pkg);
             sellerPackageRepository.save(pkg);
         }
 
@@ -198,9 +183,13 @@ public class ListingService {
     public List<ListingSummaryResponse> getFeaturedListings() {
         return listingRepository.findByStatus(ListingStatus.ACTIVE)
                 .stream()
+                .filter(l ->
+                        l.getPostSource() == PostSource.PACKAGE
+                )
                 .filter(l -> {
-                    SellerPackage pkg = getPkg(l);
-                    return pkg != null && Boolean.TRUE.equals(pkg.getPackagePlan().getIsFeatured());
+                    SellerPackage pkg = l.getSellerPackage(); // ✅
+                    return pkg != null
+                            && Boolean.TRUE.equals(pkg.getPackagePlan().getIsFeatured());
                 })
                 .sorted((a, b) -> Integer.compare(getPriority(b), getPriority(a)))
                 .limit(4)
@@ -221,8 +210,7 @@ public class ListingService {
 
     public SellerPackage getPkg(Listing listing) {
         return sellerPackageRepository
-                .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
-                .stream().findFirst()
+                .findActivePackage(listing.getSeller().getId(), LocalDateTime.now())
                 .orElse(null);
     }
 
@@ -241,116 +229,73 @@ public class ListingService {
         List<Listing> listings = listingRepository.findByStatus(ListingStatus.ACTIVE);
 
         return listings.stream()
-                .sorted((a, b) -> {
-
-                    int priorityA = getPriority(a);
-                    int priorityB = getPriority(b);
-
-                    // Ưu tiên gói (Cơ bản, sinh viên, vip)
-                    if (priorityA != priorityB) {
-                        return Integer.compare(priorityB, priorityA);
-                    }
-
-                    boolean pushA = isPushActive(a);
-                    boolean pushB = isPushActive(b);
-
-                    if (pushA != pushB) {
-                        return pushB ? 1 : -1;
-                    }
-
-                    if (a.getLastPushAt() != null && b.getLastPushAt() != null) {
-                        return b.getLastPushAt().compareTo(a.getLastPushAt());
-                    }
-
-                    return b.getCreatedAt().compareTo(a.getCreatedAt());
-                })
+                .sorted(listingComparator())
                 .map(this::toSummaryResponse)
                 .toList();
     }
 
     // Lấy mức độ ưu tiên theo gói đã đăng ký
     public int getPriority(Listing listing) {
+        if (listing.getPostSource() == PostSource.FREE) return 0;
 
-        // FREE: không có ưu tiên
-        if (listing.getPostSource() == PostSource.FREE) {
-            return 0;
-        }
+        SellerPackage pkg = listing.getSellerPackage();
+        if (pkg == null) return 0;
 
-        SellerPackage pkg = sellerPackageRepository
-                .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
-                .stream().findFirst()
-                .orElse(null);
-
-        if (pkg == null)
-            return 0;
-
+        // Chỉ trả về priorityLevel, không cộng thêm gì
         return pkg.getPackagePlan().getPriorityLevel();
     }
 
     // Kiểm tra xem còn trong thời gian được đẩy hay không?
-    private boolean isPushActive(Listing listing) {
-        if (listing.getLastPushAt() == null)
-            return false;
+    public boolean isPushActive(Listing listing) {
 
-        SellerPackage pkg = sellerPackageRepository
-                .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
-                .stream().findFirst()
-                .orElse(null);
+        if (listing.getLastPushAt() == null) return false;
 
-        if (pkg == null)
-            return false;
+        SellerPackage pkg = listing.getSellerPackage();
 
-        int hours = pkg.getPackagePlan().getPushHours();
+        if (pkg == null) return false;
 
         return listing.getLastPushAt()
-                .plusHours(hours)
+                .plusHours(pkg.getPackagePlan().getPushHours())
                 .isAfter(LocalDateTime.now());
     }
 
     // Lọc tổng hợp kết hợp từ khóa, trường đại học, danh mục và sắp xếp
-    public List<ListingSummaryResponse> filterListingsCustom(String keyword, String university, Integer categoryId, String sortBy) {
-        String kw = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
-        String uni = (university == null || university.isBlank()) ? null : university.trim();
-        String sort = (sortBy == null || sortBy.isBlank()) ? "newest" : sortBy.trim();
+    public List<ListingSummaryResponse> filterListingsCustom(
+            String keyword, String university, Integer categoryId, String sortBy) {
 
-        return listingRepository.filterListingsCustom(kw, uni, categoryId, sort)
-                .stream()
+        List<Listing> listings = listingRepository
+                .filterListingsCustom(keyword, university, categoryId, sortBy);
+
+        // 🔥 sort chuẩn
+        listings.sort(listingComparator());
+
+        // sort giá nếu user chọn
+        if ("price_asc".equals(sortBy)) {
+            listings.sort(Comparator.comparing(Listing::getPrice));
+        } else if ("price_desc".equals(sortBy)) {
+            listings.sort(Comparator.comparing(Listing::getPrice).reversed());
+        }
+
+        return listings.stream()
                 .map(this::toSummaryResponse)
                 .toList();
     }
 
     // Lọc bài đăng theo trường đại học và sắp xếp theo độ ưu tiên gói tin
     public List<ListingSummaryResponse> filterByUniversity(String university) {
+
         if (university == null || university.isBlank()) {
             return getActiveListings();
         }
 
-        List<Listing> listings = listingRepository.findByUniversityCustom(ListingStatus.ACTIVE, university.trim());
+        List<Listing> listings = listingRepository
+                .findByUniversityCustom(ListingStatus.ACTIVE, university.trim());
+
+        listings.sort(listingComparator());
 
         return listings.stream()
-                .sorted((a, b) -> {
-                    int priorityA = getPriority(a);
-                    int priorityB = getPriority(b);
-
-                    // Ưu tiên gói (Cơ bản, sinh viên, vip)
-                    if (priorityA != priorityB) {
-                        return Integer.compare(priorityB, priorityA);
-                    }
-
-                    boolean pushA = isPushActive(a);
-                    boolean pushB = isPushActive(b);
-
-                    if (pushA != pushB) {
-                        return pushB ? 1 : -1;
-                    }
-
-                    if (a.getLastPushAt() != null && b.getLastPushAt() != null) {
-                        return b.getLastPushAt().compareTo(a.getLastPushAt());
-                    }
-
-                    return b.getCreatedAt().compareTo(a.getCreatedAt());
-                })
-                .map(this::toSummaryResponse).toList();
+                .map(this::toSummaryResponse)
+                .toList();
     }
 
     // Them/bo luu bai dang theo user dang nhap.
@@ -553,21 +498,24 @@ public class ListingService {
         response.setCreatedAt(listing.getCreatedAt());
 
         if (listing.getPostSource() == PostSource.PACKAGE) {
-            SellerPackage pkg = sellerPackageRepository
-                    .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
-                    .stream()
-                    .findFirst()
-                    .orElse(null);
 
-            int priority = pkg != null ? pkg.getPackagePlan().getPriorityLevel() : 0;
+            SellerPackage pkg = listing.getSellerPackage();
 
-            response.setPriorityLevel(priority);
-            response.setIsFeatured(pkg != null && Boolean.TRUE.equals(pkg.getPackagePlan().getIsFeatured()));
+            if (pkg != null) {
+                int priority = pkg.getPackagePlan().getPriorityLevel();
+                boolean isFeatured = Boolean.TRUE.equals(pkg.getPackagePlan().getIsFeatured());
 
-        } else {
-            // FREE
-            response.setPriorityLevel(0);
-            response.setIsFeatured(false);
+                boolean stillPushing = isPushActive(listing);
+
+                response.setPriorityLevel(priority);
+                response.setIsFeatured(isFeatured);
+                response.setPushing(stillPushing);
+
+            } else {
+                response.setPriorityLevel(0);
+                response.setIsFeatured(false);
+                response.setPushing(false);
+            }
         }
 
         return response;
@@ -625,5 +573,145 @@ public class ListingService {
                 .stream()
                 .map(this::toSummaryResponse)
                 .toList();
+    }
+
+    // Lấy danh sách bài đăng (có mua gói) đã được duyệt
+    public List<PushHistoryResponse> getPushHistory(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
+
+        SellerPackage activePkg = sellerPackageRepository
+                .findAvailablePackage(user.getId(), LocalDateTime.now())
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        String packageName = activePkg != null
+                ? activePkg.getPackagePlan().getName()
+                : "—";
+
+        int remainingPushes = activePkg != null
+                ? activePkg.getRemainingPushes()
+                : 0;
+
+        int pushHours = activePkg != null
+                ? activePkg.getPackagePlan().getPushHours()
+                : 0;
+
+        return listingRepository
+                .findBySellerIdAndPostSource(user.getId(), PostSource.PACKAGE)
+                .stream()
+                .filter(listing -> listing.getStatus() == ListingStatus.ACTIVE)
+                .map(listing -> {
+
+                    LocalDateTime lastPush = listing.getLastPushAt();
+
+                    LocalDateTime expiresAt = lastPush != null
+                            ? lastPush.plusHours(pushHours)
+                            : null;
+
+                    boolean pushExpired = expiresAt != null
+                            && LocalDateTime.now().isAfter(expiresAt);
+
+                    boolean canPush = pushExpired
+                            && activePkg != null
+                            && remainingPushes > 0;
+
+                    return new PushHistoryResponse(
+                            listing.getId(),
+                            listing.getTitle(),
+                            packageName,
+                            lastPush,
+                            expiresAt,
+                            remainingPushes,
+                            canPush
+                    );
+                })
+                .toList();
+    }
+
+    //  Xử lý đẩy lại bài đăng khi bấm nút "Đẩy lại"
+    @Transactional
+    public void pushListing(String email, Integer listingId) {
+
+        User user = getUserByEmail(email);
+
+        Listing listing = listingRepository
+                .findByIdAndSellerId(listingId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng"));
+
+        SellerPackage pkg = sellerPackageRepository
+                .findAvailablePackage(user.getId(), LocalDateTime.now())
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Không có gói khả dụng"));
+
+        if (pkg.getRemainingPushes() <= 0) {
+            throw new RuntimeException("Hết lượt đẩy");
+        }
+
+        // Kiểm tra chưa hết thời gian push
+        if (listing.getLastPushAt() != null) {
+            LocalDateTime expire = listing.getLastPushAt()
+                    .plusHours(pkg.getPackagePlan().getPushHours());
+
+            if (LocalDateTime.now().isBefore(expire)) {
+                throw new RuntimeException("Chưa hết thời gian đẩy");
+            }
+        }
+
+        // Cập nhật
+        listing.setLastPushAt(LocalDateTime.now());
+        pkg.setRemainingPushes(pkg.getRemainingPushes() - 1);
+
+        listingRepository.save(listing);
+        sellerPackageRepository.save(pkg);
+    }
+
+    /**
+     * Comparator dùng để sắp xếp danh sách bài đăng theo độ ưu tiên hiển thị.
+     *
+     * Thứ tự ưu tiên:
+     * 1. Gói đăng (priorityLevel):
+     *    - Gói cao hơn (VIP > Sinh viên > Free) luôn đứng trước
+     *
+     * 2. Trạng thái đẩy (push):
+     *    - Nếu cùng gói, bài nào còn trong thời gian được đẩy sẽ đứng trước
+     *
+     * 3. Thời điểm đẩy gần nhất (lastPushAt):
+     *    - Nếu cả hai đều đang được đẩy, bài được đẩy gần đây hơn sẽ đứng trước
+     *
+     * 4. Thời gian tạo (createdAt):
+     *    - Nếu không còn push, bài đăng mới hơn sẽ đứng trước
+     *
+     */
+    public Comparator<Listing> listingComparator() {
+        return (a, b) -> {
+
+            // Package
+            int priorityA = getPriority(a);
+            int priorityB = getPriority(b);
+
+            if (priorityA != priorityB) {
+                return Integer.compare(priorityB, priorityA);
+            }
+
+            // Push
+            boolean pushA = isPushActive(a);
+            boolean pushB = isPushActive(b);
+
+            if (pushA != pushB) {
+                return pushA ? -1 : 1;
+            }
+
+            // Push time
+            if (pushA && pushB) {
+                return b.getLastPushAt().compareTo(a.getLastPushAt());
+            }
+
+            // Created
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
+        };
     }
 }

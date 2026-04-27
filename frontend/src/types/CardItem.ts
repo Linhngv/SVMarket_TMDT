@@ -7,4 +7,6 @@ export type CardItem = {
   image: string;
 
   priorityLevel?: number;
+  isFeatured?: boolean;
+  pushing?: boolean;
 };

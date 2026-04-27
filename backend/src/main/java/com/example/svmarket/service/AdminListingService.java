@@ -1,7 +1,10 @@
 package com.example.svmarket.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.svmarket.entity.*;
+import com.example.svmarket.repository.SellerPackageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -9,9 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.svmarket.dto.ListingDetailResponse;
 import com.example.svmarket.dto.ListingSummaryResponse;
-import com.example.svmarket.entity.Image;
-import com.example.svmarket.entity.Listing;
-import com.example.svmarket.entity.ListingStatus;
 import com.example.svmarket.repository.ListingRepository;
 
 @Service
@@ -20,6 +20,9 @@ public class AdminListingService {
 
     @Autowired
     private ListingRepository listingRepository;
+
+    @Autowired
+    private SellerPackageRepository sellerPackageRepository;
 
     // Lấy tất cả bài đăng cho Admin (bất kể trạng thái ACTIVE, PENDING, REJECTED, v.v.)
     public List<ListingSummaryResponse> getAllListings() {
@@ -49,7 +52,38 @@ public class AdminListingService {
     public void approveListing(Integer id) {
         Listing listing = listingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng"));
+        // tránh duyệt lại
+        if (listing.getStatus() == ListingStatus.ACTIVE) return;
+
         listing.setStatus(ListingStatus.ACTIVE);
+
+        if (listing.getPostSource() == PostSource.PACKAGE) {
+
+            SellerPackage pkg = sellerPackageRepository
+                    .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
+
+            if (pkg != null) {
+
+                // ✅ trừ lượt đăng
+                if (pkg.getRemainingPosts() <= 0) {
+                    throw new RuntimeException("Hết lượt đăng");
+                }
+
+                pkg.setRemainingPosts(pkg.getRemainingPosts() - 1);
+
+                // ✅ OPTIONAL: auto push khi duyệt
+                if (pkg.getRemainingPushes() > 0) {
+                    listing.setLastPushAt(LocalDateTime.now());
+                    pkg.setRemainingPushes(pkg.getRemainingPushes() - 1);
+                }
+
+                sellerPackageRepository.save(pkg);
+            }
+        }
+
         listingRepository.save(listing);
     }
 

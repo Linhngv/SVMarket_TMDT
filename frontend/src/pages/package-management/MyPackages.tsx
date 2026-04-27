@@ -1,44 +1,21 @@
 import "../../styles/MyPackages.css";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-
-interface PackagePlan {
-  id: number;
-  name: string;
-  price: number;
-  postLimit: number;
-  pushLimit: number;
-  pushHours: number;
-  durationDays: number;
-  priorityLevel: number;
-}
-
-interface SellerPackage {
-  id: number;
-  packageName: string;
-  remainingPosts: number;
-  remainingPushes: number;
-  postLimit: number;
-  pushLimit: number;
-  startDate: string;
-  endDate: string;
-}
-
-interface History {
-  baiDang: string;
-  loaiGoi: string;
-  thoiGianBatDau: string;
-  thoiGianKetThuc: string;
-}
-
-const lichSuSuDung: History[] = [
-  {
-    baiDang: "Giáo trình Kinh tế vĩ mô",
-    loaiGoi: "Gói Đẩy Tin Nhanh",
-    thoiGianBatDau: "15:00 06/04/2026",
-    thoiGianKetThuc: "15:05 06/04/2026",
-  },
-];
+import { toast } from "react-toastify";
+import { FilePenLine, CalendarDays, Rocket } from "lucide-react";
+import type { PushHistory } from "../../types/PushHistory";
+import type { PackagePlan } from "../../types/PackagePlan";
+import type { SellerPackage } from "../../types/SellerPackage";
+import {
+  fetchPushHistory,
+  pushListing,
+  fetchPostLimit,
+} from "../../services/listingService";
+import { createPackagePayment } from "../../services/paymentService";
+import {
+  fetchPackagePlans,
+  fetchMyPackages,
+} from "../../services/packageService";
 
 export default function PackagePlans() {
   const { token } = useAuth();
@@ -46,38 +23,49 @@ export default function PackagePlans() {
   const [myPackages, setMyPackages] = useState<SellerPackage[]>([]);
   const [statusMsg, setStatusMsg] = useState("");
   const [postLimit, setPostLimit] = useState<any>(null);
+  const [pushHistory, setPushHistory] = useState<PushHistory[]>([]);
 
-  const fetchPostLimit = () => {
-    fetch("http://localhost:8080/api/listings/post-limit", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const text = await res.text();
-          console.error("SERVER ERROR:", text);
-          return null;
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data) setPostLimit(data);
-      })
-      .catch(console.error);
+  // Hàm đẩy tin
+  const handlePush = async (listingId: number) => {
+    try {
+      const data = await pushListing(listingId);
+
+      toast.success(data.message || "Đẩy tin thành công");
+
+      const history = await fetchPushHistory();
+      setPushHistory(history);
+    } catch (err: any) {
+      toast.error(err.message || "Đẩy tin thất bại");
+    }
   };
 
-  // Lấy danh sách gói tin
-  useEffect(() => {
-    fetch("http://localhost:8080/api/package-plans")
-      .then((res) => res.json())
-      .then(setPackages)
-      .catch(console.error);
-  }, []);
+  // Tính xem có gói nào còn hạn không
+  const hasActivePackage = myPackages.some(
+    (sp) => new Date(sp.endDate) > new Date(),
+  );
 
   useEffect(() => {
-    if (token) {
-      fetchMyPackages();
-      fetchPostLimit();
-    }
+    if (!token) return;
+
+    const loadData = async () => {
+      try {
+        const [pkgPlans, myPkgs, history, limit] = await Promise.all([
+          fetchPackagePlans(),
+          fetchMyPackages(),
+          fetchPushHistory(),
+          fetchPostLimit(),
+        ]);
+
+        setPackages(pkgPlans);
+        setMyPackages(myPkgs);
+        setPushHistory(history);
+        setPostLimit(limit);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadData();
   }, [token]);
 
   // Thông báo kết quả từ thanh toán
@@ -93,35 +81,17 @@ export default function PackagePlans() {
     }
   }, []);
 
-  // Hàm lấy danh sách gói tin của người dùng sau khi mua hoặc khi vào trang
-  const fetchMyPackages = () => {
-    fetch("http://localhost:8080/api/my-packages", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then(setMyPackages)
-      .catch(console.error);
-  };
-
   // Hàm xử lý khi người dùng nhấn "Mua ngay"
   const handlePayment = async (id: number) => {
-    const returnUrl = window.location.origin;
+    try {
+      const returnUrl = window.location.origin;
 
-    const res = await fetch(
-      `http://localhost:8080/api/payment/create?packageId=${id}&returnUrl=${returnUrl}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
+      const paymentUrl = await createPackagePayment(id, returnUrl);
 
-    const paymentUrl = await res.text();
-    window.location.href = paymentUrl;
-  };
-
-  const activatePackage = (sellerPackageId: number) => {
-    alert(`Kích hoạt gói #${sellerPackageId}`);
+      window.location.href = paymentUrl;
+    } catch (err: any) {
+      toast.error(err.message || "Không thể tạo thanh toán");
+    }
   };
 
   return (
@@ -140,7 +110,9 @@ export default function PackagePlans() {
 
               <div className="usage-item">
                 <div className="usage-label">
-                  <span>📝 Lượt đăng</span>
+                  <span>
+                    <FilePenLine size={18} /> Lượt đăng tin
+                  </span>
                   <span className="usage-count">
                     <strong>{postLimit.freeRemaining}</strong> / 3
                   </span>
@@ -161,7 +133,7 @@ export default function PackagePlans() {
         </section>
       )}
 
-      {/* ===== GÓI ĐANG SỬ DỤNG ===== */}
+      {/* Gói đang sử dụng */}
       {myPackages.length > 0 && (
         <section className="active-packages-section">
           <h2 className="section-title">Gói đang sử dụng</h2>
@@ -200,7 +172,7 @@ export default function PackagePlans() {
 
                   {/* Ngày hết hạn */}
                   <div className="active-pkg-expiry">
-                    📅 Hết hạn:{" "}
+                    <CalendarDays size={18} /> Hết hạn:{" "}
                     <strong>
                       {endDate.toLocaleDateString("vi-VN", {
                         day: "2-digit",
@@ -216,7 +188,9 @@ export default function PackagePlans() {
                   {/* Lượt đăng tin */}
                   <div className="usage-item">
                     <div className="usage-label">
-                      <span>📝 Lượt đăng tin</span>
+                      <span>
+                        <FilePenLine size={18} /> Lượt đăng tin
+                      </span>
                       <span className="usage-count">
                         <strong>{sp.remainingPosts}</strong> / {sp.postLimit}
                       </span>
@@ -235,7 +209,9 @@ export default function PackagePlans() {
                   {/* Lượt đẩy tin */}
                   <div className="usage-item">
                     <div className="usage-label">
-                      <span>🚀 Lượt đẩy tin</span>
+                      <span>
+                        <Rocket size={18} /> Lượt đẩy tin
+                      </span>
                       <span className="usage-count">
                         <strong>{sp.remainingPushes}</strong> / {sp.pushLimit}
                       </span>
@@ -257,69 +233,65 @@ export default function PackagePlans() {
         </section>
       )}
 
-      <section>
-        <h2 className="section-title">Kho gói tin của tôi</h2>
+      {/* Kho gói tin của tôi */}
+      {!hasActivePackage && (
+        <section>
+          <h2 className="section-title">Kho gói tin của tôi</h2>
 
-        <div className="plans-grid">
-          {packages.map((pkg) => {
-            const purchased = myPackages.find((sp) => sp.id === pkg.id);
-            const hasPurchased = myPackages.length > 0;
-            const isPopular = pkg.priorityLevel === 2;
+          <div className="plans-grid">
+            {packages.map((pkg) => {
+              const purchased = myPackages.find((sp) => sp.id === pkg.id);
+              const hasPurchased = myPackages.length > 0;
+              const isPopular = pkg.priorityLevel === 2;
 
-            return (
-              <div
-                key={pkg.id}
-                className={`plan-card ${isPopular ? "popular" : ""}`}
-              >
-                {isPopular && (
-                  <span className="badge-popular">Phổ biến nhất</span>
-                )}
+              return (
+                <div
+                  key={pkg.id}
+                  className={`plan-card ${isPopular ? "popular" : ""}`}
+                >
+                  {isPopular && (
+                    <span className="badge-popular">Phổ biến nhất</span>
+                  )}
 
-                <div className="plan-name">{pkg.name}</div>
-                <div className="plan-price">
-                  {pkg.price.toLocaleString("vi-VN")}đ
-                </div>
-                <div className="plan-period">VNĐ / {pkg.durationDays} ngày</div>
+                  <div className="plan-name">{pkg.name}</div>
+                  <div className="plan-price">
+                    {pkg.price.toLocaleString("vi-VN")}đ
+                  </div>
+                  <div className="plan-period">
+                    VNĐ / {pkg.durationDays} ngày
+                  </div>
 
-                <hr className="plan-divider" />
+                  <hr className="plan-divider" />
 
-                <ul className="plan-features">
-                  <li>
-                    <span className="check-icon">✓</span>
-                    <span>
-                      <strong>{pkg.postLimit} bài</strong> đăng tin
-                    </span>
-                  </li>
-                  <li>
-                    <span className="check-icon">✓</span>
-                    <span>
-                      <strong>{pkg.pushLimit} lượt</strong> đẩy tin
-                    </span>
-                  </li>
-                  <li>
-                    <span className="check-icon">✓</span>
-                    <span>
-                      Hiệu lực <strong>{pkg.pushHours}h</strong> / lượt
-                    </span>
-                  </li>
-                  {pkg.priorityLevel === 3 && (
+                  <ul className="plan-features">
                     <li>
                       <span className="check-icon">✓</span>
                       <span>
-                        Xuất hiện mục <strong>Đề xuất</strong>
+                        <strong>{pkg.postLimit} bài</strong> đăng tin
                       </span>
                     </li>
-                  )}
-                </ul>
+                    <li>
+                      <span className="check-icon">✓</span>
+                      <span>
+                        <strong>{pkg.pushLimit} lượt</strong> đẩy tin
+                      </span>
+                    </li>
+                    <li>
+                      <span className="check-icon">✓</span>
+                      <span>
+                        Hiệu lực <strong>{pkg.pushHours}h</strong> / lượt
+                      </span>
+                    </li>
+                    {pkg.priorityLevel === 3 && (
+                      <li>
+                        <span className="check-icon">✓</span>
+                        <span>
+                          Xuất hiện mục <strong>Đề xuất</strong>
+                        </span>
+                      </li>
+                    )}
+                  </ul>
 
-                {purchased ? (
-                  <button
-                    className="btn-activate"
-                    onClick={() => activatePackage(purchased.id)}
-                  >
-                    Kích hoạt
-                  </button>
-                ) : (
                   <button
                     className={`btn-buy ${isPopular ? "primary" : ""}`}
                     disabled={hasPurchased}
@@ -332,38 +304,92 @@ export default function PackagePlans() {
                   >
                     Mua ngay — {pkg.price.toLocaleString("vi-VN")}đ
                   </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
+      {/* Lịch sử & Trạng thái sử dụng */}
       <section className="history-section">
-        <h2 className="section-title">
-          Lịch sử &amp; Trạng thái sử dụng (Dữ liệu demo)
-        </h2>
+        <h2 className="section-title">Lịch sử &amp; Trạng thái sử dụng</h2>
         <div className="table-wrapper">
           <table className="data-table">
             <thead>
               <tr>
                 <th>Bài đăng</th>
                 <th>Loại gói</th>
-                <th>Thời gian bắt đầu</th>
-                <th>Thời gian kết thúc</th>
+                <th>Thời gian bắt đầu đẩy</th>
+                <th>Thời gian hết hiệu lực</th>
+                <th>Đẩy tin</th>
               </tr>
             </thead>
             <tbody>
-              {lichSuSuDung.map((item, idx) => (
-                <tr key={idx}>
-                  <td>{item.baiDang}</td>
-                  <td>
-                    <span className="package-tag">{item.loaiGoi}</span>
+              {pushHistory.map((item) => {
+                const expiresAt = new Date(item.pushExpiresAt);
+                const isPushExpired = new Date() > expiresAt;
+
+                return (
+                  <tr key={item.listingId}>
+                    <td>{item.listingTitle}</td>
+                    <td>
+                      <span className="package-tag">{item.packageName}</span>
+                    </td>
+                    <td className="time-text">
+                      {new Date(item.lastPushAt).toLocaleString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td
+                      className="time-text"
+                      style={{ color: isPushExpired ? "#888" : "#15803d" }}
+                    >
+                      {expiresAt.toLocaleString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td>
+                      {item.canPush ? (
+                        <button
+                          className="btn-push"
+                          onClick={() => handlePush(item.listingId)}
+                        >
+                          Đẩy lại
+                        </button>
+                      ) : !isPushExpired ? (
+                        <span className="push-msg warn">Còn hiệu lực</span>
+                      ) : item.remainingPushes === 0 ? (
+                        <span className="push-msg warn">Hết lượt đẩy</span>
+                      ) : (
+                        <span className="push-msg warn">Gói hết hạn</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {pushHistory.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={5}
+                    style={{
+                      textAlign: "center",
+                      color: "#888",
+                      padding: "20px",
+                    }}
+                  >
+                    Chưa có dữ liệu
                   </td>
-                  <td className="time-text">{item.thoiGianBatDau}</td>
-                  <td className="time-text">{item.thoiGianKetThuc}</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

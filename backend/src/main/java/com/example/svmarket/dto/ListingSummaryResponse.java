@@ -24,4 +24,5 @@ public class ListingSummaryResponse {
     private LocalDateTime createdAt;
     private Integer priorityLevel;
     private Boolean isFeatured;
+    private boolean pushing;
 }

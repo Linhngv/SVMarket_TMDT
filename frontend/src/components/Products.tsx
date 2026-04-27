@@ -55,7 +55,6 @@ function formatCurrency(value: number) {
   return `${new Intl.NumberFormat("vi-VN").format(value)}đ`;
 }
 
-
 // Nhận props searchKeyword từ Home
 export default function Products({
   title,
@@ -68,7 +67,6 @@ export default function Products({
   university: string;
   categoryId?: number;
 }) {
-
   const [openFilter, setOpenFilter] = useState(false);
   const [selected, setSelected] = useState("Mới nhất");
   const [activeListings, setActiveListings] = useState<ListingSummary[]>([]);
@@ -82,7 +80,12 @@ export default function Products({
     return "newest";
   };
 
-  const loadActiveListings = async (keyword?: string, uni?: string, catId?: number, sortLabel?: string) => {
+  const loadActiveListings = async (
+    keyword?: string,
+    uni?: string,
+    catId?: number,
+    sortLabel?: string,
+  ) => {
     try {
       const sortBy = getSortByParam(sortLabel || "Mới nhất");
       const data = await fetchActiveListings(keyword, uni, catId, sortBy);
@@ -127,6 +130,7 @@ export default function Products({
       : "",
 
     priorityLevel: listing.priorityLevel,
+    pushing: listing.pushing,
   }));
 
   const handleFavoriteClick = async (
@@ -218,8 +222,8 @@ export default function Products({
               <div className="product-img-wrapper">
                 {/* Hiển thị cho gói VIP */}
                 {item.priorityLevel === 3 && (
-                  <div className="badge hot">
-                    <span className="flame"></span>
+                  <div className={`badge ${item.pushing ? "hot" : "vip"}`}>
+                    {item.pushing && <span className="flame"></span>}
                     TOP
                   </div>
                 )}
@@ -249,13 +253,19 @@ export default function Products({
                   </div>
                 )}
               </div>
-    
+
               <div className="product-info">
-                <h6 className="product-item-title" title={item.title}>{item.title}</h6>
+                <h6 className="product-item-title" title={item.title}>
+                  {item.title}
+                </h6>
 
-                <p className="product-price" title={item.price}>{item.price}</p>
+                <p className="product-price" title={item.price}>
+                  {item.price}
+                </p>
 
-                <small className="product-meta" title={item.university}>{item.university}</small>
+                <small className="product-meta" title={item.university}>
+                  {item.university}
+                </small>
 
                 <div className="product-action">
                   <button className="product-status-btn">Đã qua sử dụng</button>
