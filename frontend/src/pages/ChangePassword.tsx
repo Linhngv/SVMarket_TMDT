@@ -100,7 +100,7 @@ export default function ChangePassword() {
                 {renderPasswordInput("Xác nhận mật khẩu mới", confirmPassword, setConfirmPassword, "confirm")}
 
                 <div className="d-flex justify-content-end mt-4">
-                    <button type="submit" className="btn px-4 py-2 text-white border-0" disabled={loading} style={{ backgroundColor: "#1B7A4A", borderRadius: "8px", fontWeight: "500", fontSize: "15px" }}>
+                    <button type="submit" className="btn px-4 py-2 text-white border-0" disabled={loading} style={{ width: "300px", backgroundColor: "#1B7A4A", borderRadius: "8px", fontWeight: "500", fontSize: "15px" }}>
                         {loading ? "Đang xử lý..." : "Đổi mật khẩu"}
                     </button>
                 </div>

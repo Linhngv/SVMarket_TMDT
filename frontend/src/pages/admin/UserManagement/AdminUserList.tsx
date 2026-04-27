@@ -4,7 +4,7 @@ import AdminSidebar from "../../../components/admin/AdminSidebar";
 import AdminTopBar from "../../../components/admin/AdminTopBar";
 import { Search, User as UserIcon, Eye, ChevronDown } from "lucide-react";
 import AdminUserDetailsPopup from "./AdminUserDetailsPopup";
-import "../../../styles/admin/AdminPackage.css";
+import "../../../styles/admin/AdminPostList.css";
 
 export interface UserAdmin {
     id: number;
@@ -142,7 +142,7 @@ export default function AdminUserList() {
                                         <th className="fw-medium text-muted" style={{ width: "60px" }}>ID</th>
                                         <th className="fw-medium text-muted">Người dùng</th>
                                         <th className="fw-medium text-muted">Email</th>
-                                        <th className="fw-medium text-muted" style={{ width: "120px" }}>Vai trò</th>
+                                        <th className="fw-medium text-muted" style={{ width: "200px" }}>Vai trò</th>
                                         <th className="fw-medium text-muted">Xác minh</th>
                                         <th className="fw-medium text-muted" style={{ width: "150px" }}>Trạng thái</th>
                                         <th className="fw-medium text-center text-muted" style={{ width: "100px" }}>Hành động</th>
@@ -171,31 +171,31 @@ export default function AdminUserList() {
                                                 </td>
                                                 <td className="text-muted">{user.email}</td>
                                                 <td>
-                                                    <span 
-                                                        className={`badge rounded-pill ${user.role === 'ADMIN' ? 'bg-danger-subtle text-danger border border-danger-subtle' : ''}`}
+                                                    <span
+                                                        className={`rounded-pill ${user.role === 'ADMIN' ? 'bg-danger-subtle text-danger border border-danger-subtle' : ''}`}
                                                         style={user.role !== 'ADMIN' ? {
                                                             backgroundColor: '#E8F5EE',
                                                             color: '#2D9E63',
-                                                            padding: '5.5px 12px'
-                                                        } : { padding: '5.5px 12px' }}
+                                                            padding: '5px 10px'
+                                                        } : { padding: '5px 10px' }}
                                                     >
                                                         {user.role === 'ADMIN' ? 'Quản trị viên' : 'Người dùng'}
                                                     </span>
                                                 </td>
                                                 <td>{user.university ? "Đã duyệt" : "Chờ duyệt"}</td>
                                                 <td>
-                                                    <span className="badge rounded-pill text-white px-3 py-2" style={{ backgroundColor: user.status === 'Đã khóa' ? '#C0392B' : '#22C55E' }}>
+                                                    <span className="rounded-pill text-white px-3 py-2" style={{ backgroundColor: user.status === 'Đã khóa' ? '#C0392B' : '#22C55E' }}>
                                                         {user.status === 'Đã khóa' ? 'Bị khóa' : 'Hoạt động'}
                                                     </span>
                                                 </td>
                                                 <td>
                                                     <div className="d-flex justify-content-center gap-2">
                                                         <button className="btn btn-sm bg-transparent border-0 text-primary" title="Xem chi tiết" onClick={() => handleOpenDetails(user)}>
-                                                            <Eye size={20}  style={{color: "#1B7A4A"}} />
+                                                            <Eye size={20} style={{ color: "#1B7A4A" }} />
                                                         </button>
                                                         <button className="btn btn-sm bg-transparent border-0 text-primary" title="Cập nhật trạng thái" onClick={() => handleOpenStatusModal(user)}>
                                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20">
-                                                                <path fill="#C0392B" d="M256 312C322.3 312 376 258.3 376 192C376 125.7 322.3 72 256 72C189.7 72 136 125.7 136 192C136 258.3 189.7 312 256 312zM226.3 368C127.8 368 48 447.8 48 546.3C48 562.7 61.3 576 77.7 576L329.2 576C293 533.4 272 478.5 272 420.4L272 389.3C272 382 273 374.8 274.9 368L226.3 368zM477.3 552.5L464 558.8L464 370.7L560 402.7L560 422.3C560 478.1 527.8 528.8 477.3 552.6zM453.9 323.5L341.9 360.8C328.8 365.2 320 377.4 320 391.2L320 422.3C320 496.7 363 564.4 430.2 596L448.7 604.7C453.5 606.9 458.7 608.1 463.9 608.1C469.1 608.1 474.4 606.9 479.1 604.7L497.6 596C565 564.3 608 496.6 608 422.2L608 391.1C608 377.3 599.2 365.1 586.1 360.7L474.1 323.4C467.5 321.2 460.4 321.2 453.9 323.4z"/>
+                                                                <path fill="#C0392B" d="M256 312C322.3 312 376 258.3 376 192C376 125.7 322.3 72 256 72C189.7 72 136 125.7 136 192C136 258.3 189.7 312 256 312zM226.3 368C127.8 368 48 447.8 48 546.3C48 562.7 61.3 576 77.7 576L329.2 576C293 533.4 272 478.5 272 420.4L272 389.3C272 382 273 374.8 274.9 368L226.3 368zM477.3 552.5L464 558.8L464 370.7L560 402.7L560 422.3C560 478.1 527.8 528.8 477.3 552.6zM453.9 323.5L341.9 360.8C328.8 365.2 320 377.4 320 391.2L320 422.3C320 496.7 363 564.4 430.2 596L448.7 604.7C453.5 606.9 458.7 608.1 463.9 608.1C469.1 608.1 474.4 606.9 479.1 604.7L497.6 596C565 564.3 608 496.6 608 422.2L608 391.1C608 377.3 599.2 365.1 586.1 360.7L474.1 323.4C467.5 321.2 460.4 321.2 453.9 323.4z" />
                                                             </svg>
                                                         </button>
                                                     </div>
@@ -211,21 +211,21 @@ export default function AdminUserList() {
                         {totalPages > 1 && (
                             <div className="d-flex justify-content-center align-items-center mt-4 text-muted small">
                                 <div className="d-flex flex-wrap justify-content-center gap-2">
-                                    <button 
+                                    <button
                                         className="btn btn-sm rounded-circle border bg-white d-flex align-items-center justify-content-center"
                                         style={{ width: "32px", height: "32px" }}
                                         disabled={currentPage === 1}
                                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                     >‹</button>
                                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                        <button 
+                                        <button
                                             key={page}
                                             className={`btn btn-sm rounded-circle border d-flex align-items-center justify-content-center ${currentPage === page ? 'text-white' : 'bg-white text-dark'}`}
                                             style={currentPage === page ? { backgroundColor: '#1B7A4A', borderColor: '#1B7A4A', width: "32px", height: "32px" } : { width: "32px", height: "32px" }}
                                             onClick={() => setCurrentPage(page)}
                                         >{page}</button>
                                     ))}
-                                    <button 
+                                    <button
                                         className="btn btn-sm rounded-circle border bg-white d-flex align-items-center justify-content-center"
                                         style={{ width: "32px", height: "32px" }}
                                         disabled={currentPage === totalPages}
@@ -246,7 +246,7 @@ export default function AdminUserList() {
                                     <h3 className="page-title m-0 fw-bold" style={{ color: '#1A1A2E' }}>Cập nhật trạng thái - {selectedUser.fullName || "Chưa cập nhật"}</h3>
                                     <button type="button" className="btn-close" onClick={() => setShowStatusModal(false)}></button>
                                 </div>
-                                
+
                                 <div className="modal-body p-0 text-start">
                                     <div className="mb-4">
                                         <p className="fw-medium mb-2" style={{ color: '#374151' }}>Trạng thái hiện tại</p>

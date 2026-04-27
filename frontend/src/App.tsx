@@ -32,6 +32,7 @@ import SavedListings from "./pages/listing/SavedListings";
 import SellerReviews from "./pages/SellerReviews";
 import BuyerReviews from "./pages/BuyerReviews";
 import MyReview from "./pages/MyReview";
+import AdminTransactionList from "./pages/admin/TransactionManagement.tsx/AdminTransactionList";
 
 function App() {
   return (
@@ -75,6 +76,7 @@ function App() {
         <Route path="/admin/categories" element={<AdminCategory />} />
         <Route path="/admin/users" element={<AdminUserList />} />
         <Route path="/admin/status/:id" element={<AdminUserStatus />} />
+        <Route path="/admin/giao-dich" element={<AdminTransactionList />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
         <Route path="*" element={<div>Trang đang được phát triển.</div>} />

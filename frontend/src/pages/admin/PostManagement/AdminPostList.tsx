@@ -174,12 +174,12 @@ export default function AdminPostList() {
                                     ) : (
                                         currentPosts.map((post) => (
                                             <tr key={post.id}>
-                                                <td style={{ paddingTop: "10px", paddingBottom: "10px" }}>{post.id}</td>
-                                                <td style={{ paddingTop: "10px", paddingBottom: "10px" }}>{post.title}</td>
-                                                <td style={{ paddingTop: "10px", paddingBottom: "10px" }}>{post.author}</td>
-                                                <td className="align-middle text-center" style={{ paddingTop: "10px", paddingBottom: "10px" }}>
+                                                <td className="admin-post-list-td">{post.id}</td>
+                                                <td className="admin-post-list-td">{post.title}</td>
+                                                <td className="admin-post-list-td">{post.author}</td>
+                                                <td className="align-middle text-center admin-post-list-td">
                                                     <div className="d-flex align-items-center justify-content-center m-0">
-                                                        <span className={`badge ${getStatusClass(post.status)} status-badge rounded-pill py-2 px-3 m-0`} style={{ fontSize: "14px", fontWeight: "500" }}>
+                                                        <span className={`${getStatusClass(post.status)} status-badge rounded-pill py-2 px-3 m-0`}>
                                                             {getStatusLabel(post.status)}
                                                         </span>
                                                     </div>

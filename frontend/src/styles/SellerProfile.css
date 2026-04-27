@@ -43,6 +43,9 @@ body {
 .reputation {
     background-color: #d4a017;
     color: var(--white);
+    border-radius: 30px;
+    font-size: 14px;
+    padding: 5px 18px;
 }
 
 .number {

@@ -46,6 +46,10 @@ public class OrderService {
         Listing listing = listingRepository.findById(request.getListingId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng"));
 
+        if (buyer.getId().equals(listing.getSeller().getId())) {
+            throw new RuntimeException("Bạn không thể tự đặt mua sản phẩm của chính mình");
+        }
+
         // Tạo đơn hàng lưu vào bảng orders
         Order order = Order.builder()
                 .buyer(buyer)

@@ -13,7 +13,7 @@ import {
 export default function ProductDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
 
   const [isBuyFormOpen, setIsBuyFormOpen] = useState(false);
   const [buyerNote, setBuyerNote] = useState("");
@@ -24,6 +24,7 @@ export default function ProductDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -36,6 +37,26 @@ export default function ProductDetail() {
       document.body.style.overflow = "";
     };
   }, [isBuyFormOpen]);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      if (user && (user as any).id) {
+        setCurrentUserId((user as any).id);
+      } else {
+        const token = localStorage.getItem("token");
+        if (token) {
+          fetch("http://localhost:8080/api/user/profile", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+            .then((res) => (res.ok ? res.json() : Promise.reject("Lỗi xác thực")))
+            .then((data) => setCurrentUserId(data.id))
+            .catch((err) => console.error(err));
+        }
+      }
+    } else {
+      setCurrentUserId(null);
+    }
+  }, [isLoggedIn, user]);
 
   useEffect(() => {
     if (!id) {
@@ -61,7 +82,11 @@ export default function ProductDetail() {
     loadListing();
   }, [id]);
 
-  const openBuyForm = () => setIsBuyFormOpen(true);
+  const openBuyForm = () => {
+    const isProductOwner = Boolean(isLoggedIn && currentUserId && (product as any)?.sellerId && String(currentUserId) === String((product as any)?.sellerId));
+    if (isProductOwner) return;
+    setIsBuyFormOpen(true);
+  };
   const closeBuyForm = () => setIsBuyFormOpen(false);
 
   const handleBuySubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -109,6 +134,8 @@ export default function ProductDetail() {
   const location = product?.deliveryAddress || "Chưa cập nhật địa điểm";
   const sellerId = (product as any)?.sellerId;
   const sellerAvatar = (product as any)?.sellerAvatar;
+
+  const isOwner = Boolean(isLoggedIn && currentUserId && sellerId && String(currentUserId) === String(sellerId));
 
   const galleryImages =
     product?.imageUrls && product.imageUrls.length > 0
@@ -251,8 +278,14 @@ export default function ProductDetail() {
                   </div>
 
                   <div className="detail-action-row">
-                    <button className="buy-btn" onClick={openBuyForm}>
-                      Đặt mua
+                    <button 
+                      className="buy-btn" 
+                      onClick={openBuyForm}
+                      disabled={isOwner}
+                      style={isOwner ? { opacity: 0.6, cursor: "not-allowed" } : undefined}
+                      title={isOwner ? "Bạn không thể tự mua sản phẩm của chính mình" : ""}
+                    >
+                      {isOwner ? "Sản phẩm của bạn" : "Đặt mua"}
                     </button>
                     <button className="chat-btn">Nhắn tin</button>
                   </div>

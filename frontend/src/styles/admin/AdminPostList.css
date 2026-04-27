@@ -60,18 +60,18 @@
 }
 
 .badge-pending {
-    background-color: #E5E7EB;
-    color: #3D3D5C;
+    background: #E5E7EB !important;
+    color: #3D3D5C !important;
 }
 
 .badge-approved {
-    background-color: #22C55E;
-    color: #fff;
+    background: #22C55E !important;
+    color: #fff !important;
 }
 
 .badge-violation {
-    background-color: #C0392B;
-    color: #fff;
+    background: #C0392B !important;
+    color: #fff !important;
 }
 
 .status-badge {
@@ -80,6 +80,7 @@
     text-align: center;
     font-weight: 500;
     font-size: 15px;
+    position: relative !important;
 }
 
 /* APPROVAL PAGE */
@@ -146,6 +147,11 @@
 .btn-reject-post:hover {
     background-color: #fad2d0;
     color: #a93226;
+}
+
+.admin-post-list-td {
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 /* RESPONSIVE */
