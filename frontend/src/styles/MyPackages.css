@@ -26,7 +26,7 @@
 }
 
 .data-table thead tr {
-  background: var(--gray-light);
+  background: var(--light-green);
 }
 
 .data-table thead th {
@@ -103,12 +103,15 @@
   font-size: 14px;
   margin-bottom: 15px;
 }
-.section-title {
-  font-size: 20px;
+
+.history-section .section-title,
+.active-packages-section .section-title {
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 12px 0;
 }
+
 .section-desc {
   font-size: 13px;
   color: var(--text-secondary);
@@ -277,8 +280,14 @@
   border-radius: 999px;
 }
 
-.tag-active  { background: #dcfce7; color: #15803d; }
-.tag-expired { background: #fee2e2; color: #b91c1c; }
+.tag-active {
+  background: #dcfce7;
+  color: #15803d;
+}
+.tag-expired {
+  background: #fee2e2;
+  color: #b91c1c;
+}
 
 .active-pkg-expiry {
   font-size: 0.88rem;
@@ -286,12 +295,15 @@
 }
 
 .days-left {
-  color: #f59e0b;
+  color: var(--warning);
   font-weight: 600;
 }
 
-/* Progress bars */
-.usage-item { display: flex; flex-direction: column; gap: 5px; }
+.usage-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
 .usage-label {
   display: flex;
@@ -300,7 +312,9 @@
   color: #374151;
 }
 
-.usage-count strong { color: #1e1b4b; }
+.usage-count strong {
+  color: #1e1b4b;
+}
 
 .usage-bar-bg {
   height: 7px;
@@ -313,4 +327,34 @@
   height: 100%;
   border-radius: 999px;
   transition: width 0.4s ease;
+}
+
+.btn-push {
+  background: var(--secondary);
+  color: var(--white);
+  border: none;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-push:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(27, 122, 74, 0.35);
+}
+
+.push-msg {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.push-msg.warn {
+  background: var(--light-red);
+  color: var(--red);
 }

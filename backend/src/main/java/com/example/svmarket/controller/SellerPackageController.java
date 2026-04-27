@@ -1,9 +1,13 @@
 package com.example.svmarket.controller;
 
+import com.example.svmarket.dto.PushHistoryResponse;
 import com.example.svmarket.dto.SellerPackageResponse;
 import com.example.svmarket.service.SellerPackageService;
 import com.example.svmarket.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;

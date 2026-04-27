@@ -94,6 +94,7 @@ export default function RecommendedProducts() {
       : "",
 
     priorityLevel: listing.priorityLevel,
+    pushing: listing.pushing,
   }));
 
   const handleFavoriteClick = async (
@@ -150,8 +151,8 @@ export default function RecommendedProducts() {
               {/* IMAGE */}
               <div className="product-img-wrapper">
                 {item.priorityLevel === 3 && (
-                  <div className="badge hot">
-                    <span className="flame"></span>
+                  <div className={`badge ${item.pushing ? "hot" : "vip"}`}>
+                    {item.pushing && <span className="flame"></span>}
                     TOP
                   </div>
                 )}

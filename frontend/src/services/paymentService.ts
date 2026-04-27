@@ -30,3 +30,24 @@ export async function createOrderPayment(
 
     return res.text();
 }
+
+
+export async function createPackagePayment(
+  packageId: number,
+  returnUrl: string
+) {
+  const res = await fetch(
+    `${API}/create?packageId=${packageId}&returnUrl=${returnUrl}`,
+    {
+      method: "GET",
+      headers: getAuthHeader(),
+    }
+  );
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Tạo thanh toán thất bại");
+  }
+
+  return res.text(); 
+}

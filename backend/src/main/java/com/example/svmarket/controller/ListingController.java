@@ -1,11 +1,21 @@
 package com.example.svmarket.controller;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 
+import com.example.svmarket.dto.*;
+import com.example.svmarket.entity.Listing;
+import com.example.svmarket.entity.SellerPackage;
+import com.example.svmarket.entity.User;
+import com.example.svmarket.repository.SellerPackageRepository;
+import com.example.svmarket.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,11 +30,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.svmarket.dto.CategoryOptionResponse;
-import com.example.svmarket.dto.FavoriteToggleResponse;
-import com.example.svmarket.dto.ListingDetailResponse;
-import com.example.svmarket.dto.ListingSummaryResponse;
-import com.example.svmarket.dto.ListingUpsertRequest;
 // import com.example.svmarket.dto.UniversityJson;
 import com.example.svmarket.repository.ListingRepository;
 // import com.example.svmarket.repository.SellerPackageRepository;
@@ -46,11 +51,11 @@ public class ListingController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    // @Autowired
-    // private UserRepository userRepository;
+     @Autowired
+     private UserRepository userRepository;
 
-    // @Autowired
-    // private SellerPackageRepository sellerPackageRepository;
+     @Autowired
+     private SellerPackageRepository sellerPackageRepository;
 
     @Autowired
     ListingRepository listingRepository;
@@ -182,5 +187,26 @@ public class ListingController {
     public List<ListingSummaryResponse> getByCategory(
             @RequestParam Integer categoryId) {
         return listingService.getListingsByCategory(categoryId);
+    }
+
+    // Lấy danh sách bài đăng (có mua gói) đã được duyệt
+    @GetMapping("/history")
+    public ResponseEntity<List<PushHistoryResponse>> getPushHistory(
+            @RequestHeader("Authorization") String token) {
+
+        String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+        return ResponseEntity.ok(listingService.getPushHistory(email));
+    }
+
+    //  Xử lý đẩy lại bài đăng khi bấm nút "Đẩy lại"
+    @PostMapping("/{id}/push")
+    public ResponseEntity<?> pushListing(
+            @PathVariable Integer id,
+            @RequestHeader("Authorization") String token) {
+
+        String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+        listingService.pushListing(email, id);
+
+        return ResponseEntity.ok(Map.of("message", "Đẩy bài thành công"));
     }
 }
