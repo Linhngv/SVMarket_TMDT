@@ -29,4 +29,5 @@ public class ListingDetailResponse {
     private String rejectReason;
     private Integer sellerId;
     private String sellerAvatar;
+    private String postSource;
 }
