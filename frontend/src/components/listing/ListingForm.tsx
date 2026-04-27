@@ -22,6 +22,7 @@ type ListingFormProps = {
   submitDisabled?: boolean;
   showStatusField?: boolean;
   showBack?: boolean;
+  disablePostSource?: boolean;
   onBack?: () => void;
   onChange: (nextValues: ListingFormValues) => void;
   onImageChange: (files: File[]) => void;
@@ -48,6 +49,7 @@ export default function ListingForm({
   submitDisabled = false,
   showStatusField = false,
   showBack = false,
+  disablePostSource = false,
   onBack,
   onChange,
   onImageChange,
@@ -221,11 +223,14 @@ export default function ListingForm({
           <div className="post-source-grid">
             {/* FREE */}
             <div
-              className={`post-card ${
-                values.postSource === "FREE" ? "active" : ""
-              }`}
-              onClick={() => onChange({ ...values, postSource: "FREE" })}
-            >
+  className={`post-card ${
+    values.postSource === "FREE" ? "active" : ""
+  } ${disablePostSource ? "disabled" : ""}`}
+  onClick={() =>
+    !disablePostSource &&
+    onChange({ ...values, postSource: "FREE" })
+  }
+>
               <div className="post-radio" />
               <div>
                 <strong>Đăng miễn phí</strong>
@@ -234,12 +239,15 @@ export default function ListingForm({
             </div>
 
             {/* PACKAGE */}
-            <div
-              className={`post-card ${
-                values.postSource === "PACKAGE" ? "active" : ""
-              }`}
-              onClick={() => onChange({ ...values, postSource: "PACKAGE" })}
-            >
+           <div
+  className={`post-card ${
+    values.postSource === "PACKAGE" ? "active" : ""
+  } ${disablePostSource ? "disabled" : ""}`}
+  onClick={() =>
+    !disablePostSource &&
+    onChange({ ...values, postSource: "PACKAGE" })
+  }
+>
               <div className="post-radio" />
               <div>
                 <strong>Đăng bằng gói</strong>

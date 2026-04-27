@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 import {
   deleteListing,
   fetchMyListings,
-  fetchMyListingById,
-  updateListing,
   ListingSummary,
 } from "../services/listingService";
 import "../styles/ListingManagement.css";
@@ -29,11 +27,11 @@ function getStatusBadge(status: string) {
   return { text: "Tạm ẩn", className: "status-badge inactive" };
 }
 
-const STATUS_OPTIONS = [
-  { value: "ACTIVE", label: "Đang bán", className: "active" },
-  { value: "SOLD", label: "Đã bán", className: "sold" },
-  { value: "INACTIVE", label: "Tạm ẩn", className: "inactive" },
-];
+// const STATUS_OPTIONS = [
+//   { value: "ACTIVE", label: "Đang bán", className: "active" },
+//   { value: "SOLD", label: "Đã bán", className: "sold" },
+//   { value: "INACTIVE", label: "Tạm ẩn", className: "inactive" },
+// ];
 
 export default function MyListings() {
   const navigate = useNavigate();
@@ -73,8 +71,8 @@ export default function MyListings() {
       const data = await fetchMyListings();
       setListings(data);
     } catch (error) {
-      console.error("Khong the tai danh sach bai dang", error);
-      alert("Khong the tai danh sach bai dang");
+      console.error("Không thể tải danh sách bài đăng", error);
+      alert("Không thể tải danh sách bài đăng");
     }
   };
 
@@ -119,65 +117,59 @@ export default function MyListings() {
       await deleteListing(id);
       await loadListings();
     } catch (error) {
-      console.error("Khong the xoa bai dang", error);
-      alert("Khong the xoa bai dang");
+      console.error("Không thể xóa bài đăng", error);
+      alert("Không thể xóa bài đăng");
     }
   };
 
-  const handleStatusChange = async (listingId: number, nextStatus: string) => {
-    if (updatingStatusId === listingId) {
-      return;
-    }
+  // const handleStatusChange = async (listingId: number, nextStatus: string) => {
+  //   if (updatingStatusId === listingId) {
+  //     return;
+  //   }
 
-    setUpdatingStatusId(listingId);
+  //   setUpdatingStatusId(listingId);
 
-    try {
-      const listingDetail = await fetchMyListingById(listingId);
-      await updateListing(listingId, {
-        title: listingDetail.title,
-        categoryId: listingDetail.categoryId,
-        price: listingDetail.price,
-        deliveryAddress: listingDetail.deliveryAddress,
-        conditionLevel: listingDetail.conditionLevel,
-        description: listingDetail.description,
-        status: nextStatus,
-        images: [],
-      });
-      await loadListings();
-    } catch (error) {
-      console.error("Khong the cap nhat trang thai", error);
-      alert("Khong the cap nhat trang thai");
-    } finally {
-      setUpdatingStatusId(null);
-      setOpenStatusMenuId(null);
-    }
-  };
+  //   try {
+  //     const listingDetail = await fetchMyListingById(listingId);
+  //     await updateListing(listingId, {
+  //       title: listingDetail.title,
+  //       categoryId: listingDetail.categoryId,
+  //       price: listingDetail.price,
+  //       deliveryAddress: listingDetail.deliveryAddress,
+  //       conditionLevel: listingDetail.conditionLevel,
+  //       description: listingDetail.description,
+  //       status: nextStatus,
+  //       images: [],
+  //       postSource: listingDetail.postSource
+  //     });
+  //     await loadListings();
+  //   } catch (error) {
+  //     console.error("Không thể cập nhật trạng thái", error);
+  //     alert("Không thể cập nhật trạng thái");
+  //   } finally {
+  //     setUpdatingStatusId(null);
+  //     setOpenStatusMenuId(null);
+  //   }
+  // };
 
   return (
     <section className="listing-panel">
       <div className="listing-panel-header">
-        <h2>Danh sach bai dang</h2>
-
-        {postInfo && (
-          <div
-            className={`post-limit-badge ${postInfo.canPost ? "ok" : "error"}`}
-          >
-            {postInfo.message}
-          </div>
-        )}
+        <h2>Danh sách bài đăng</h2>
       </div>
 
-      <div className="listing-search-wrap">
-        <Search size={16} />
+      <div className="search-bar">
+        <Search size={15} className="search-icon" />
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Tim kiem bai dang theo tieu de"
+          placeholder="Tìm kiếm theo tiêu đề"
+          className="search-input"
         />
       </div>
 
       <div className="listing-table-wrap">
-        <table className="listing-table">
+        <table className="history-table">
           <thead>
             <tr>
               <th>Hình ảnh</th>
@@ -238,10 +230,10 @@ export default function MyListings() {
                           aria-label={`Cap nhat trang thai bai dang ${listing.title}`}
                         >
                           <span>{statusBadge.text}</span>
-                          <ChevronDown size={14} />
+                          {/* <ChevronDown size={14} /> */}
                         </button>
 
-                        {openStatusMenuId === listing.id ? (
+                        {/* {openStatusMenuId === listing.id ? (
                           <div className="status-menu" role="menu">
                             {STATUS_OPTIONS.map((option) => (
                               <button
@@ -257,7 +249,7 @@ export default function MyListings() {
                               </button>
                             ))}
                           </div>
-                        ) : null}
+                        ) : null} */}
                       </div>
                     </td>
 
@@ -268,18 +260,18 @@ export default function MyListings() {
                           onClick={() =>
                             navigate(`/my-listings/${listing.id}/edit`)
                           }
-                          aria-label="Cap nhat bai dang"
+                          aria-label="Cập nhật bài đăng"
                         >
-                          <Pencil size={19} />
+                          <Pencil size={18} />
                         </button>
 
                         <button
                           type="button"
                           className="danger"
                           onClick={() => handleDelete(listing.id)}
-                          aria-label="Xoa bai dang"
+                          aria-label="Xóa bài đăng"
                         >
-                          <Trash2 size={19} />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </td>

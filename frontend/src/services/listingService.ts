@@ -35,6 +35,7 @@ export type ListingDetail = {
   description: string;
   status: string;
   imageUrls: string[];
+  postSource: "FREE" | "PACKAGE";
 };
 
 export type PublicListingDetail = ListingDetail & {

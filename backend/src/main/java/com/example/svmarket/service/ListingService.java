@@ -457,6 +457,7 @@ public class ListingService {
                 .imageUrls(imageUrls)
                 .sellerId(listing.getSeller() != null ? listing.getSeller().getId() : null)
                 .sellerAvatar(listing.getSeller() != null ? listing.getSeller().getAvatar() : null)
+                .postSource(listing.getPostSource().name())
                 .build();
     }
 

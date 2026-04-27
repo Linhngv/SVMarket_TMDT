@@ -15,7 +15,7 @@ const DEFAULT_VALUES: ListingFormValues = {
   categoryId: "",
   price: "0",
   deliveryAddress: "",
-  conditionLevel: "Da qua su dung",
+  conditionLevel: "Đã qua sử dụng",
   description: "",
   status: "ACTIVE",
   postSource: "FREE",
@@ -99,18 +99,16 @@ export default function CreateListing() {
   };
 
   return (
-    <div className="create-listing-page">
-      <ListingForm
-        title="Thêm bài đăng"
-        submitLabel="Thêm bài đăng"
-        categories={categories}
-        values={values}
-        imagePreviews={imagePreviews}
-        submitDisabled={isSubmitting}
-        onChange={setValues}
-        onImageChange={setImages}
-        onSubmit={handleCreateListing}
-      />
-    </div>
+    <ListingForm
+      title="Thêm bài đăng"
+      submitLabel="Thêm bài đăng"
+      categories={categories}
+      values={values}
+      imagePreviews={imagePreviews}
+      submitDisabled={isSubmitting}
+      onChange={setValues}
+      onImageChange={setImages}
+      onSubmit={handleCreateListing}
+    />
   );
 }

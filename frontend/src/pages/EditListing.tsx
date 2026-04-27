@@ -21,9 +21,10 @@ export default function EditListing() {
     categoryId: "",
     price: "0",
     deliveryAddress: "",
-    conditionLevel: "Da qua su dung",
+    conditionLevel: "Đã qua sử dụng",
     description: "",
     status: "ACTIVE",
+    postSource: "FREE", 
   });
   const [images, setImages] = useState<File[]>([]);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
@@ -50,19 +51,19 @@ export default function EditListing() {
             url.startsWith("http") ? url : `http://localhost:8080${url}`,
           ),
         );
-
         setValues({
           title: listingData.title || "",
           categoryId: String(listingData.categoryId || ""),
           price: String(listingData.price || 0),
           deliveryAddress: listingData.deliveryAddress || "",
-          conditionLevel: listingData.conditionLevel || "Da qua su dung",
+          conditionLevel: listingData.conditionLevel || "Đã qua sử dụng",
           description: listingData.description || "",
           status: listingData.status || "ACTIVE",
+          postSource: listingData.postSource,
         });
       } catch (error) {
-        console.error("Khong the tai du lieu bai dang", error);
-        alert("Khong the tai du lieu bai dang");
+        console.error("Không thể tải dữ liệu bài đăng", error);
+        alert("Không thể tải dữ liệu bài đăng");
         navigate("/my-listings");
       }
     };
@@ -89,12 +90,12 @@ export default function EditListing() {
     const listingId = Number(id);
 
     if (Number.isNaN(listingId)) {
-      alert("ID bai dang khong hop le");
+      alert("ID bài này không hợp lệ");
       return;
     }
 
     if (!values.title.trim() || !values.categoryId) {
-      alert("Vui long dien day du thong tin bat buoc");
+      alert("Vui lòng điền đầy đủ thông tin bắt buộc");
       return;
     }
 
@@ -110,9 +111,10 @@ export default function EditListing() {
         description: values.description.trim(),
         status: values.status,
         images,
+        postSource: values.postSource,
       });
 
-      alert("Cap nhat bai dang thanh cong");
+      alert("Cập nhật bài đăng thành công");
       navigate("/my-listings");
     } catch (error: any) {
       alert(error?.response?.data || "Khong the cap nhat bai dang");
@@ -123,8 +125,8 @@ export default function EditListing() {
 
   return (
     <ListingForm
-      title="Cap nhat bai dang"
-      submitLabel="Cap nhat bai dang"
+      title="Cập nhật bài đăng"
+      submitLabel="Cập nhật bài đăng"
       categories={categories}
       values={values}
       imagePreviews={mergedImagePreviews}
@@ -135,6 +137,7 @@ export default function EditListing() {
       onChange={setValues}
       onImageChange={setImages}
       onSubmit={handleUpdateListing}
+      disablePostSource
     />
   );
 }
