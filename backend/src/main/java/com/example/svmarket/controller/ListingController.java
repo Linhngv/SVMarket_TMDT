@@ -1,21 +1,13 @@
 package com.example.svmarket.controller;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
 import com.example.svmarket.dto.*;
-import com.example.svmarket.entity.Listing;
-import com.example.svmarket.entity.SellerPackage;
-import com.example.svmarket.entity.User;
-import com.example.svmarket.repository.SellerPackageRepository;
-import com.example.svmarket.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,12 +22,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-// import com.example.svmarket.dto.UniversityJson;
 import com.example.svmarket.repository.ListingRepository;
-// import com.example.svmarket.repository.SellerPackageRepository;
-// import com.example.svmarket.repository.UserRepository;
 import com.example.svmarket.service.ListingService;
-// import com.example.svmarket.service.UniversityService;
 import com.example.svmarket.util.JwtUtil;
 
 import jakarta.validation.Valid;
@@ -50,12 +38,6 @@ public class ListingController {
 
     @Autowired
     private JwtUtil jwtUtil;
-
-     @Autowired
-     private UserRepository userRepository;
-
-     @Autowired
-     private SellerPackageRepository sellerPackageRepository;
 
     @Autowired
     ListingRepository listingRepository;
