@@ -56,21 +56,25 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
     }, []);
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
-    const unreadSystemNotes = notifications.filter(
-        (n) => n.type === "SYSTEM" && !n.isRead,
+    const unreadPostNotes = notifications.filter(
+        (n) => n.type === "SYSTEM" && !n.isRead && n.content.includes("bài đăng mới"),
     );
-    const pendingCount = unreadSystemNotes.length;
+    const unreadVerifyNotes = notifications.filter(
+        (n) => n.type === "SYSTEM" && !n.isRead && n.content.includes("duyệt định danh mới"),
+    );
+    const pendingPostCount = unreadPostNotes.length;
+    const pendingVerifyCount = unreadVerifyNotes.length;
 
     const displayNotifications = notifications.filter(
         (n) => !(n.type === "SYSTEM" && !n.isRead),
     );
 
-    const handlePendingClick = async () => {
+    const handlePendingPostClick = async () => {
         try {
             const token = localStorage.getItem("token");
             if (token) {
                 await Promise.all(
-                    unreadSystemNotes.map((n) =>
+                    unreadPostNotes.map((n) =>
                         fetch(`http://localhost:8080/api/notifications/${n.id}/read`, {
                             method: "PUT",
                             headers: { Authorization: `Bearer ${token}` },
@@ -78,13 +82,36 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                     ),
                 );
                 setNotifications((prev) =>
-                    prev.map((n) => (n.type === "SYSTEM" ? { ...n, isRead: true } : n)),
+                    prev.map((n) => (n.type === "SYSTEM" && n.content.includes("bài đăng mới") ? { ...n, isRead: true } : n)),
                 );
             }
         } catch (error) {
             console.error("Lỗi đánh dấu đã đọc:", error);
         }
         navigate("/admin/duyet-bai");
+        setShowNotifications(false);
+    };
+
+    const handlePendingVerifyClick = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (token) {
+                await Promise.all(
+                    unreadVerifyNotes.map((n) =>
+                        fetch(`http://localhost:8080/api/notifications/${n.id}/read`, {
+                            method: "PUT",
+                            headers: { Authorization: `Bearer ${token}` },
+                        }),
+                    ),
+                );
+                setNotifications((prev) =>
+                    prev.map((n) => (n.type === "SYSTEM" && n.content.includes("duyệt định danh mới") ? { ...n, isRead: true } : n)),
+                );
+            }
+        } catch (error) {
+            console.error("Lỗi đánh dấu đã đọc:", error);
+        }
+        navigate("/admin/xac-thuc");
         setShowNotifications(false);
     };
 
@@ -131,7 +158,11 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
         }
 
         if (note.type === "SYSTEM") {
-            navigate("/admin/duyet-bai");
+            if (note.content.includes("bài đăng mới")) {
+                navigate("/admin/duyet-bai");
+            } else if (note.content.includes("duyệt định danh mới")) {
+                navigate("/admin/xac-thuc");
+            }
             setShowNotifications(false);
         }
     };
@@ -211,18 +242,34 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                                 </p>
                             ) : (
                                 <>
-                                    {pendingCount > 0 && (
+                                    {pendingPostCount > 0 && (
                                         <div
                                             className="notification-note"
-                                            onClick={handlePendingClick}
+                                            onClick={handlePendingPostClick}
                                         >
                                             <div
                                                 className="dot-green"
                                             ></div>
                                             <div className="notification-content">
-                                                Có <strong>{pendingCount}</strong> bài đăng mới
+                                                Có <strong>{pendingPostCount}</strong> bài đăng mới
                                                 <div className="notification-time mt-1">
                                                     Đang chờ bạn kiểm duyệt
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {pendingVerifyCount > 0 && (
+                                        <div
+                                            className="notification-note"
+                                            onClick={handlePendingVerifyClick}
+                                        >
+                                            <div
+                                                className="dot-green"
+                                            ></div>
+                                            <div className="notification-content">
+                                                Có <strong>{pendingVerifyCount}</strong> yêu cầu xác thực mới
+                                                <div className="notification-time mt-1">
+                                                    Đang chờ bạn kiểm duyệt định danh
                                                 </div>
                                             </div>
                                         </div>
@@ -255,6 +302,16 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                                                         <strong>
                                                             {note.content.replace(
                                                                 "Có bài đăng mới cần kiểm duyệt: ",
+                                                                "",
+                                                            )}
+                                                        </strong>
+                                                    </>
+                                                ) : note.content.startsWith("Có yêu cầu duyệt định danh mới từ: ") ? (
+                                                    <>
+                                                        Có yêu cầu duyệt định danh mới từ:{" "}
+                                                        <strong>
+                                                            {note.content.replace(
+                                                                "Có yêu cầu duyệt định danh mới từ: ",
                                                                 "",
                                                             )}
                                                         </strong>

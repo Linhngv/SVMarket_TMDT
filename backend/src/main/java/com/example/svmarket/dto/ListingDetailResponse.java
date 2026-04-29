@@ -30,4 +30,5 @@ public class ListingDetailResponse {
     private Integer sellerId;
     private String sellerAvatar;
     private String postSource;
+    private Boolean isVerified;
 }

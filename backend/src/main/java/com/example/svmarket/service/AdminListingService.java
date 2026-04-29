@@ -102,6 +102,7 @@ public class AdminListingService {
                 ? List.of()
                 : listing.getImages().stream().map(Image::getUrl).toList();
 
+        Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());
         return ListingDetailResponse.builder()
                 .id(listing.getId())
                 .title(listing.getTitle())
@@ -115,6 +116,7 @@ public class AdminListingService {
                 .imageUrls(imageUrls)
                 .sellerName(listing.getSeller() != null ? listing.getSeller().getFullName() : null)
                 .sellerUniversity(listing.getSeller() != null ? listing.getSeller().getUniversity() : null)
+                .isVerified(isVerified)
                 .thumbnailUrl(!imageUrls.isEmpty() ? imageUrls.get(0) : null)
                 .createdAt(listing.getCreatedAt())
                 .rejectReason(listing.getRejectReason())
@@ -125,6 +127,7 @@ public class AdminListingService {
 
     // Hàm ánh xạ Entity sang DTO
     private ListingSummaryResponse toSummaryResponse(Listing listing) {
+        Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());
         String thumbnail = listing.getImages() != null && !listing.getImages().isEmpty()
                 ? listing.getImages().get(0).getUrl()
                 : null;
@@ -135,6 +138,7 @@ public class AdminListingService {
         response.setPrice(listing.getPrice());
         response.setSellerName(listing.getSeller() != null ? listing.getSeller().getFullName() : null);
         response.setSellerUniversity(listing.getSeller() != null ? listing.getSeller().getUniversity() : null);
+        response.setIsVerified(isVerified);
         response.setStatus(listing.getStatus() != null ? listing.getStatus().name() : ListingStatus.ACTIVE.name());
         response.setThumbnailUrl(thumbnail);
         response.setCreatedAt(listing.getCreatedAt());
