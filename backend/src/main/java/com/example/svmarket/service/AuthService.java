@@ -22,6 +22,7 @@ import com.example.svmarket.exception.BadRequestException;
 import com.example.svmarket.repository.PasswordResetOTPRepository;
 import com.example.svmarket.repository.UserRepository;
 import com.example.svmarket.util.JwtUtil;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
@@ -45,6 +46,9 @@ public class AuthService {
 
     @Autowired
     private UniversityService universityService;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     // public LoginResponse login(LoginRequest req) {
     // System.out.println("INPUT: " + req.getEmailOrPhone());
@@ -141,7 +145,7 @@ public class AuthService {
         emailService.sendOTP(registerRequest.getEmail(), otp, "dang ky tai khoan");
     }
 
-    public void verifyRegistrationOTP(RegisterOtpRequest request) {
+    public void verifyRegistrationOTP(RegisterOtpRequest request, MultipartFile studentCard) {
         PasswordResetOTP otpEntity = otpRepository.findByEmailAndOtp(request.getEmail(), request.getOtp())
                 .orElseThrow(() -> new BadRequestException("OTP không hợp lệ"));
 
@@ -158,16 +162,23 @@ public class AuthService {
                     "Mật khẩu phải có chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 6 ký tự");
         }
 
+        if (studentCard == null || studentCard.isEmpty()) {
+            throw new BadRequestException("Vui lòng upload ảnh thẻ sinh viên");
+        }
+        if (studentCard.getSize() > 5 * 1024 * 1024) {
+            throw new BadRequestException("Ảnh không được vượt quá 5MB");
+        }
+        CloudinaryService.UploadedImage uploaded = cloudinaryService.uploadStudentCard(studentCard);
+        String university = universityService.findUniversityByEmail(request.getEmail());
+
         User user = new User();
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setStatus("Đang hoạt động");
         user.setRole(Role.USER);
-
-        String university = universityService.findUniversityByEmail(request.getEmail());
-
         user.setUniversity(university); // lưu tên trường
+        user.setStudentCard(uploaded.secureUrl());
 
         userRepository.save(user);
         otpRepository.delete(otpEntity);

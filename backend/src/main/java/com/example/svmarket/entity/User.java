@@ -58,6 +58,9 @@ public class User {
     @Column(name = "free_reset_date")
     private LocalDateTime freeResetDate;
 
+    @Column(name = "student_card")
+    private String studentCard; // ảnh thẻ sinh viên
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Address> addresses;
 
@@ -69,4 +72,21 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Notification> notifications;
+
+    @PrePersist
+    public void prePersist() {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (freePostsRemaining == null) {
+            freePostsRemaining = 3;
+        }
+
+        if (freeResetDate == null) {
+            freeResetDate = now.plusMonths(1);
+        }
+
+        if (createdAt == null) {
+            createdAt = now;
+        }
+    }
 }

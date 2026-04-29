@@ -1,18 +1,23 @@
 import type { ChangeEvent, ClipboardEvent, KeyboardEvent } from "react";
 import type { CSSProperties } from "react";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import "../styles/Register.css";
 
 export default function RegisterOTP() {
+  const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState(Array<string>(6).fill(""));
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { fullName, email, password } = location.state || {};
+  const { fullName, email, password, studentCard } = location.state || {};
 
-  const handleChange = (index: number, event: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    index: number,
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const value = event.target.value.replace(/\D/g, "").slice(0, 1);
     const nextOtp = [...otp];
     nextOtp[index] = value;
@@ -23,14 +28,23 @@ export default function RegisterOTP() {
     }
   };
 
-  const handleKeyDown = (index: number, event: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (
+    index: number,
+    event: KeyboardEvent<HTMLInputElement>,
+  ) => {
     if (event.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleVerify(event as any);
+    }
   };
-
   const handlePaste = (event: ClipboardEvent) => {
-    const pasted = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const pasted = event.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
     if (!pasted) return;
     event.preventDefault();
 
@@ -46,34 +60,38 @@ export default function RegisterOTP() {
   const handleVerify = async (e: any) => {
     e.preventDefault();
 
+    if (loading) return;
+    setLoading(true);
+
     const otpValue = otp.join("");
+
     try {
+      const formData = new FormData();
+      formData.append(
+        "data",
+        new Blob(
+          [JSON.stringify({ fullName, email, password, otp: otpValue })],
+          { type: "application/json" },
+        ),
+      );
+      formData.append("studentCard", studentCard);
+
       const response = await fetch(
         "http://localhost:8080/api/auth/register/verify",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            fullName,
-            email,
-            password,
-            otp: otpValue,
-          }),
+          body: formData,
         },
       );
 
       const data = await response.text();
+      if (!response.ok) throw new Error(data);
 
-      if (!response.ok) {
-        throw new Error(data);
-      }
-
-      alert("Đăng ký thành công!");
+      toast.success("Đăng ký thành công!");
       navigate("/login");
     } catch (error: any) {
-      alert(error.message || "OTP không đúng");
+      setLoading(false);
+      toast.error(error.message || "OTP không đúng");
     }
   };
 
@@ -104,8 +122,19 @@ export default function RegisterOTP() {
             </div>
           </div>
 
-          <button type="submit" className="btn-auth">
-            Xác nhận
+          <button
+            type="submit"
+            className={`btn-auth ${loading ? "btn-auth-loading" : ""}`}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span className="spinner" />
+                Đang xử lý...
+              </>
+            ) : (
+              "Xác nhận"
+            )}
           </button>
           <div className="text-login">
             Bạn đã có tài khoản?{" "}

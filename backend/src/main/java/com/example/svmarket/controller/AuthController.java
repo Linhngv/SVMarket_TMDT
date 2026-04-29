@@ -1,11 +1,8 @@
 package com.example.svmarket.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.svmarket.dto.ForgotPasswordRequest;
 import com.example.svmarket.dto.LoginRequest;
@@ -15,6 +12,7 @@ import com.example.svmarket.dto.RegisterRequest;
 import com.example.svmarket.dto.ResetPasswordRequest;
 import com.example.svmarket.dto.VerifyPasswordOtpRequest;
 import com.example.svmarket.service.AuthService;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
@@ -38,9 +36,11 @@ public class AuthController {
     }
 
     // Xác nhận OTP + tạo tài khoản
-    @PostMapping("/register/verify")
-    public String verifyOtp(@RequestBody RegisterOtpRequest request) {
-        authService.verifyRegistrationOTP(request);
+    @PostMapping(value = "/register/verify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String verifyOtp(
+            @RequestPart("data") RegisterOtpRequest request,
+            @RequestPart("studentCard") MultipartFile studentCard) {
+        authService.verifyRegistrationOTP(request, studentCard);
         return "Đăng ký thành công";
     }
 
