@@ -1,23 +1,23 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Home from "./pages/Home";
-import FAQ from "./pages/FAQ";
-import About from "./pages/About";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import RegisterOTP from "./pages/RegisterOTP";
-import ForgotPassword from "./pages/ForgotPassword";
-import Profile from "./pages/Profile";
+import Home from "./pages/user/Home";
+import FAQ from "./pages/user/FAQ";
+import About from "./pages/user/About";
+import Login from "./pages/user/Login";
+import Register from "./pages/user/Register";
+import RegisterOTP from "./pages/user/RegisterOTP";
+import ForgotPassword from "./pages/user/ForgotPassword";
+import Profile from "./pages/user/Profile";
 import ProductDetail from "./pages/product/ProductDetail";
-import PurchaseHistory from "./pages/PurchaseHistory";
-import SalesHistory from "./pages/SalesHistory";
+import PurchaseHistory from "./pages/user/PurchaseHistory";
+import SalesHistory from "./pages/user/SalesHistory";
 import MyPackages from "./pages/package-management/MyPackages";
-import Payment from "./pages/Payment";
+import Payment from "./pages/user/Payment";
 import UserAreaLayout from "./components/sidebar/user/UserAreaLayout";
-import CreateListing from "./pages/CreateListing";
-import MyListings from "./pages/MyListings";
-import EditListing from "./pages/EditListing";
+import CreateListing from "./pages/user/CreateListing";
+import MyListings from "./pages/user/MyListings";
+import EditListing from "./pages/user/EditListing";
 import AdminPostList from "./pages/admin/PostManagement/AdminPostList";
 import AdminPostApproval from "./pages/admin/PostManagement/AdminPostApproval";
 import AdminViolationList from "./pages/admin/PostManagement/AdminViolationList";
@@ -25,14 +25,15 @@ import AdminPackage from "./pages/admin/AdminPackage";
 import AdminCategory from "./pages/admin/CategoryManagement/AdminCategoryList";
 import AdminUserList from "./pages/admin/UserManagement/AdminUserList";
 import AdminUserStatus from "./pages/admin/UserManagement/AdminUserStatus";
-import ChangePassword from "./pages/ChangePassword";
+import ChangePassword from "./pages/user/ChangePassword";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import SellerProfile from "./pages/SellerProfile";
+import SellerProfile from "./pages/user/SellerProfile";
 import SavedListings from "./pages/listing/SavedListings";
-import SellerReviews from "./pages/SellerReviews";
-import BuyerReviews from "./pages/BuyerReviews";
-import MyReview from "./pages/MyReview";
-import AdminTransactionList from "./pages/admin/TransactionManagement.tsx/AdminTransactionList";
+import SellerReviews from "./pages/user/SellerReviews";
+import BuyerReviews from "./pages/user/BuyerReviews";
+import MyReview from "./pages/user/MyReview";
+import AdminTransactionList from "./pages/admin/TransactionManagement/AdminTransactionList";
+import AdminStudentVerification from "./pages/admin/TrustManagement/AdminStudentVerification";
 
 function App() {
   return (
@@ -77,6 +78,7 @@ function App() {
         <Route path="/admin/users" element={<AdminUserList />} />
         <Route path="/admin/status/:id" element={<AdminUserStatus />} />
         <Route path="/admin/giao-dich" element={<AdminTransactionList />} />
+        <Route path="/admin/xac-thuc" element={<AdminStudentVerification />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
         <Route path="*" element={<div>Trang đang được phát triển.</div>} />

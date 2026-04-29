@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
-import "../styles/History.css";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import "../../styles/user/History.css";
+import Header from "../../components/user/Header";
+import Footer from "../../components/user/Footer";
 
 export default function Payment() {
     const { orderId } = useParams();

@@ -1,8 +1,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight, FaFlag, FaStar } from "react-icons/fa";
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
+import Header from "../../components/user/Header";
+import Footer from "../../components/user/Footer";
 import "../../styles/product/ProductDetail.css";
 import { useAuth } from "../../context/AuthContext";
 import {

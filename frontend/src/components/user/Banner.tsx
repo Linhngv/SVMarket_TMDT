@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   fetchActiveListings,
   ListingSummary,
-} from "../services/listingService";
+} from "../../services/listingService";
 
 // Banner nhận props để cập nhật từ khóa tìm kiếm toàn cục
 export default function Banner({

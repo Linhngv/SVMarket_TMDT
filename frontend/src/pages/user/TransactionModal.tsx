@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import "../styles/TransactionModal.css";
+import "../../styles/user/TransactionModal.css";
 
 interface SaleTransaction {
   id: string;

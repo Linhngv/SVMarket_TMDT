@@ -4,13 +4,13 @@ import { useNavigate } from "react-router-dom";
 import {
   fetchFeaturedListings,
   ListingSummary,
-} from "../services/listingService";
+} from "../../services/listingService";
 import {
   fetchMyFavoriteListingIds,
   toggleFavoriteListing,
-} from "../services/favoriteService";
-import { useAuth } from "../context/AuthContext";
-import type { CardItem } from "../types/CardItem";
+} from "../../services/favoriteService";
+import { useAuth } from "../../context/AuthContext";
+import type { CardItem } from "../../types/CardItem";
 
 function formatRelativeTime(value?: string) {
   if (!value) {

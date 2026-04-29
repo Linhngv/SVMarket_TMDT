@@ -6,13 +6,13 @@ import {
   ListingSummary,
   fetchListingsByUniversity,
   fetchListingsByCategory,
-} from "../services/listingService";
+} from "../../services/listingService";
 import {
   fetchMyFavoriteListingIds,
   toggleFavoriteListing,
-} from "../services/favoriteService";
-import { useAuth } from "../context/AuthContext";
-import type { CardItem } from "../types/CardItem";
+} from "../../services/favoriteService";
+import { useAuth } from "../../context/AuthContext";
+import type { CardItem } from "../../types/CardItem";
 
 type Props = {
   title: string;

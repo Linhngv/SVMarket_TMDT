@@ -13,12 +13,12 @@ import {
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   favoritesUpdatedEvent,
   fetchMyFavoriteListings,
-} from "../services/favoriteService";
-import { ListingSummary } from "../services/listingService";
+} from "../../services/favoriteService";
+import { ListingSummary } from "../../services/listingService";
 
 type HeaderProps = {
   isLoggedIn?: boolean;

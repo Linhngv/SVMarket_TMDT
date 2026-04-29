@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Eye, X } from "lucide-react";
-import "../styles/History.css";
+import "../../styles/user/History.css";
 
 interface ReviewableTransaction {
   orderId: number;

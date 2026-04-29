@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import "../styles/SellerProfile.css";
-import { useAuth } from "../context/AuthContext";
+import Header from "../../components/user/Header";
+import Footer from "../../components/user/Footer";
+import "../../styles/user/SellerProfile.css";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 interface ListingSummary {

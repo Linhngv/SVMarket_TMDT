@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Search, Eye, X } from "lucide-react";
-import type { PurchaseTransaction } from "../types/PurchaseTransaction";
-import type { OrderDetail } from "../types/OrderDetail";
-import { fetchPurchases, fetchOrderDetail } from "../services/orderService";
-import { createOrderPayment } from "../services/paymentService";
-import "../styles/History.css";
+import type { PurchaseTransaction } from "../../types/PurchaseTransaction";
+import type { OrderDetail } from "../../types/OrderDetail";
+import { fetchPurchases, fetchOrderDetail } from "../../services/orderService";
+import { createOrderPayment } from "../../services/paymentService";
+import "../../styles/user/History.css";
 
 export default function PurchaseHistory() {
   const [loading, setLoading] = useState(false);

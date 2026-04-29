@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import "../../../styles/Sidebar.css";
+import "../../../styles/user/Sidebar.css";
 
 type SidebarItem = {
   id: string;
