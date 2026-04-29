@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminSidebar from "../../../components/admin/AdminSidebar";
 import AdminTopBar from "../../../components/admin/AdminTopBar";
-import Header from "../../../components/user/Header";
 import Footer from "../../../components/user/Footer";
 import { X } from "lucide-react";
 import "../../../styles/admin/AdminPostList.css";
@@ -14,10 +13,46 @@ interface PendingVerificationUser {
     createdAt: string;
 }
 
+interface ConfirmationModalProps {
+    show: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+}
+
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ show, onClose, onConfirm, title, message, confirmText = "Xác nhận", cancelText = "Hủy" }) => {
+    if (!show) return null;
+
+    return (
+        <div className="modal-overlay" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 10000, display: "flex", justifyContent: "center", alignItems: "center" }} onClick={onClose}>
+            <div className="modal-content bg-white p-4 rounded-3 border-0 shadow" style={{ maxWidth: '400px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
+                <h5 className="modal-title fw-bold mb-3" style={{ color: "#1A1A2E" }}>{title}</h5>
+                <p className="text-muted" style={{ fontSize: '15px' }}>{message}</p>
+                <div className="d-flex justify-content-end gap-3 mt-4">
+                    <button className="btn btn-light" onClick={onClose} style={{ fontWeight: 500 }}>{cancelText}</button>
+                    <button className="btn btn-success" onClick={onConfirm} style={{ fontWeight: 500 }}>{confirmText}</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 export default function AdminStudentVerification() {
     const [users, setUsers] = useState<PendingVerificationUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+    // State cho modal xác nhận
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [modalContent, setModalContent] = useState({
+        title: "",
+        message: "",
+        onConfirm: () => { }
+    });
 
     useEffect(() => {
         const fetchPendingUsers = async () => {
@@ -30,17 +65,6 @@ export default function AdminStudentVerification() {
                 if (res.ok) {
                     const data = await res.json();
                     setUsers(data);
-                } else {
-                    // Mock data tạm thời nếu API chưa sẵn sàng
-                    setUsers([
-                        {
-                            id: 1,
-                            fullName: "Nguyễn Văn Sinh Viên",
-                            email: "sinhvien123@st.edu.vn",
-                            studentCard: "/images/detail.png", 
-                            createdAt: new Date().toISOString()
-                        }
-                    ]);
                 }
             } catch (error) {
                 console.error("Lỗi lấy danh sách xác thực:", error);
@@ -51,41 +75,57 @@ export default function AdminStudentVerification() {
         fetchPendingUsers();
     }, []);
 
-    const handleApprove = async (id: number) => {
-        if (!window.confirm("Xác nhận duyệt thẻ sinh viên này để cấp huy hiệu Uy tín?")) return;
+    const confirmApprove = (id: number) => {
+        setModalContent({
+            title: "Xác nhận duyệt",
+            message: "Bạn có chắc chắn muốn duyệt thẻ sinh viên này và cấp huy hiệu 'Uy tín' không?",
+            onConfirm: () => handleApprove(id)
+        });
+        setShowConfirmModal(true);
+    };
+
+    const confirmReject = (id: number) => {
+        setModalContent({
+            title: "Xác nhận từ chối",
+            message: "Bạn có chắc chắn muốn từ chối định danh cho sinh viên này không?",
+            onConfirm: () => handleReject(id)
+        });
+        setShowConfirmModal(true);
+    };
+
+    const handleApprove = async (userId: number) => {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`http://localhost:8080/api/admin/users/${id}/verify`, {
+            const res = await fetch(`http://localhost:8080/api/admin/users/${userId}/verify`, {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.ok) {
-                alert("Đã duyệt định danh thành công!");
-                setUsers((prev) => prev.filter((u) => u.id !== id));
+                setUsers((prev) => prev.filter((u) => u.id !== userId));
             } else {
-                alert("Lỗi khi duyệt định danh sinh viên.");
+                console.error("Lỗi khi duyệt định danh sinh viên.");
             }
         } catch (error) {
             console.error("Lỗi duyệt:", error);
+        } finally {
+            setShowConfirmModal(false);
         }
     };
 
-    const handleReject = async (id: number) => {
-        if (!window.confirm("Bạn muốn từ chối định danh sinh viên này?")) return;
+    const handleReject = async (userId: number) => {
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`http://localhost:8080/api/admin/users/${id}/reject-verification`, {
+            const res = await fetch(`http://localhost:8080/api/admin/users/${userId}/reject-verification`, {
                 method: "PUT",
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.ok) {
-                alert("Đã từ chối định danh.");
-                setUsers((prev) => prev.filter((u) => u.id !== id));
-            } else {
-                alert("Lỗi khi từ chối.");
+                setUsers((prev) => prev.filter((u) => u.id !== userId));
             }
         } catch (error) {
             console.error("Lỗi từ chối:", error);
+        } finally {
+            setShowConfirmModal(false);
         }
     };
 
@@ -96,7 +136,6 @@ export default function AdminStudentVerification() {
 
     return (
         <>
-            <Header />
             <div className="admin-container d-flex">
                 <AdminSidebar />
                 <div className="admin-main flex-grow-1">
@@ -130,8 +169,8 @@ export default function AdminStudentVerification() {
                                                         <img src={getImageUrl(user.studentCard)} alt="Thẻ sinh viên" style={{ width: "100px", height: "60px", objectFit: "cover", cursor: "pointer", borderRadius: "6px", border: "1px solid #ddd" }} onClick={() => setSelectedImage(getImageUrl(user.studentCard))} title="Nhấn để phóng to" />
                                                     </td>
                                                     <td className="text-center">
-                                                        <button className="btn btn-sm btn-success me-2 px-3 rounded-pill" onClick={() => handleApprove(user.id)}>Xác thực</button>
-                                                        <button className="btn btn-sm btn-outline-danger px-3 rounded-pill" onClick={() => handleReject(user.id)}>Từ chối</button>
+                                                        <button className="btn btn-sm btn-success me-2 px-3 rounded-pill" onClick={() => confirmApprove(user.id)}>Xác thực</button>
+                                                        <button className="btn btn-sm btn-outline-danger px-3 rounded-pill" onClick={() => confirmReject(user.id)}>Từ chối</button>
                                                     </td>
                                                 </tr>
                                             ))
@@ -155,6 +194,14 @@ export default function AdminStudentVerification() {
                     </div>
                 )}
             </div>
+
+            <ConfirmationModal
+                show={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={modalContent.onConfirm}
+                title={modalContent.title}
+                message={modalContent.message}
+            />
             <Footer />
         </>
     );

@@ -47,7 +47,8 @@ public class UserService {
                 user.getUniversity(),
                 address != null ? address.getProvince() : "",
                 address != null ? address.getAddressDetail() : "",
-                user.getGender() != null ? user.getGender().name() : "OTHER");
+                user.getGender() != null ? user.getGender().name() : "OTHER",
+                user.getIsVerified());
     }
 
     // UPDATE PROFILE
@@ -178,6 +179,7 @@ public class UserService {
                 .email(seller.getEmail())
                 .avatar(seller.getAvatar())
                 .university(seller.getUniversity())
+                .isVerified(seller.getIsVerified())
                 .province(address != null ? address.getProvince() : "")
                 .addressDetail(address != null ? address.getAddressDetail() : "")
                 .activeListingCount(activeListings.size())

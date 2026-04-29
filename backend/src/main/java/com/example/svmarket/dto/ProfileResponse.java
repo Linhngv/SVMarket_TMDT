@@ -16,4 +16,5 @@ public class ProfileResponse {
     private String province;
     private String addressDetail;
     private String gender;
+    private Boolean isVerified;
 }

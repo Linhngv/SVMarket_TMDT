@@ -39,6 +39,10 @@ public class User {
 
     private String status;
 
+    @Column(name = "is_verified")
+    @Builder.Default
+    private Boolean isVerified = false;
+
     // @Enumerated(EnumType.STRING)
     // private Role role;
     @Builder.Default

@@ -25,4 +25,5 @@ public class ListingSummaryResponse {
     private Integer priorityLevel;
     private Boolean isFeatured;
     private boolean pushing;
+    private Boolean isVerified;
 }

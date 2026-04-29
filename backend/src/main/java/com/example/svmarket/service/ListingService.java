@@ -443,6 +443,7 @@ public class ListingService {
     }
 
     private ListingDetailResponse toDetailResponse(Listing listing, List<String> imageUrls) {
+        Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());
         return ListingDetailResponse.builder()
                 .id(listing.getId())
                 .title(listing.getTitle())
@@ -457,10 +458,12 @@ public class ListingService {
                 .sellerId(listing.getSeller() != null ? listing.getSeller().getId() : null)
                 .sellerAvatar(listing.getSeller() != null ? listing.getSeller().getAvatar() : null)
                 .postSource(listing.getPostSource().name())
+                .isVerified(isVerified)
                 .build();
     }
 
     private ListingDetailResponse toPublicDetailResponse(Listing listing, List<String> imageUrls) {
+        Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());
         return ListingDetailResponse.builder()
                 .id(listing.getId())
                 .title(listing.getTitle())
@@ -474,6 +477,7 @@ public class ListingService {
                 .imageUrls(imageUrls)
                 .sellerName(listing.getSeller() != null ? listing.getSeller().getFullName() : null)
                 .sellerUniversity(listing.getSeller() != null ? listing.getSeller().getUniversity() : null)
+                .isVerified(isVerified)
                 .thumbnailUrl(!imageUrls.isEmpty() ? imageUrls.get(0) : null)
                 .createdAt(listing.getCreatedAt())
                 .sellerId(listing.getSeller() != null ? listing.getSeller().getId() : null)
@@ -482,6 +486,7 @@ public class ListingService {
     }
 
     public ListingSummaryResponse toSummaryResponse(Listing listing) {
+        Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());
 
         String thumbnail = listing.getImages() != null && !listing.getImages().isEmpty()
                 ? listing.getImages().get(0).getUrl()
@@ -495,6 +500,7 @@ public class ListingService {
         response.setThumbnailUrl(thumbnail);
         response.setSellerUniversity(listing.getSeller() != null ? listing.getSeller().getUniversity() : null);
         response.setSellerName(listing.getSeller() != null ? listing.getSeller().getFullName() : null);
+        response.setIsVerified(isVerified);
         response.setCreatedAt(listing.getCreatedAt());
 
         if (listing.getPostSource() == PostSource.PACKAGE) {

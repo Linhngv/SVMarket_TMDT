@@ -25,4 +25,5 @@ public class SellerProfileResponse {
     private Double averageRating;
     private Integer reviewCount;
     private List<ReviewData> reviews;
+    private Boolean isVerified;
 }

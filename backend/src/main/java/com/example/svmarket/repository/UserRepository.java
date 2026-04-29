@@ -20,4 +20,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Boolean existsByEmail(String email);
 
     List<User> findByRole(Role role);
+
+    // Lấy danh sách sinh viên chờ duyệt định danh
+    @Query("SELECT u FROM User u WHERE (u.isVerified IS NULL OR u.isVerified = false) AND u.studentCard IS NOT NULL AND u.role = 'USER'")
+    List<User> findPendingVerificationUsers();
 }

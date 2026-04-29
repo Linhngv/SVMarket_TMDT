@@ -30,4 +30,21 @@ public class AdminUserController {
         adminUserService.updateUser(id, request);
         return ResponseEntity.ok("Cập nhật người dùng thành công");
     }
+
+    @GetMapping("/pending-verification")
+    public ResponseEntity<?> getPendingVerificationUsers() {
+        return ResponseEntity.ok(adminUserService.getPendingVerificationUsers());
+    }
+
+    @PutMapping("/{id}/verify")
+    public ResponseEntity<?> verifyStudent(@PathVariable Integer id) {
+        adminUserService.verifyStudent(id);
+        return ResponseEntity.ok("Duyệt định danh thành công");
+    }
+
+    @PutMapping("/{id}/reject-verification")
+    public ResponseEntity<?> rejectVerification(@PathVariable Integer id) {
+        adminUserService.rejectVerification(id);
+        return ResponseEntity.ok("Từ chối định danh thành công");
+    }
 }

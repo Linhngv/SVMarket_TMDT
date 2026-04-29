@@ -1,6 +1,7 @@
 package com.example.svmarket.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ import com.example.svmarket.dto.VerifyPasswordOtpRequest;
 import com.example.svmarket.entity.PasswordResetOTP;
 import com.example.svmarket.entity.Role;
 import com.example.svmarket.entity.User;
+import com.example.svmarket.entity.Notification;
+import com.example.svmarket.entity.NotificationType;
+import com.example.svmarket.repository.NotificationRepository;
 import com.example.svmarket.exception.BadRequestException;
 import com.example.svmarket.repository.PasswordResetOTPRepository;
 import com.example.svmarket.repository.UserRepository;
@@ -49,6 +53,9 @@ public class AuthService {
 
     @Autowired
     private CloudinaryService cloudinaryService;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     // public LoginResponse login(LoginRequest req) {
     // System.out.println("INPUT: " + req.getEmailOrPhone());
@@ -178,10 +185,23 @@ public class AuthService {
         user.setStatus("Đang hoạt động");
         user.setRole(Role.USER);
         user.setUniversity(university); // lưu tên trường
+        user.setIsVerified(false); // Chờ admin duyệt định danh
         user.setStudentCard(uploaded.secureUrl());
 
         userRepository.save(user);
         otpRepository.delete(otpEntity);
+
+        List<User> admins = userRepository.findByRole(Role.ADMIN);
+        for (User admin : admins) {
+            Notification notification = Notification.builder()
+                    .user(admin)
+                    .content("Có yêu cầu duyệt định danh mới từ: " + user.getFullName())
+                    .type(NotificationType.SYSTEM)
+                    .referenceId(user.getId())
+                    .isRead(false)
+                    .build();
+            notificationRepository.save(notification);
+        }
     }
 
     // Gửi OTP để đổi mật khẩu
