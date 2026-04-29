@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
+import Header from "../../components/user/Header";
+import Footer from "../../components/user/Footer";
 import {
   fetchMyFavoriteListings,
   toggleFavoriteListing,
 } from "../../services/favoriteService";
 import { ListingSummary } from "../../services/listingService";
-import "../../styles/ListingManagement.css";
+import "../../styles/user/ListingManagement.css";
 
 const SavedListings: React.FC = () => {
   const [listings, setListings] = useState<ListingSummary[]>([]);

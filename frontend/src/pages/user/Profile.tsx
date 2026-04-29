@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import { useAuth } from "../context/AuthContext";
-import Sidebar from "../components/sidebar/user/Sidebar";
+import Header from "../../components/user/Header";
+import Footer from "../../components/user/Footer";
+import { useAuth } from "../../context/AuthContext";
+import Sidebar from "../../components/sidebar/user/Sidebar";
 
 export default function Profile() {
 

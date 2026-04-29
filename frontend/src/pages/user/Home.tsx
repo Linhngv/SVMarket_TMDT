@@ -1,9 +1,9 @@
-import Header from "../components/Header";
-import Banner from "../components/Banner";
-import Categories from "../components/Categories";
-import Products from "../components/Products";
-import RecommendedProducts from "../components/RecommendedProducts";
-import Footer from "../components/Footer";
+import Header from "../../components/user/Header";
+import Banner from "../../components/user/Banner";
+import Categories from "../../components/user/Categories";
+import Products from "../../components/user/Products";
+import RecommendedProducts from "../../components/user/RecommendedProducts";
+import Footer from "../../components/user/Footer";
 import { useState } from "react";
 
 function Home() {

@@ -8,7 +8,7 @@ import type {
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import "../styles/Register.css";
+import "../../styles/user/Register.css";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/;

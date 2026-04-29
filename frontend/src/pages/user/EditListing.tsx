@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ListingForm, {
   ListingFormValues,
-} from "../components/listing/ListingForm";
+} from "../../components/listing/ListingForm";
 import {
   CategoryOption,
   fetchCategoryOptions,
   fetchMyListingById,
   updateListing,
-} from "../services/listingService";
-import "../styles/ListingManagement.css";
+} from "../../services/listingService";
+import "../../styles/user/ListingManagement.css";
 
 export default function EditListing() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function EditListing() {
     conditionLevel: "Đã qua sử dụng",
     description: "",
     status: "ACTIVE",
-    postSource: "FREE", 
+    postSource: "FREE",
   });
   const [images, setImages] = useState<File[]>([]);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);

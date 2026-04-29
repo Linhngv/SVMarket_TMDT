@@ -15,7 +15,7 @@ interface PendingPost {
 export default function AdminPostApproval() {
     const [pendingPosts, setPendingPosts] = useState<PendingPost[]>([]);
     const [loading, setLoading] = useState(true);
-    const [rejectReason, setRejectReason] = useState("");
+    const [rejectReasons, setRejectReasons] = useState<{ [key: number]: string }>({});
 
     useEffect(() => {
         const fetchPendingPosts = async () => {
@@ -66,18 +66,24 @@ export default function AdminPostApproval() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}` 
                 },
-                body: JSON.stringify({ reason: rejectReason })
+                body: JSON.stringify({ reason: rejectReasons[id] || "" })
             });
             if (res.ok) {
                 setPendingPosts((prev) => prev.filter((post) => post.id !== id));
-                setRejectReason("");
+                setRejectReasons((prev) => {
+                    const newReasons = { ...prev };
+                    delete newReasons[id];
+                    return newReasons;
+                });
             }
         } catch (error) {
             console.error("Lỗi từ chối bài:", error);
         }
     };
 
-    const currentPost = pendingPosts[0];
+    const handleRejectReasonChange = (id: number, reason: string) => {
+        setRejectReasons((prev) => ({ ...prev, [id]: reason }));
+    };
 
     return (
         <div className="admin-container d-flex">
@@ -96,51 +102,55 @@ export default function AdminPostApproval() {
 
                     {loading ? (
                         <div className="card p-4 shadow-sm text-center">Đang tải dữ liệu...</div>
-                    ) : !currentPost ? (
+                    ) : pendingPosts.length === 0 ? (
                         <div className="card p-4 shadow-sm text-center py-5">
                             <h4 className="text-muted">Không có bài đăng nào đang chờ duyệt</h4>
                         </div>
                     ) : (
-                        <div className="card p-4 shadow-sm">
+                        <div>
                             <h3 className="page-title mb-4">Kiểm duyệt bài đăng</h3>
 
-                            {/* APPROVAL DETAILS */}
-                            <div className="approval-container p-4 mb-4">
-                                <div className="approval-title mb-2">{currentPost.title}</div>
-                                <div className="approval-author mb-3">Người đăng: {currentPost.sellerName || "Khuyết danh"}</div>
+                            {pendingPosts.map((post) => (
+                                <div key={post.id} className="card p-4 shadow-sm mb-4">
+                                    {/* APPROVAL DETAILS */}
+                                    <div className="approval-container p-4 mb-4">
+                                        <div className="approval-title mb-2">{post.title}</div>
+                                        <div className="approval-author mb-3">Người đăng: {post.sellerName || "Khuyết danh"}</div>
 
-                                {/* POST IMAGES */}
-                                <div className="post-images d-flex gap-3 mb-4 overflow-auto">
-                                    {currentPost.imageUrls && currentPost.imageUrls.length > 0 ? (
-                                        currentPost.imageUrls.map((url, idx) => (
-                                            <img key={idx} src={url.startsWith("http") ? url : `http://localhost:8080${url}`} alt={`Sản phẩm ${idx + 1}`} className="post-img" />
-                                        ))
-                                    ) : (
-                                        <p className="text-muted">Không có hình ảnh</p>
-                                    )}
+                                        {/* POST IMAGES */}
+                                        <div className="post-images d-flex gap-3 mb-4 overflow-auto">
+                                            {post.imageUrls && post.imageUrls.length > 0 ? (
+                                                post.imageUrls.map((url, idx) => (
+                                                    <img key={idx} src={url.startsWith("http") ? url : `http://localhost:8080${url}`} alt={`Sản phẩm ${idx + 1}`} className="post-img" />
+                                                ))
+                                            ) : (
+                                                <p className="text-muted">Không có hình ảnh</p>
+                                            )}
+                                        </div>
+
+                                        <div className="approval-desc mb-0">
+                                            {post.description}
+                                        </div>
+                                    </div>
+
+                                    {/* REJECT REASON INPUT */}
+                                    <div className="mb-4">
+                                        <textarea
+                                            rows={4}
+                                            className="form-control reject-input px-4 py-3"
+                                            placeholder="Nhập lý do từ chối (nếu có)"
+                                            value={rejectReasons[post.id] || ""}
+                                            onChange={(e) => handleRejectReasonChange(post.id, e.target.value)}
+                                        ></textarea>
+                                    </div>
+
+                                    {/* ACTION BUTTONS */}
+                                    <div className="d-flex gap-3">
+                                        <button className="btn btn-approve-post" onClick={() => handleApprove(post.id)}>Duyệt bài</button>
+                                        <button className="btn btn-reject-post" onClick={() => handleReject(post.id)}>Từ chối</button>
+                                    </div>
                                 </div>
-
-                                <div className="approval-desc mb-0">
-                                    {currentPost.description}
-                                </div>
-                            </div>
-
-                            {/* REJECT REASON INPUT */}
-                            <div className="mb-4">
-                                <textarea
-                                    rows={4}
-                                    className="form-control reject-input px-4 py-3"
-                                    placeholder="Nhập lý do từ chối (nếu có)"
-                                    value={rejectReason}
-                                    onChange={(e) => setRejectReason(e.target.value)}
-                                ></textarea>
-                            </div>
-
-                            {/* ACTION BUTTONS */}
-                            <div className="d-flex gap-3">
-                                <button className="btn btn-approve-post" onClick={() => handleApprove(currentPost.id)}>Duyệt bài</button>
-                                <button className="btn btn-reject-post" onClick={() => handleReject(currentPost.id)}>Từ chối</button>
-                            </div>
+                            ))}
                         </div>
                     )}
                 </div>

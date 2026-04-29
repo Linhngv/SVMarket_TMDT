@@ -5,9 +5,9 @@ import {
   deleteListing,
   fetchMyListings,
   ListingSummary,
-} from "../services/listingService";
-import "../styles/ListingManagement.css";
-import { useAuth } from "../context/AuthContext";
+} from "../../services/listingService";
+import "../../styles/user/ListingManagement.css";
+import { useAuth } from "../../context/AuthContext";
 
 const ITEMS_PER_PAGE = 5;
 

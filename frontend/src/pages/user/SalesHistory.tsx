@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, Eye, Pencil } from "lucide-react";
 import TransactionModal from "./TransactionModal";
-import "../styles/History.css";
+import "../../styles/user/History.css";
 
 interface SaleTransaction {
   id: string | number;

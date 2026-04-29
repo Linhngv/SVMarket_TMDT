@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom";
-import Header from "../../Header";
-import Footer from "../../Footer";
+import Header from "../../user/Header";
+import Footer from "../../user/Footer";
 import Sidebar from "./Sidebar";
-import "../../../styles/UserAreaLayout.css";
+import "../../../styles/user/UserAreaLayout.css";
 
 export default function UserAreaLayout() {
   return (

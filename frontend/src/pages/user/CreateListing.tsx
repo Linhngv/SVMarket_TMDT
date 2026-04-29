@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ListingForm, {
   ListingFormValues,
-} from "../components/listing/ListingForm";
+} from "../../components/listing/ListingForm";
 import {
   CategoryOption,
   createListing,
   fetchCategoryOptions,
-} from "../services/listingService";
-import "../styles/ListingManagement.css";
+} from "../../services/listingService";
+import "../../styles/user/ListingManagement.css";
 
 const DEFAULT_VALUES: ListingFormValues = {
   title: "",
