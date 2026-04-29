@@ -165,6 +165,27 @@
 }
 
 
+/* Upload thẻ sinh viên */
+.upload-label:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.upload-label:hover i {
+  color: var(--primary);
+}
+
+/* Giới hạn chiều cao preview để không phá layout */
+.student-card-preview {
+  margin-top: 8px;
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  display: block;
+}
+
 @media (max-width: 768px) {
   .login-wrapper {
     flex-direction: column;
@@ -179,4 +200,28 @@
   .form-side {
     padding: 20px;
   }
+}
+
+/* ===== SPINNER ===== */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 8px;
+  height: 8px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+.btn-auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0.85;
+  cursor: not-allowed;
 }

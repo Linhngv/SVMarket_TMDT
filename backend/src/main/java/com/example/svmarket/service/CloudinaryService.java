@@ -90,4 +90,23 @@ public class CloudinaryService {
 
     public record UploadedImage(String publicId, String secureUrl) {
     }
+
+    // Upload ảnh thẻ sinh viên lên Cloudinary and trả về public_id + secure_url.
+    public UploadedImage uploadStudentCard(MultipartFile file) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "svmarket/student-cards",
+                            "resource_type", "image"));
+
+            return new UploadedImage(
+                    (String) result.get("public_id"),
+                    (String) result.get("secure_url"));
+
+        } catch (IOException e) {
+            throw new RuntimeException("Không thể upload thẻ sinh viên lên Cloudinary", e);
+        }
+    }
 }
