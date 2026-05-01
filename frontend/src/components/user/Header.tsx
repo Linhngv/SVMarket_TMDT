@@ -269,6 +269,15 @@ export default function Header({
     navigate("/create-listing");
   };
 
+  const handleOpenMessages = () => {
+    if (!resolvedIsLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    navigate("/messages");
+  };
+
   return (
     <div className="header shadow-sm">
       <div className="container-fluid px-4 d-flex justify-content-between align-items-center py-2">
@@ -390,7 +399,10 @@ export default function Header({
             )}
           </div>
 
-          <button className="contact-btn rounded-pill px-3 d-flex align-items-center gap-2">
+          <button
+            className="contact-btn rounded-pill px-3 d-flex align-items-center gap-2"
+            onClick={handleOpenMessages}
+          >
             <MessageCircle size={18} />
             Liên hệ
           </button>
@@ -588,12 +600,18 @@ function ProfilePopup({
               {
                 label: "Đơn hàng đã mua",
                 icon: <FileText size={16} />,
-                onClick: () => { navigate("/purchase-history"); onClose(); }
+                onClick: () => {
+                  navigate("/purchase-history");
+                  onClose();
+                },
               },
-              { 
-                label: "Đánh giá từ tôi", 
+              {
+                label: "Đánh giá từ tôi",
                 icon: <Star size={16} />,
-                onClick: () => { navigate("/my-review"); onClose(); }
+                onClick: () => {
+                  navigate("/my-review");
+                  onClose();
+                },
               },
             ]}
           />
@@ -603,8 +621,12 @@ function ProfilePopup({
             items={[
               { label: "Lịch sử giao dịch", icon: <History size={16} /> },
               {
-                label: "Gói đăng tin", icon: <Package size={16} />,
-                onClick: () => { navigate("/my-packages"); onClose(); }
+                label: "Gói đăng tin",
+                icon: <Package size={16} />,
+                onClick: () => {
+                  navigate("/my-packages");
+                  onClose();
+                },
               },
             ]}
           />

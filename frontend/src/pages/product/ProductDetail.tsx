@@ -9,6 +9,7 @@ import {
   fetchListingById,
   PublicListingDetail,
 } from "../../services/listingService";
+import { startConversation } from "../../services/chatService";
 
 export default function ProductDetail() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export default function ProductDetail() {
   const [loadError, setLoadError] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [isStartingChat, setIsStartingChat] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -48,7 +50,9 @@ export default function ProductDetail() {
           fetch("http://localhost:8080/api/user/profile", {
             headers: { Authorization: `Bearer ${token}` },
           })
-            .then((res) => (res.ok ? res.json() : Promise.reject("Lỗi xác thực")))
+            .then((res) =>
+              res.ok ? res.json() : Promise.reject("Lỗi xác thực"),
+            )
             .then((data) => setCurrentUserId(data.id))
             .catch((err) => console.error(err));
         }
@@ -83,7 +87,12 @@ export default function ProductDetail() {
   }, [id]);
 
   const openBuyForm = () => {
-    const isProductOwner = Boolean(isLoggedIn && currentUserId && (product as any)?.sellerId && String(currentUserId) === String((product as any)?.sellerId));
+    const isProductOwner = Boolean(
+      isLoggedIn &&
+      currentUserId &&
+      (product as any)?.sellerId &&
+      String(currentUserId) === String((product as any)?.sellerId),
+    );
     if (isProductOwner) return;
     setIsBuyFormOpen(true);
   };
@@ -104,13 +113,13 @@ export default function ProductDetail() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           listingId: product?.id,
           note: buyerNote,
-          deliveryMethod: deliveryMethod
-        })
+          deliveryMethod: deliveryMethod,
+        }),
       });
 
       if (!response.ok) throw new Error("Lỗi khi gửi yêu cầu");
@@ -120,6 +129,36 @@ export default function ProductDetail() {
     } catch (error) {
       console.error(error);
       window.alert("Có lỗi xảy ra khi gửi yêu cầu mua hàng.");
+    }
+  };
+
+  const handleStartChat = async () => {
+    if (!isLoggedIn) {
+      window.alert("Vui lòng đăng nhập để nhắn tin với người bán!");
+      navigate("/login");
+      return;
+    }
+
+    if (isOwner) {
+      return;
+    }
+
+    if (!id) {
+      window.alert("Không tìm thấy thông tin bài đăng");
+      return;
+    }
+
+    try {
+      setIsStartingChat(true);
+      const conversation = await startConversation(Number(id));
+      navigate(`/messages?conversationId=${conversation.conversationId}`);
+    } catch (error: any) {
+      console.error("Không thể bắt đầu hội thoại", error);
+      const message =
+        error?.response?.data || "Có lỗi xảy ra khi tạo hội thoại";
+      window.alert(String(message));
+    } finally {
+      setIsStartingChat(false);
     }
   };
 
@@ -135,7 +174,12 @@ export default function ProductDetail() {
   const sellerId = (product as any)?.sellerId;
   const sellerAvatar = (product as any)?.sellerAvatar;
 
-  const isOwner = Boolean(isLoggedIn && currentUserId && sellerId && String(currentUserId) === String(sellerId));
+  const isOwner = Boolean(
+    isLoggedIn &&
+    currentUserId &&
+    sellerId &&
+    String(currentUserId) === String(sellerId),
+  );
 
   const galleryImages =
     product?.imageUrls && product.imageUrls.length > 0
@@ -150,7 +194,7 @@ export default function ProductDetail() {
 
   const imageSrc =
     normalizedGalleryImages[
-    Math.min(currentImageIndex, normalizedGalleryImages.length - 1)
+      Math.min(currentImageIndex, normalizedGalleryImages.length - 1)
     ] || "/images/detail.png";
 
   useEffect(() => {
@@ -243,10 +287,23 @@ export default function ProductDetail() {
                     <div className="seller-avatar">
                       {sellerAvatar ? (
                         <img
-                          src={sellerAvatar.startsWith("http") || sellerAvatar.startsWith("/images/") ? sellerAvatar : `http://localhost:8080${sellerAvatar}`}
+                          src={
+                            sellerAvatar.startsWith("http") ||
+                            sellerAvatar.startsWith("/images/")
+                              ? sellerAvatar
+                              : `http://localhost:8080${sellerAvatar}`
+                          }
                           alt={sellerName}
-                          style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }}
-                          onError={(e) => { (e.target as HTMLImageElement).src = "/images/avatar_default.jpg"; }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                          }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "/images/avatar_default.jpg";
+                          }}
                         />
                       ) : (
                         sellerName.slice(0, 2).toUpperCase()
@@ -272,22 +329,51 @@ export default function ProductDetail() {
                       <p className="seller-school">{sellerUniversity}</p>
                     </div>
 
-                    <button className="seller-page-btn" onClick={() => { if (sellerId) navigate(`/seller-profile/${sellerId}`); }}>
+                    <button
+                      className="seller-page-btn"
+                      onClick={() => {
+                        if (sellerId) navigate(`/seller-profile/${sellerId}`);
+                      }}
+                    >
                       Xem trang
                     </button>
                   </div>
 
                   <div className="detail-action-row">
-                    <button 
-                      className="buy-btn" 
+                    <button
+                      className="buy-btn"
                       onClick={openBuyForm}
                       disabled={isOwner}
-                      style={isOwner ? { opacity: 0.6, cursor: "not-allowed" } : undefined}
-                      title={isOwner ? "Bạn không thể tự mua sản phẩm của chính mình" : ""}
+                      style={
+                        isOwner
+                          ? { opacity: 0.6, cursor: "not-allowed" }
+                          : undefined
+                      }
+                      title={
+                        isOwner
+                          ? "Bạn không thể tự mua sản phẩm của chính mình"
+                          : ""
+                      }
                     >
                       {isOwner ? "Sản phẩm của bạn" : "Đặt mua"}
                     </button>
-                    <button className="chat-btn">Nhắn tin</button>
+                    <button
+                      className="chat-btn"
+                      onClick={handleStartChat}
+                      disabled={isOwner || isStartingChat}
+                      style={
+                        isOwner
+                          ? { opacity: 0.6, cursor: "not-allowed" }
+                          : undefined
+                      }
+                      title={
+                        isOwner
+                          ? "Bạn không thể tự nhắn tin cho chính mình"
+                          : ""
+                      }
+                    >
+                      {isStartingChat ? "Đang mở chat..." : "Nhắn tin"}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -351,7 +437,8 @@ export default function ProductDetail() {
               </div>
 
               <p className="buy-modal-note">
-                Yêu cầu của bạn sẽ được gửi đến <strong>{sellerName}</strong> <br /> Người bán sẽ xác nhận hoặc từ chối trong vòng 24h.
+                Yêu cầu của bạn sẽ được gửi đến <strong>{sellerName}</strong>{" "}
+                <br /> Người bán sẽ xác nhận hoặc từ chối trong vòng 24h.
               </p>
 
               <form className="buy-modal-form" onSubmit={handleBuySubmit}>

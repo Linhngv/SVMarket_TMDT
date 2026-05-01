@@ -21,6 +21,9 @@ repositories {
 dependencies {
     // Spring Web (làm API)
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // WebSocket (chat realtime)
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
     
     //spring security
     implementation 'org.springframework.boot:spring-boot-starter-security'

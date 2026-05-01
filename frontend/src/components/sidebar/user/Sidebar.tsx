@@ -36,6 +36,7 @@ const menuGroups: SidebarGroup[] = [
     items: [
       { id: "purchase-history", label: "Mua hàng", path: "/purchase-history" },
       { id: "sales-history", label: "Bán hàng", path: "/sales-history" },
+      { id: "messages", label: "Nhắn tin", path: "/messages" },
     ],
   },
   {
@@ -65,14 +66,20 @@ export default function Sidebar() {
           <p className="sidebar-group-label">{group.label}</p>
           <ul className="sidebar-menu">
             {group.items.map((item) => {
-              const isActive = location.pathname === item.path ||
-                (item.path === "/my-listings" && location.pathname.startsWith("/my-listings/"));
+              const isActive =
+                location.pathname === item.path ||
+                (item.path === "/my-listings" &&
+                  location.pathname.startsWith("/my-listings/"));
 
               return (
                 <li key={item.id}>
                   <button
                     className={`sidebar-item ${isActive ? "active" : ""}`}
-                    style={{ borderLeft: isActive ? "4px solid var(--dark-green)" : "4px solid #E8F5EE" }}
+                    style={{
+                      borderLeft: isActive
+                        ? "4px solid var(--dark-green)"
+                        : "4px solid #E8F5EE",
+                    }}
                     onClick={() => navigate(item.path)}
                   >
                     {item.label}
