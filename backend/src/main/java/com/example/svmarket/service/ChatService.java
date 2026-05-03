@@ -107,6 +107,37 @@ public class ChatService {
     }
 
     // Luu tin nhan vao DB va day realtime den 2 thanh vien trong hoi thoai.
+//    @Transactional
+//    public ChatMessageResponse sendMessage(String email, ChatSendMessageRequest request) {
+//        User sender = getUserByEmail(email);
+//        Conversation conversation = getConversationAndValidateMember(request.getConversationId(), sender.getId());
+//
+//        String content = request.getContent() != null ? request.getContent().trim() : "";
+//        if (content.isEmpty()) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nội dung tin nhắn không được để trống");
+//        }
+//
+//        Message savedMessage = messageRepository.save(
+//                Message.builder()
+//                        .conversation(conversation)
+//                        .sender(sender)
+//                        .content(content)
+//                        .isRead(false)
+//                        .build());
+//
+//        conversation.setLastMessage(content);
+//        conversation.setUpdatedAt(LocalDateTime.now());
+//        conversationRepository.save(conversation);
+//
+//        ChatMessageResponse payload = toMessageResponse(savedMessage, sender.getId());
+//
+//        // Gửi về kênh cá nhân của buyer và seller để đồng bộ realtime.
+//        simpMessagingTemplate.convertAndSendToUser(conversation.getBuyer().getEmail(), "/queue/messages", payload);
+//        simpMessagingTemplate.convertAndSendToUser(conversation.getSeller().getEmail(), "/queue/messages", payload);
+//
+//        return payload;
+//    }
+
     @Transactional
     public ChatMessageResponse sendMessage(String email, ChatSendMessageRequest request) {
         User sender = getUserByEmail(email);
@@ -129,13 +160,17 @@ public class ChatService {
         conversation.setUpdatedAt(LocalDateTime.now());
         conversationRepository.save(conversation);
 
-        ChatMessageResponse payload = toMessageResponse(savedMessage, sender.getId());
+        User buyer = conversation.getBuyer();
+        User seller = conversation.getSeller();
 
-        // Gửi về kênh cá nhân của buyer và seller để đồng bộ realtime.
-        simpMessagingTemplate.convertAndSendToUser(conversation.getBuyer().getEmail(), "/queue/messages", payload);
-        simpMessagingTemplate.convertAndSendToUser(conversation.getSeller().getEmail(), "/queue/messages", payload);
+        // Tạo payload riêng cho từng người, isMine tính theo userId của họ
+        ChatMessageResponse buyerPayload = toMessageResponse(savedMessage, buyer.getId());
+        ChatMessageResponse sellerPayload = toMessageResponse(savedMessage, seller.getId());
 
-        return payload;
+        simpMessagingTemplate.convertAndSendToUser(buyer.getEmail(), "/queue/messages", buyerPayload);
+        simpMessagingTemplate.convertAndSendToUser(seller.getEmail(), "/queue/messages", sellerPayload);
+
+        return sender.getId().equals(buyer.getId()) ? buyerPayload : sellerPayload;
     }
 
     private User getUserByEmail(String email) {

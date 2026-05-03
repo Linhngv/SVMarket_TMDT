@@ -17,7 +17,7 @@ import { useAuth } from "../../context/AuthContext";
 export default function Messages() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user, isAuthLoading } = useAuth();
 
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -69,14 +69,15 @@ export default function Messages() {
   };
 
   useEffect(() => {
+    if (isAuthLoading) return;
+
     if (!isLoggedIn) {
       navigate("/login");
       return;
     }
 
     loadConversations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn]);
+  }, [isLoggedIn, isAuthLoading]);
 
   useEffect(() => {
     selectedConversationIdRef.current = selectedConversationId;
@@ -396,14 +397,22 @@ export default function Messages() {
                         key={message.id}
                         className={`chat-bubble-row ${message.isMine ? "mine" : "theirs"}`}
                       >
-                        <div
-                          className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`}
-                        >
-                          <div className="chat-bubble-text">
-                            {message.content}
+                        {/* Tên hiện ngoài bubble */}
+                        <div className="chat-bubble-wrapper">
+                          <div className="chat-bubble-name">
+                            {message.isMine
+                              ? "Bạn"
+                              : selectedConversation.partnerName}
                           </div>
-                          <div className="chat-bubble-time">
-                            {formatTime(message.createdAt)}
+                          <div
+                            className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`}
+                          >
+                            <div className="chat-bubble-text">
+                              {message.content}
+                            </div>
+                            <div className="chat-bubble-time">
+                              {formatTime(message.createdAt)}
+                            </div>
                           </div>
                         </div>
                       </div>
