@@ -17,7 +17,7 @@ import { useAuth } from "../../context/AuthContext";
 export default function Messages() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { isLoggedIn, user, isAuthLoading } = useAuth();
+  const { isLoggedIn, isAuthLoading } = useAuth();
 
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -77,11 +77,23 @@ export default function Messages() {
     }
 
     loadConversations();
-  }, [isLoggedIn, isAuthLoading]);
+  }, [isLoggedIn, isAuthLoading, searchParams]);
 
   useEffect(() => {
     selectedConversationIdRef.current = selectedConversationId;
   }, [selectedConversationId]);
+
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    const timer = setTimeout(() => {
+      if (bottomRef.current) {
+        bottomRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [messages]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -127,11 +139,14 @@ export default function Messages() {
         });
 
         if (!incomingMessage.isMine) {
-          markConversationAsRead(incomingMessage.conversationId).catch(
-            (error) => {
+          markConversationAsRead(incomingMessage.conversationId)
+            .then(() => {
+              // Báo cho Header biết để refetch notifications
+              window.dispatchEvent(new Event("conversationRead"));
+            })
+            .catch((error) => {
               console.error("Không thể đánh dấu đã đọc", error);
-            },
-          );
+            });
         }
       }
     });
@@ -154,7 +169,12 @@ export default function Messages() {
         const data = await fetchConversationMessages(selectedConversationId);
         setMessages(data);
 
+        requestAnimationFrame(() => {
+          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        });
+
         await markConversationAsRead(selectedConversationId);
+        window.dispatchEvent(new Event("conversationRead"));
         setConversations((prev) =>
           prev.map((conversation) =>
             conversation.conversationId === selectedConversationId
@@ -172,12 +192,6 @@ export default function Messages() {
 
     loadMessages();
   }, [selectedConversationId]);
-
-  useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
 
   const resolveAvatar = (avatar: string | null | undefined, name: string) => {
     if (avatar && avatar.trim() !== "") {

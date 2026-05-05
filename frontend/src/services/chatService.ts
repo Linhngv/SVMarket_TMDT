@@ -81,7 +81,7 @@ export async function markConversationAsRead(conversationId: number) {
   );
 }
 
-export function createChatClient(onMessage: (message: ChatMessage) => void) {
+export function createChatClient(onMessage: (message: ChatMessage) => void, onNotification?: () => void,) {
   const token = localStorage.getItem("token");
 
   const client = new Client({
@@ -99,7 +99,14 @@ export function createChatClient(onMessage: (message: ChatMessage) => void) {
         console.error("Không parse được payload websocket", error);
       }
     });
+
+    
+  // Nhận notification realtime
+  client.subscribe("/user/queue/notifications", () => {
+    if (onNotification) onNotification();
+  });
   };
+
 
   client.onStompError = (frame) => {
     console.error("STOMP error", frame.headers["message"], frame.body);

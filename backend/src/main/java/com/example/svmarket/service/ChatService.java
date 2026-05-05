@@ -3,15 +3,8 @@ package com.example.svmarket.service;
 import com.example.svmarket.dto.ChatConversationResponse;
 import com.example.svmarket.dto.ChatMessageResponse;
 import com.example.svmarket.dto.ChatSendMessageRequest;
-import com.example.svmarket.entity.Conversation;
-import com.example.svmarket.entity.Image;
-import com.example.svmarket.entity.Listing;
-import com.example.svmarket.entity.Message;
-import com.example.svmarket.entity.User;
-import com.example.svmarket.repository.ConversationRepository;
-import com.example.svmarket.repository.ListingRepository;
-import com.example.svmarket.repository.MessageRepository;
-import com.example.svmarket.repository.UserRepository;
+import com.example.svmarket.entity.*;
+import com.example.svmarket.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -39,6 +32,9 @@ public class ChatService {
 
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     // Tao moi hoac lay lai hoi thoai giua buyer va seller theo bai dang.
     @Transactional
@@ -90,7 +86,7 @@ public class ChatService {
         User currentUser = getUserByEmail(email);
         Conversation conversation = getConversationAndValidateMember(conversationId, currentUser.getId());
 
-        messageRepository.markConversationAsRead(conversation.getId(), currentUser.getId());
+        markConversationAsRead(email, conversationId);
 
         return messageRepository.findByConversationIdOrderByCreatedAtAsc(conversationId)
                 .stream()
@@ -98,46 +94,7 @@ public class ChatService {
                 .toList();
     }
 
-    // Danh dau tat ca tin nhan trong hoi thoai la da doc.
-    @Transactional
-    public void markConversationAsRead(String email, Integer conversationId) {
-        User currentUser = getUserByEmail(email);
-        Conversation conversation = getConversationAndValidateMember(conversationId, currentUser.getId());
-        messageRepository.markConversationAsRead(conversation.getId(), currentUser.getId());
-    }
-
     // Luu tin nhan vao DB va day realtime den 2 thanh vien trong hoi thoai.
-//    @Transactional
-//    public ChatMessageResponse sendMessage(String email, ChatSendMessageRequest request) {
-//        User sender = getUserByEmail(email);
-//        Conversation conversation = getConversationAndValidateMember(request.getConversationId(), sender.getId());
-//
-//        String content = request.getContent() != null ? request.getContent().trim() : "";
-//        if (content.isEmpty()) {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nội dung tin nhắn không được để trống");
-//        }
-//
-//        Message savedMessage = messageRepository.save(
-//                Message.builder()
-//                        .conversation(conversation)
-//                        .sender(sender)
-//                        .content(content)
-//                        .isRead(false)
-//                        .build());
-//
-//        conversation.setLastMessage(content);
-//        conversation.setUpdatedAt(LocalDateTime.now());
-//        conversationRepository.save(conversation);
-//
-//        ChatMessageResponse payload = toMessageResponse(savedMessage, sender.getId());
-//
-//        // Gửi về kênh cá nhân của buyer và seller để đồng bộ realtime.
-//        simpMessagingTemplate.convertAndSendToUser(conversation.getBuyer().getEmail(), "/queue/messages", payload);
-//        simpMessagingTemplate.convertAndSendToUser(conversation.getSeller().getEmail(), "/queue/messages", payload);
-//
-//        return payload;
-//    }
-
     @Transactional
     public ChatMessageResponse sendMessage(String email, ChatSendMessageRequest request) {
         User sender = getUserByEmail(email);
@@ -163,6 +120,23 @@ public class ChatService {
         User buyer = conversation.getBuyer();
         User seller = conversation.getSeller();
 
+        // Xác định người nhận
+        User receiver = sender.getId().equals(buyer.getId()) ? seller : buyer;
+
+        // Gửi thông báo
+        Notification notification = Notification.builder()
+                .user(receiver)
+                .content(sender.getFullName() + ": " + content)
+                .type(NotificationType.MESSAGE)
+                .referenceId(conversation.getId())
+                .isRead(false)
+                .build();
+        notificationRepository.save(notification);
+        simpMessagingTemplate.convertAndSendToUser(
+                receiver.getEmail(), "/queue/notifications", notification.getId()
+        );
+
+        // Gửi tin nhắn
         // Tạo payload riêng cho từng người, isMine tính theo userId của họ
         ChatMessageResponse buyerPayload = toMessageResponse(savedMessage, buyer.getId());
         ChatMessageResponse sellerPayload = toMessageResponse(savedMessage, seller.getId());
@@ -171,6 +145,23 @@ public class ChatService {
         simpMessagingTemplate.convertAndSendToUser(seller.getEmail(), "/queue/messages", sellerPayload);
 
         return sender.getId().equals(buyer.getId()) ? buyerPayload : sellerPayload;
+    }
+
+    // Đánh dấu đã đọc một hội thoại
+    @Transactional
+    public void markConversationAsRead(String email, Integer conversationId) {
+        User currentUser = getUserByEmail(email);
+        Conversation conversation = getConversationAndValidateMember(conversationId, currentUser.getId());
+
+        // Đánh dấu tất cả message trong conversation là đã đọc (DB message)
+        messageRepository.markConversationAsRead(conversation.getId(), currentUser.getId());
+
+        // Đánh dấu notification MESSAGE tương ứng là đã đọc (DB notification)
+        List<Notification> notifications = notificationRepository
+                .findAllByUserIdAndTypeAndReferenceId(
+                        currentUser.getId(), NotificationType.MESSAGE, conversationId);
+        notifications.forEach(n -> n.setIsRead(true));
+        notificationRepository.saveAll(notifications);
     }
 
     private User getUserByEmail(String email) {

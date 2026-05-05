@@ -19,6 +19,9 @@ import {
   fetchMyFavoriteListings,
 } from "../../services/favoriteService";
 import { ListingSummary } from "../../services/listingService";
+import { createChatClient } from "../../services/chatService";
+import { Client } from "@stomp/stompjs";
+import { fetchMyConversations } from "../../services/chatService";
 
 type HeaderProps = {
   isLoggedIn?: boolean;
@@ -37,6 +40,7 @@ export default function Header({
   const [openFavorites, setOpenFavorites] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const wsClientRef = useRef<Client | null>(null);
   const [favoriteListings, setFavoriteListings] = useState<ListingSummary[]>(
     [],
   );
@@ -61,33 +65,56 @@ export default function Header({
   // avatar fallback
   const resolvedIsLoggedIn = isLoggedInProp ?? isLoggedIn;
 
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      const res = await fetch("http://localhost:8080/api/notifications/my", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+    } catch (error) {
+      console.error("Lỗi lấy thông báo:", error);
+    }
+  };
+
   useEffect(() => {
     if (resolvedIsLoggedIn) {
-      const fetchNotifications = async () => {
-        try {
-          const token = localStorage.getItem("token");
-          if (!token) return;
-          const res = await fetch(
-            "http://localhost:8080/api/notifications/my",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            },
-          );
-          if (res.ok) {
-            const data = await res.json();
-            setNotifications(data);
-          }
-        } catch (error) {
-          console.error("Lỗi lấy thông báo:", error);
-        }
-      };
       fetchNotifications();
     } else {
       setNotifications([]);
     }
   }, [resolvedIsLoggedIn]);
+
+  useEffect(() => {
+    if (!resolvedIsLoggedIn) return;
+
+    wsClientRef.current = createChatClient(
+      () => {},
+      () => {
+        fetchNotifications();
+      },
+    );
+
+    return () => {
+      wsClientRef.current?.deactivate();
+      wsClientRef.current = null;
+    };
+  }, [resolvedIsLoggedIn]);
+
+  useEffect(() => {
+    const handleConversationRead = () => {
+      fetchNotifications();
+    };
+
+    window.addEventListener("conversationRead", handleConversationRead);
+    return () => {
+      window.removeEventListener("conversationRead", handleConversationRead);
+    };
+  }, []);
 
   const rawAvatar = avatarUrl || user?.avatar;
   const avatar =
@@ -157,6 +184,17 @@ export default function Header({
       setShowNotifications(false);
     } else if (note.type === "REVIEW_REPLY") {
       navigate("/reviews/seller");
+      setShowNotifications(false);
+    } else if (note.type === "MESSAGE") {
+      // Mark tất cả notification cùng conversationId là đã đọc
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n.type === "MESSAGE" && n.referenceId === note.referenceId
+            ? { ...n, isRead: true }
+            : n,
+        ),
+      );
+      navigate(`/messages?conversationId=${note.referenceId}`);
       setShowNotifications(false);
     }
   };
@@ -269,14 +307,33 @@ export default function Header({
     navigate("/create-listing");
   };
 
-  const handleOpenMessages = () => {
+  // Click nut Lien he de vao trang danh sach hoi thoai.
+  const handleOpenMessages = async () => {
     if (!resolvedIsLoggedIn) {
       navigate("/login");
       return;
     }
 
-    navigate("/messages");
+    try {
+      const conversations = await fetchMyConversations();
+
+      if (conversations.length > 0) {
+        const unread = conversations.find((c) => c.unreadCount > 0);
+        const target = unread || conversations[0];
+
+        navigate(`/messages?conversationId=${target.conversationId}`);
+      } else {
+        navigate("/messages");
+      }
+    } catch (error) {
+      console.error(error);
+      navigate("/messages");
+    }
   };
+
+  const unreadMessageCount = notifications.filter(
+    (n) => !n.isRead && n.type === "MESSAGE",
+  ).length;
 
   return (
     <div className="header shadow-sm">
@@ -402,9 +459,16 @@ export default function Header({
           <button
             className="contact-btn rounded-pill px-3 d-flex align-items-center gap-2"
             onClick={handleOpenMessages}
+            style={{ position: "relative" }}
           >
             <MessageCircle size={18} />
             Liên hệ
+            {/* Badge số tin nhắn chưa đọc */}
+            {unreadMessageCount > 0 && (
+              <span className="message-unread-badge">
+                {unreadMessageCount > 99 ? "99+" : unreadMessageCount}
+              </span>
+            )}
           </button>
 
           <button
