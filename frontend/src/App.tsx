@@ -34,6 +34,7 @@ import BuyerReviews from "./pages/user/BuyerReviews";
 import MyReview from "./pages/user/MyReview";
 import AdminTransactionList from "./pages/admin/TransactionManagement/AdminTransactionList";
 import AdminStudentVerification from "./pages/admin/TrustManagement/AdminStudentVerification";
+import Messages from "./pages/user/Messages";
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/seller-profile/:id" element={<SellerProfile />} />
         <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/messages" element={<Messages />} />
         <Route path="/my-review" element={<MyReview />} />
 
         <Route path="/saved-listings" element={<SavedListings />} />

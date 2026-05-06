@@ -265,7 +265,6 @@ public class ListingService {
         List<Listing> listings = listingRepository
                 .filterListingsCustom(keyword, university, categoryId, sortBy);
 
-        // 🔥 sort chuẩn
         listings.sort(listingComparator());
 
         // sort giá nếu user chọn

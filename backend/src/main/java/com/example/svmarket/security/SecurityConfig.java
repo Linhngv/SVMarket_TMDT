@@ -66,7 +66,8 @@ package com.example.svmarket.security;
 //     }
 // }
 
-import com.example.svmarket.util.JwtAuthFilter;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -80,7 +81,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import com.example.svmarket.util.JwtAuthFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -153,6 +154,7 @@ public class SecurityConfig {
                         // STATIC (đã ignore ở trên, nhưng để đây cũng OK)
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
 
                         // Cho phép truy cập /error để không bị lỗi 403 khi gặp 404 hoặc 500
                         .requestMatchers("/error").permitAll()
