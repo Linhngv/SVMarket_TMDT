@@ -119,7 +119,7 @@ export default function Banner({
       </p>
 
       <div className="search-box mt-3">
-        <div className="search-wrapper" style={{ position: "relative" }}>
+        <div className="search-wrapper" style={{ position: "relative", zIndex: 99 }}>
           <input
             ref={inputRef}
             className="form-control search-input-home"
@@ -146,7 +146,7 @@ export default function Banner({
                 right: 0,
                 background: "#fff",
                 border: "1px solid #eee",
-                zIndex: 10,
+                zIndex: 99,
                 maxHeight: 320,
                 overflowY: "auto",
                 borderRadius: 8,
@@ -202,7 +202,7 @@ export default function Banner({
             </div>
           )}
 
-          <div className="select-wrapper" style={{ minWidth: "205px" }} ref={uniRef}>
+          <div className="select-wrapper" style={{ minWidth: "220px" }} ref={uniRef}>
             {/* ICON LEFT (location-dot) */}
             <span className="icon-left" style={{ pointerEvents: "none" }}>
               <svg
@@ -222,7 +222,7 @@ export default function Banner({
               style={{ cursor: "pointer", backgroundColor: "transparent", color: university ? "#000" : "#6B7280" }}
               onClick={() => setShowUniDropdown(!showUniDropdown)}
             >
-              <span className="text-truncate" style={{ maxWidth: "140px" }}>
+              <span className="text-truncate" style={{ maxWidth: "180px" }}>
                 {university || "Chọn trường đại học"}
               </span>
             </div>
@@ -243,11 +243,11 @@ export default function Banner({
             {/* CUSTOM DROPDOWN MENU */}
             {showUniDropdown && (
               <div
-                className="position-absolute bg-white border rounded shadow-sm w-100"
-                style={{ top: "calc(100% + 5px)", left: 0, zIndex: 100, maxHeight: "300px", overflowY: "auto" }}
+                className="position-absolute bg-white border rounded shadow-sm"
+                style={{ top: "calc(100% + 5px)", right: 0, minWidth: "320px", zIndex: 99, maxHeight: "300px", overflowY: "auto" }}
               >
                 <div
-                    className="px-3 py-2 text-truncate"
+                    className="px-3 py-2"
                     style={{
                         fontSize: "14px",
                         color: university === "" ? "#1B7A4A" : "#374151",
@@ -256,10 +256,12 @@ export default function Banner({
                         cursor: "pointer"
                     }}
                     onMouseEnter={(e) => {
-                        if (university !== "") e.currentTarget.style.backgroundColor = "#f3f4f6";
+                        e.currentTarget.style.backgroundColor = "#e8f5ee";
+                        e.currentTarget.style.color = "#1B7A4A";
                     }}
                     onMouseLeave={(e) => {
-                        if (university !== "") e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.backgroundColor = university === "" ? "#e8f5ee" : "transparent";
+                        e.currentTarget.style.color = university === "" ? "#1B7A4A" : "#374151";
                     }}
                     onClick={(e) => {
                         e.stopPropagation();
@@ -274,7 +276,7 @@ export default function Banner({
                   return (
                     <div
                         key={idx}
-                        className="px-3 py-2 text-truncate"
+                        className="px-3 py-2"
                         title={uniName}
                         style={{
                             fontSize: "14px",
@@ -284,10 +286,12 @@ export default function Banner({
                             cursor: "pointer"
                         }}
                         onMouseEnter={(e) => {
-                            if (university !== uniName) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                            e.currentTarget.style.backgroundColor = "#e8f5ee";
+                            e.currentTarget.style.color = "#1B7A4A";
                         }}
                         onMouseLeave={(e) => {
-                            if (university !== uniName) e.currentTarget.style.backgroundColor = "transparent";
+                            e.currentTarget.style.backgroundColor = university === uniName ? "#e8f5ee" : "transparent";
+                            e.currentTarget.style.color = university === uniName ? "#1B7A4A" : "#374151";
                         }}
                         onClick={(e) => {
                             e.stopPropagation();

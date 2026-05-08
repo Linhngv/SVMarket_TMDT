@@ -105,7 +105,7 @@ export default function AdminDashboard() {
                         <h3 className="page-title m-0 fw-bold" style={{ color: "#111827" }}>Thống kê hoạt động</h3>
                         <div 
                             className="d-flex align-items-center gap-2 bg-white px-3 py-2 rounded shadow-sm border position-relative" 
-                            style={{ minWidth: "280px", cursor: "pointer" }}
+                            style={{ minWidth: "230px", cursor: "pointer" }}
                             ref={periodRef}
                             onClick={() => setOpenPeriodDropdown(!openPeriodDropdown)}
                         >
