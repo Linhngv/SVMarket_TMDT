@@ -13,6 +13,7 @@ import {
 } from "../../services/chatService";
 import "../../styles/user/Messages.css";
 import { useAuth } from "../../context/AuthContext";
+import { Navigation } from "lucide-react";
 
 export default function Messages() {
   const navigate = useNavigate();
@@ -265,6 +266,67 @@ export default function Messages() {
     setDraft("");
   };
 
+ 
+  // chức năng gủi vi trí hiện tại của người dùng
+  const handleSendLocation = () => {
+    if (!selectedConversationId) return;
+    
+    // Kiểm tra xem trình duyệt có hỗ trợ lấy vị trí không
+    if (!navigator.geolocation) {
+      window.alert("Trình duyệt của bạn không hỗ trợ định vị!");
+      return;
+    }
+
+    const client = websocketClientRef.current;
+    if (!client || !client.connected) {
+      window.alert("Kết nối realtime chưa sẵn sàng. Vui lòng thử lại.");
+      return;
+    }
+
+    // Xin quyền và lấy tọa độ hiện tại
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        // [Vị trí] để thông báo hiển thị
+        const locationContent = `[Vị trí] ${lat},${lng}`;
+        publishChatMessage(client, selectedConversationId, locationContent);
+      },
+      (error) => {
+        console.error("Lỗi lấy vị trí:", error);
+        window.alert("Không thể lấy vị trí. Vui lòng cấp quyền định vị cho trình duyệt.");
+      }
+    );
+  };
+
+  // Hàm phân tích nội dung: Nếu là text thì in text, nếu là vị trí thì vẽ bản đồ
+  const renderMessageContent = (content: string) => {
+    if (content.startsWith("[Vị trí] ")) {
+      const coords = content.replace("[Vị trí] ", "");
+      const [latStr, lngStr] = coords.split(",");
+      const latNum = parseFloat(latStr);
+      const lngNum = parseFloat(lngStr);
+      
+      // Tính toán khung hình (bounding box) cho bản đồ OpenStreetMap
+      const offset = 0.005;
+      const bbox = `${lngNum - offset},${latNum - offset},${lngNum + offset},${latNum + offset}`;
+      const iframeSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${latNum},${lngNum}`;
+      const osmUrl = `https://www.openstreetmap.org/?mlat=${latNum}&mlon=${lngNum}#map=16/${latNum}/${lngNum}`;
+
+      return (
+        <div className="location-message" style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: "200px" }}>
+          <div style={{ fontWeight: "600", fontSize: "14px", display: 'flex', alignItems: 'center', gap: '6px' }}><Navigation size={16} /> Vị trí được chia sẻ</div>
+          {/* Dùng iframe của OpenStreetMap*/}
+          <iframe width="100%" height="150" frameBorder="0" scrolling="no" marginHeight={0} marginWidth={0} src={iframeSrc} style={{ borderRadius: "8px", border: "1px solid #ddd" }}></iframe>
+          <a href={osmUrl} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline", fontSize: "12px", textAlign: "right" }}>Xem bản đồ lớn</a>
+        </div>
+      );
+    }
+    return content;
+  };
+  //xong chức năng gủi vị trí
+  
+
   return (
     <>
       <Header />
@@ -318,8 +380,10 @@ export default function Messages() {
                       <div className="chat-conversation-product">
                         {conversation.listingTitle || "Bài đăng"}
                       </div>
-                      <div className="chat-conversation-last">
-                        {conversation.lastMessage || "Chưa có tin nhắn"}
+                      <div className="chat-conversation-last" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {conversation.lastMessage?.includes("[Vị trí]")
+                          ? <><Navigation size={12} /> <span>Đã chia sẻ một vị trí</span></>
+                          : conversation.lastMessage || "Chưa có tin nhắn"}
                       </div>
                     </div>
 
@@ -422,7 +486,8 @@ export default function Messages() {
                             className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`}
                           >
                             <div className="chat-bubble-text">
-                              {message.content}
+                              {/* Sử dụng hàm render thay vì in text thẳng để vẽ map */}
+                              {renderMessageContent(message.content)}
                             </div>
                             <div className="chat-bubble-time">
                               {formatTime(message.createdAt)}
@@ -442,6 +507,17 @@ export default function Messages() {
                     value={draft}
                     onChange={(event) => setDraft(event.target.value)}
                   />
+                  {/* Nút gửi vị trí */}
+                  <button 
+                    type="button" 
+                    onClick={handleSendLocation}
+                    title="Chia sẻ vị trí hiện tại"
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: "0 10px", color: "#000", transition: "color 0.2s", display: "flex", alignItems: "center" }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = "#1B7A4A"}
+                    onMouseLeave={(e) => e.currentTarget.style.color = "#000"}
+                  >
+                    <Navigation size={22} />
+                  </button>
                   <button type="submit">Gửi</button>
                 </form>
               </>

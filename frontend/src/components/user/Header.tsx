@@ -9,6 +9,7 @@ import {
   Package,
   LogOut,
   User,
+  Navigation,
 } from "lucide-react";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -441,6 +442,11 @@ export default function Header({
                                 note.content.indexOf(" muốn mua ") + 10,
                               )}
                             </strong>
+                          </>
+                          //gửi vị trí
+                        ) : note.content.includes("[Vị trí]") ? (
+                          <>
+                            {note.content.substring(0, note.content.indexOf("[Vị trí]"))} <Navigation size={14} style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginLeft: '4px' }} /> Đã chia sẻ một vị trí 
                           </>
                         ) : (
                           note.content
