@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import com.example.svmarket.entity.User;
 import com.example.svmarket.entity.Role;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,4 +25,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     // Lấy danh sách sinh viên chờ duyệt định danh
     @Query("SELECT u FROM User u WHERE (u.isVerified IS NULL OR u.isVerified = false) AND u.studentCard IS NOT NULL AND u.role = 'USER'")
     List<User> findPendingVerificationUsers();
+    // Thống kê số lượng người dùng theo khoảng thời gian sau một thời điểm  7 ngày, 30 ngày, 1 năm
+    long countByCreatedAtAfter(LocalDateTime date);
+
+    long countByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    @Query("SELECT u.createdAt FROM User u WHERE u.createdAt >= :startDate")
+    List<LocalDateTime> findCreatedAtAfter(@Param("startDate") LocalDateTime startDate);
 }

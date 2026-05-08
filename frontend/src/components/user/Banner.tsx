@@ -84,6 +84,16 @@ export default function Banner({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
   
+ // Đóng uni dropdown khi click ngoài
+  useEffect(() => {
+    const handleUniClick = (e: MouseEvent) => {
+      if (uniRef.current && !uniRef.current.contains(e.target as Node)) {
+        setShowUniDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleUniClick);
+    return () => document.removeEventListener("mousedown", handleUniClick);
+  }, []);
 
   // Xử lý chọn gợi ý
   const handleSelectSuggestion = (item: ListingSummary) => {
@@ -192,9 +202,9 @@ export default function Banner({
             </div>
           )}
 
-          <div className="select-wrapper">
+          <div className="select-wrapper" style={{ minWidth: "205px" }} ref={uniRef}>
             {/* ICON LEFT (location-dot) */}
-            <span className="icon-left">
+            <span className="icon-left" style={{ pointerEvents: "none" }}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -206,22 +216,19 @@ export default function Banner({
               </svg>
             </span>
 
-            {/* SELECT */}
-            <select
-              className="form-select search-select"
-              value={university}
-              onChange={(e) => setUniversity(e.target.value)}
+            {/* CUSTOM SELECT */}
+            <div
+              className="form-select search-select d-flex align-items-center"
+              style={{ cursor: "pointer", backgroundColor: "transparent", color: university ? "#000" : "#6B7280" }}
+              onClick={() => setShowUniDropdown(!showUniDropdown)}
             >
-              <option value="">Chọn trường đại học</option>
-              {universities.map((uni, idx) => (
-                <option key={idx} value={uni.name || uni}>
-                  {uni.name || uni}
-                </option>
-              ))}
-            </select>
+              <span className="text-truncate" style={{ maxWidth: "140px" }}>
+                {university || "Chọn trường đại học"}
+              </span>
+            </div>
 
             {/* ICON RIGHT (caret-down) */}
-            <span className="icon-right">
+            <span className="icon-right" style={{ pointerEvents: "none" }}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -232,6 +239,68 @@ export default function Banner({
                 <path d="M31.3 192h257.4c28.4 0 42.7 34.5 22.6 54.6L182.6 375.3c-12.5 12.5-32.8 12.5-45.3 0L8.7 246.6C-11.4 226.5 2.9 192 31.3 192z" />
               </svg>
             </span>
+
+            {/* CUSTOM DROPDOWN MENU */}
+            {showUniDropdown && (
+              <div
+                className="position-absolute bg-white border rounded shadow-sm w-100"
+                style={{ top: "calc(100% + 5px)", left: 0, zIndex: 100, maxHeight: "300px", overflowY: "auto" }}
+              >
+                <div
+                    className="px-3 py-2 text-truncate"
+                    style={{
+                        fontSize: "14px",
+                        color: university === "" ? "#1B7A4A" : "#374151",
+                        backgroundColor: university === "" ? "#e8f5ee" : "transparent",
+                        transition: "all 0.2s",
+                        cursor: "pointer"
+                    }}
+                    onMouseEnter={(e) => {
+                        if (university !== "") e.currentTarget.style.backgroundColor = "#f3f4f6";
+                    }}
+                    onMouseLeave={(e) => {
+                        if (university !== "") e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setUniversity("");
+                        setShowUniDropdown(false);
+                    }}
+                >
+                    Chọn trường đại học
+                </div>
+                {universities.map((uni, idx) => {
+                  const uniName = uni.name || uni;
+                  return (
+                    <div
+                        key={idx}
+                        className="px-3 py-2 text-truncate"
+                        title={uniName}
+                        style={{
+                            fontSize: "14px",
+                            color: university === uniName ? "#1B7A4A" : "#374151",
+                            backgroundColor: university === uniName ? "#e8f5ee" : "transparent",
+                            transition: "all 0.2s",
+                            cursor: "pointer"
+                        }}
+                        onMouseEnter={(e) => {
+                            if (university !== uniName) e.currentTarget.style.backgroundColor = "#f3f4f6";
+                        }}
+                        onMouseLeave={(e) => {
+                            if (university !== uniName) e.currentTarget.style.backgroundColor = "transparent";
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setUniversity(uniName);
+                            setShowUniDropdown(false);
+                        }}
+                    >
+                        {uniName}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
           <button
             className="btn search-btn ms-2"

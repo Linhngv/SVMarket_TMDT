@@ -9,7 +9,7 @@ type Category = {
 
 type CategoriesProps = {
     selectedCategoryId?: number;
-    onSelectCategory?: (id: number) => void;
+    onSelectCategory?: (id?: number) => void;
 };
 
 export default function Categories({ selectedCategoryId, onSelectCategory }: CategoriesProps) {
@@ -36,7 +36,27 @@ export default function Categories({ selectedCategoryId, onSelectCategory }: Cat
 
     return (
         <div className="category-section mt-4">
-            <h5 className="category-title">Danh mục</h5>
+            <div className="product-header">
+                <h5 className="product-title">Danh mục</h5>
+                <div className="filter-wrapper" style={{ width: "fit-content" }}>
+                    <div 
+                        className="filter-btn"
+                        style={{ 
+                            padding: "6px 20px",
+                            color: selectedCategoryId ? "#3D3D5C" : "#ffffff",
+                            fontWeight: selectedCategoryId ? "500" : "600",
+                            borderColor: selectedCategoryId ? "#E5E7EB" : "#1B7A4A",
+                            backgroundColor: selectedCategoryId ? "#F0F2F5" : "#1B7A4A",
+                            justifyContent: "center",
+                            transition: "all 0.3s ease",
+                            boxShadow: selectedCategoryId ? "none" : "0 4px 12px rgba(27, 122, 74, 0.25)"
+                        }}
+                        onClick={() => onSelectCategory && onSelectCategory(undefined)}
+                    >
+                        Tất cả
+                    </div>
+                </div>
+            </div>
 
             <div className="category-grid">
                 {loading ? (
