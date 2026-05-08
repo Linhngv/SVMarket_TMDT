@@ -100,11 +100,11 @@ export function createChatClient(onMessage: (message: ChatMessage) => void, onNo
       }
     });
 
-    
-  // Nhận notification realtime
-  client.subscribe("/user/queue/notifications", () => {
-    if (onNotification) onNotification();
-  });
+
+    // Nhận notification realtime
+    client.subscribe("/user/queue/notifications", () => {
+      if (onNotification) onNotification();
+    });
   };
 
 
@@ -126,4 +126,26 @@ export function publishChatMessage(
     destination: "/app/chat.send",
     body: JSON.stringify({ conversationId, content }),
   });
+}
+
+export async function sendChatImage(
+  conversationId: number,
+  file: File,
+) {
+  const formData = new FormData();
+
+  formData.append("file", file);
+
+  const response = await axios.post(
+    `${CHAT_API}/conversations/${conversationId}/image`,
+    formData,
+    {
+      headers: {
+        ...getAuthHeaders(),
+        "Content-Type": "multipart/form-data",
+      },
+    },
+  );
+
+  return response.data;
 }
