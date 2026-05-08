@@ -195,7 +195,7 @@ const menuGroups = [
   {
     label: "Thống kê hoạt động website",
     items: [
-      { id: "admin", label: "Trang chủ", icon: <IconHome size={24} /> },
+      { id: "admin/dashboard", label: "Trang chủ", icon: <IconHome size={24} /> },
     ],
   },
   {

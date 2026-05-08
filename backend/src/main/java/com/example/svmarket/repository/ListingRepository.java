@@ -1,7 +1,9 @@
 package com.example.svmarket.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 import com.example.svmarket.entity.PostSource;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -78,4 +80,9 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
             @Param("sortBy") String sortBy);
 
     List<Listing> findBySellerIdAndPostSource(Integer sellerId, PostSource postSource);
+    // Thống kê số lượng bài đăng theo danh mục sau một thời điểm  7 ngày, 30 ngày, 1 năm
+    long countByCreatedAtAfter(LocalDateTime date);
+
+    @Query("SELECT c.name as categoryName, COUNT(l.id) as postCount FROM Listing l JOIN l.category c WHERE l.createdAt > :date GROUP BY c.name")
+    List<Map<String, Object>> countPostsByCategoryAfter(@Param("date") LocalDateTime date);
 }
