@@ -7,15 +7,9 @@ import com.example.svmarket.service.ChatService;
 import com.example.svmarket.util.JwtUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -71,5 +65,22 @@ public class ChatController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token không hợp lệ");
         }
         return jwtUtil.extractEmail(bearerToken.replace("Bearer ", ""));
+    }
+
+    // Gửi ảnh
+    @PostMapping("/conversations/{conversationId}/image")
+    public ChatMessageResponse sendImage(
+            @RequestHeader("Authorization") String bearerToken,
+            @PathVariable Integer conversationId,
+            @RequestParam("file") MultipartFile file
+    ) {
+
+        String email = extractEmail(bearerToken);
+
+        return chatService.sendImageMessage(
+                email,
+                conversationId,
+                file
+        );
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,9 @@ public class ChatService {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     // Tao moi hoac lay lai hoi thoai giua buyer va seller theo bai dang.
     @Transactional
@@ -224,5 +228,63 @@ public class ChatService {
                 .isMine(sender != null && sender.getId().equals(currentUserId))
                 .createdAt(message.getCreatedAt())
                 .build();
+    }
+
+    // Gửi ảnh
+    @Transactional
+    public ChatMessageResponse sendImageMessage(
+            String email,
+            Integer conversationId,
+            MultipartFile file
+    ) {
+
+        User sender = getUserByEmail(email);
+
+        Conversation conversation =
+                getConversationAndValidateMember(conversationId, sender.getId());
+
+        CloudinaryService.UploadedImage uploadedImage =
+                cloudinaryService.uploadChatImage(file);
+
+        String imageContent = "[IMAGE] " + uploadedImage.secureUrl();
+
+        Message savedMessage = messageRepository.save(
+                Message.builder()
+                        .conversation(conversation)
+                        .sender(sender)
+                        .content(imageContent)
+                        .isRead(false)
+                        .build()
+        );
+
+        conversation.setLastMessage("[Hình ảnh]");
+        conversation.setUpdatedAt(LocalDateTime.now());
+
+        conversationRepository.save(conversation);
+
+        User buyer = conversation.getBuyer();
+        User seller = conversation.getSeller();
+
+        ChatMessageResponse buyerPayload =
+                toMessageResponse(savedMessage, buyer.getId());
+
+        ChatMessageResponse sellerPayload =
+                toMessageResponse(savedMessage, seller.getId());
+
+        simpMessagingTemplate.convertAndSendToUser(
+                buyer.getEmail(),
+                "/queue/messages",
+                buyerPayload
+        );
+
+        simpMessagingTemplate.convertAndSendToUser(
+                seller.getEmail(),
+                "/queue/messages",
+                sellerPayload
+        );
+
+        return sender.getId().equals(buyer.getId())
+                ? buyerPayload
+                : sellerPayload;
     }
 }
