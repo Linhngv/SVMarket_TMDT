@@ -109,4 +109,22 @@ public class CloudinaryService {
             throw new RuntimeException("Không thể upload thẻ sinh viên lên Cloudinary", e);
         }
     }
+
+    public UploadedImage uploadChatImage(MultipartFile file) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> result = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", "svmarket/chat-images",
+                            "resource_type", "image"));
+
+            return new UploadedImage(
+                    (String) result.get("public_id"),
+                    (String) result.get("secure_url"));
+
+        } catch (IOException e) {
+            throw new RuntimeException("Không thể upload ảnh chat", e);
+        }
+    }
 }
