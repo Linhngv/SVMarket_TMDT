@@ -21,4 +21,8 @@ public class ChatMessageResponse {
     private Boolean isRead;
     private Boolean isMine;
     private LocalDateTime createdAt;
+
+    private Boolean isEdited;
+    private LocalDateTime lastEditedAt;
+    private String type;
 }

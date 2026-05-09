@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "messages")
@@ -33,6 +34,13 @@ public class Message {
     @Builder.Default
     private Boolean isRead = false;
 
+    @Column(name = "is_edited")
+    @Builder.Default
+    private Boolean isEdited = false;
+
+    @Column(name = "last_edited_at")
+    private LocalDateTime lastEditedAt;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -40,4 +48,7 @@ public class Message {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MessageHistory> history;
 }

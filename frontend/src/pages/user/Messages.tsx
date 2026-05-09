@@ -11,10 +11,12 @@ import {
   markConversationAsRead,
   publishChatMessage,
   sendChatImage,
+  updateChatMessage,
+  getMessageHistory,
 } from "../../services/chatService";
 import "../../styles/user/Messages.css";
 import { useAuth } from "../../context/AuthContext";
-import { Navigation, ImagePlus, Smile, Search } from "lucide-react";
+import { Navigation, ImagePlus, Smile, Search, Edit } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 
 export default function Messages() {
@@ -27,6 +29,9 @@ export default function Messages() {
   const [selectedConversationId, setSelectedConversationId] = useState<
     number | null
   >(null);
+  const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
+  const [editingMessageDraft, setEditingMessageDraft] = useState("");
+  const [expandedHistory, setExpandedHistory] = useState<Record<number, { oldContent: string; editedAt: string }[]>>({});
   const [draft, setDraft] = useState("");
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
@@ -162,6 +167,20 @@ export default function Messages() {
           return [...prev, incomingMessage];
         });
 
+        // Handle edited messages (assuming WebSocket also sends MESSAGE_EDITED)
+        if ((incomingMessage as any).type === "MESSAGE_EDITED" && incomingMessage.conversationId === selectedConversationIdRef.current) {
+          setMessages((prev) => prev.map((msg) =>
+            msg.id === incomingMessage.id
+              ? {
+                  ...msg,
+                  content: incomingMessage.content,
+                  isEdited: true,
+                  lastEditedAt: (incomingMessage as any).lastEditedAt,
+                }
+              : msg
+          ));
+        }
+
         if (!incomingMessage.isMine) {
           markConversationAsRead(incomingMessage.conversationId)
             .then(() => {
@@ -189,6 +208,8 @@ export default function Messages() {
     }
 
     const loadMessages = async () => {
+      setEditingMessageId(null); // Thoát chế độ chỉnh sửa khi chuyển conversation
+      setEditingMessageDraft("");
       try {
         setIsLoadingMessages(true);
         const data = await fetchConversationMessages(selectedConversationId);
@@ -290,7 +311,59 @@ export default function Messages() {
     setDraft("");
   };
 
-  // chức năng gủi vi trí hiện tại của người dùng
+  const startEditing = (message: ChatMessage) => {
+    setEditingMessageId(message.id);
+    setEditingMessageDraft(message.content);
+    setShowEmojiPicker(false); // Đóng emoji picker khi bắt đầu chỉnh sửa
+  };
+
+  const cancelEditing = () => {
+    setEditingMessageId(null);
+    setEditingMessageDraft("");
+  };
+
+  const saveEditedMessage = async () => {
+    if (!editingMessageId || !editingMessageDraft.trim()) {
+      return;
+    }
+
+    const client = websocketClientRef.current;
+    if (!client || !client.connected) {
+      window.alert(
+        "Kết nối realtime chưa sẵn sàng. Vui lòng thử lại sau 1-2 giây.",
+      );
+      return;
+    }
+
+    try {
+      // Gọi API cập nhật tin nhắn
+      const updatedMsg = await updateChatMessage(editingMessageId, editingMessageDraft.trim());
+      setEditingMessageId(null);
+      setEditingMessageDraft("");
+    } catch (error) {
+      console.error(error);
+      window.alert("Không thể chỉnh sửa tin nhắn");
+    }
+  };
+
+  const toggleMessageHistory = async (messageId: number) => {
+    if (expandedHistory[messageId]) {
+      setExpandedHistory((prev) => {
+        const next = { ...prev };
+        delete next[messageId];
+        return next;
+      });
+      return;
+    }
+    try {
+      const history = await getMessageHistory(messageId);
+      setExpandedHistory((prev) => ({ ...prev, [messageId]: history }));
+    } catch (error) {
+      console.error("Không tải được lịch sử tin nhắn", error);
+      window.alert("Không tải được lịch sử tin nhắn");
+    }
+  };
+
   const handleSendLocation = () => {
     if (!selectedConversationId) return;
 
@@ -675,17 +748,69 @@ export default function Messages() {
                               ? "Bạn"
                               : selectedConversation.partnerName}
                           </div>
-                          <div
-                            className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`}
-                          >
-                            <div className="chat-bubble-text">
-                              {/* Sử dụng hàm render thay vì in text thẳng để vẽ map */}
-                              {renderMessageContent(message.content)}
+                          
+                          {editingMessageId === message.id ? (
+                            <div className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                              <input 
+                                type="text" 
+                                value={editingMessageDraft} 
+                                onChange={(e) => setEditingMessageDraft(e.target.value)}
+                                autoFocus
+                                style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', outline: 'none' }}
+                              />
+                              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                <button onClick={cancelEditing} style={{ fontSize: '12px', padding: '2px 8px', cursor: 'pointer' }}>Hủy</button>
+                                <button onClick={saveEditedMessage} style={{ fontSize: '12px', padding: '2px 8px', cursor: 'pointer', backgroundColor: '#1B7A4A', color: 'white', border: 'none', borderRadius: '4px' }}>Lưu</button>
+                              </div>
                             </div>
-                            <div className="chat-bubble-time">
-                              {formatTime(message.createdAt)}
+                          ) : (
+                            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', flexDirection: message.isMine ? 'row-reverse' : 'row' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: message.isMine ? 'flex-end' : 'flex-start' }}>
+                                {/* Bong bóng lịch sử tin nhắn */}
+                                {expandedHistory[message.id] && expandedHistory[message.id].slice().reverse().map((hist, index, revArr) => (
+                                  <div key={index} className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`} style={{ opacity: 0.6, fontSize: '13px' }}>
+                                    <div className="chat-bubble-text">
+                                      {renderMessageContent(hist.oldContent)}
+                                    </div>
+                                    <div className="chat-bubble-time" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      {formatTime(index === 0 ? message.createdAt : revArr[index - 1].editedAt)}
+                                    </div>
+                                  </div>
+                                ))}
+                              
+                                {/* Bong bóng tin nhắn hiện tại */}
+                                <div className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`}>
+                                  <div className="chat-bubble-text">
+                                    {renderMessageContent(message.content)}
+                                  </div>
+                                  <div className="chat-bubble-time" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    {formatTime(message.isEdited && message.lastEditedAt ? message.lastEditedAt : message.createdAt)}
+                                    {message.isEdited && (
+                                      <span 
+                                        title={expandedHistory[message.id] ? "Ẩn lịch sử" : "Xem lịch sử chỉnh sửa"} 
+                                        className="chat-edited-label"
+                                        style={{ cursor: 'pointer', fontSize: '11px', textDecoration: 'underline' }}
+                                        onClick={() => toggleMessageHistory(message.id)}
+                                      >
+                                        {expandedHistory[message.id] ? "(Ẩn chỉnh sửa)" : "(Đã chỉnh sửa)"}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              {message.isMine && !(message.content.startsWith("[IMAGE]") || message.content.startsWith("[Vị trí]")) && (
+                                <button 
+                                  className="edit-message-btn" 
+                                  onClick={() => startEditing(message)}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.5, padding: '4px', marginBottom: '8px' }}
+                                  title="Chỉnh sửa tin nhắn"
+                                >
+                                  <Edit size={14}/>
+                                </button>
+                              )}
                             </div>
-                          </div>
+                          )}
                         </div>
                       </div>
                     ))}

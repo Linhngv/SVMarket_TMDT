@@ -3,6 +3,7 @@ package com.example.svmarket.controller;
 import com.example.svmarket.dto.ChatConversationResponse;
 import com.example.svmarket.dto.ChatMessageResponse;
 import com.example.svmarket.dto.ChatStartConversationRequest;
+import com.example.svmarket.dto.MessageHistoryResponse;
 import com.example.svmarket.service.ChatService;
 import com.example.svmarket.util.JwtUtil;
 import jakarta.validation.Valid;
@@ -58,6 +59,25 @@ public class ChatController {
             @PathVariable Integer conversationId) {
         String email = extractEmail(bearerToken);
         chatService.markConversationAsRead(email, conversationId);
+    }
+
+    // Chỉnh sửa tin nhắn
+    @PutMapping("/messages/{messageId}")
+    public ChatMessageResponse editMessage(
+            @RequestHeader("Authorization") String bearerToken,
+            @PathVariable Integer messageId,
+            @RequestBody java.util.Map<String, String> payload) {
+        String email = extractEmail(bearerToken);
+        return chatService.editMessage(email, messageId, payload.get("content"));
+    }
+
+    // Xem lịch sử chỉnh sửa tin nhắn
+    @GetMapping("/messages/{messageId}/history")
+    public List<MessageHistoryResponse> getMessageHistory(
+            @RequestHeader("Authorization") String bearerToken,
+            @PathVariable Integer messageId) {
+        String email = extractEmail(bearerToken);
+        return chatService.getMessageHistory(email, messageId);
     }
 
     private String extractEmail(String bearerToken) {
