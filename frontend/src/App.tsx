@@ -13,6 +13,7 @@ import ProductDetail from "./pages/product/ProductDetail";
 import PurchaseHistory from "./pages/user/PurchaseHistory";
 import SalesHistory from "./pages/user/SalesHistory";
 import MyPackages from "./pages/package-management/MyPackages";
+import SellerDashboard from "./pages/package-management/SellerDashboard";
 import Payment from "./pages/user/Payment";
 import UserAreaLayout from "./components/sidebar/user/UserAreaLayout";
 import CreateListing from "./pages/user/CreateListing";
@@ -68,6 +69,7 @@ function App() {
           <Route path="/reviews/buyer" element={<BuyerReviews />} />
           <Route path="/my-packages" element={<MyPackages />} />
           <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/dashboard" element={<SellerDashboard />} />
         </Route>
 
         <Route path="/payment/:orderId" element={<Payment />} />

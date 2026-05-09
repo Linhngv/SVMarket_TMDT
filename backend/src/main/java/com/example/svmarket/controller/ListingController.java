@@ -191,4 +191,24 @@ public class ListingController {
 
         return ResponseEntity.ok(Map.of("message", "Đẩy bài thành công"));
     }
+
+    // Tính lượt xem của người dùng khi click vào xem chi tiết bài đăng
+    @PostMapping("/{id}/view")
+    public ResponseEntity<Void> increaseView(
+            @PathVariable Integer id,
+            @RequestHeader(value = "Authorization", required = false) String token
+    ) {
+        String email = null;
+
+        try {
+            if (token != null && token.startsWith("Bearer ")) {
+                email = extractEmail(token);
+            }
+        } catch (Exception e) {
+            email = null;
+        }
+
+        listingService.increaseView(id, email);
+        return ResponseEntity.ok().build();
+    }
 }

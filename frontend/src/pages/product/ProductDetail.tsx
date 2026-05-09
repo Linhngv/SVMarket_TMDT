@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import {
   fetchListingById,
   PublicListingDetail,
+  increaseListingView,
 } from "../../services/listingService";
 import { startConversation } from "../../services/chatService";
 
@@ -30,6 +31,12 @@ export default function ProductDetail() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    increaseListingView(Number(id));
   }, [id]);
 
   useEffect(() => {

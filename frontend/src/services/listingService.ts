@@ -1,6 +1,4 @@
 import axios from "axios";
-import type {PushHistory} from "../types/PushHistory";
-
 
 const API_BASE_URL = "http://localhost:8080/api/listings";
 
@@ -252,3 +250,16 @@ export async function fetchPostLimit() {
 
   return res.json();
 }
+
+export const increaseListingView = async (listingId: number) => {
+  const token = localStorage.getItem("token");
+
+  await fetch(`${API_BASE_URL}/${listingId}/view`, {
+    method: "POST",
+    headers: token
+      ? {
+          Authorization: `Bearer ${token}`,
+        }
+      : {},
+  });
+};
