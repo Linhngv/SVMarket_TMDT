@@ -2,6 +2,7 @@ package com.example.svmarket.service;
 
 import com.example.svmarket.dto.ChatConversationResponse;
 import com.example.svmarket.dto.ChatMessageResponse;
+import com.example.svmarket.dto.MessageHistoryResponse;
 import com.example.svmarket.dto.ChatSendMessageRequest;
 import com.example.svmarket.entity.*;
 import com.example.svmarket.repository.*;
@@ -24,6 +25,9 @@ public class ChatService {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private MessageHistoryRepository messageHistoryRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -168,6 +172,73 @@ public class ChatService {
         notificationRepository.saveAll(notifications);
     }
 
+    // Chỉnh sửa tin nhắn
+    @Transactional
+    public ChatMessageResponse editMessage(String email, Integer messageId, String newContent) {
+        User sender = getUserByEmail(email);
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tin nhắn"));
+
+        if (!message.getSender().getId().equals(sender.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền chỉnh sửa tin nhắn này");
+        }
+
+        if (newContent == null || newContent.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nội dung tin nhắn không được để trống");
+        }
+
+        MessageHistory history = MessageHistory.builder()
+                .message(message)
+                .oldContent(message.getContent())
+                .editedAt(LocalDateTime.now())
+                .build();
+        messageHistoryRepository.save(history);
+
+        message.setContent(newContent.trim());
+        message.setIsEdited(true);
+        message.setLastEditedAt(LocalDateTime.now());
+        Message updatedMessage = messageRepository.save(message);
+
+        Conversation conversation = message.getConversation();
+        User buyer = conversation.getBuyer();
+        User seller = conversation.getSeller();
+
+        ChatMessageResponse buyerPayload = toMessageResponse(updatedMessage, buyer.getId());
+        buyerPayload.setType("MESSAGE_EDITED");
+        ChatMessageResponse sellerPayload = toMessageResponse(updatedMessage, seller.getId());
+        sellerPayload.setType("MESSAGE_EDITED");
+
+        simpMessagingTemplate.convertAndSendToUser(buyer.getEmail(), "/queue/messages", buyerPayload);
+        simpMessagingTemplate.convertAndSendToUser(seller.getEmail(), "/queue/messages", sellerPayload);
+
+        return sender.getId().equals(buyer.getId()) ? buyerPayload : sellerPayload;
+    }
+
+    // Xem lịch sử chỉnh sửa
+    @Transactional(readOnly = true)
+    public List<MessageHistoryResponse> getMessageHistory(String email, Integer messageId) {
+        User currentUser = getUserByEmail(email);
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy tin nhắn"));
+
+        Conversation conversation = message.getConversation();
+        boolean isParticipant = (conversation.getBuyer() != null && conversation.getBuyer().getId().equals(currentUser.getId())) ||
+                                (conversation.getSeller() != null && conversation.getSeller().getId().equals(currentUser.getId()));
+
+        if (!isParticipant) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền xem tin nhắn này");
+        }
+
+        return messageHistoryRepository.findByMessageIdOrderByEditedAtDesc(messageId)
+                .stream()
+                .map(history -> MessageHistoryResponse.builder()
+                        .id(history.getId())
+                        .oldContent(history.getOldContent())
+                        .editedAt(history.getEditedAt())
+                        .build())
+                .toList();
+    }
+
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy user"));
@@ -227,6 +298,8 @@ public class ChatService {
                 .isRead(message.getIsRead())
                 .isMine(sender != null && sender.getId().equals(currentUserId))
                 .createdAt(message.getCreatedAt())
+                .isEdited(message.getIsEdited())
+                .lastEditedAt(message.getLastEditedAt())
                 .build();
     }
 

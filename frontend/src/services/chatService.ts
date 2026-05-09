@@ -30,6 +30,9 @@ export type ChatMessage = {
   isRead: boolean;
   isMine: boolean;
   createdAt: string | null;
+  isEdited?: boolean;
+  lastEditedAt?: string | null;
+  type?: string;
 };
 
 function getAuthHeaders() {
@@ -50,6 +53,23 @@ export async function startConversation(listingId: number) {
     { headers: getAuthHeaders() },
   );
 
+  return response.data;
+}
+
+export async function updateChatMessage(messageId: number, content: string) {
+  const response = await axios.put(
+    `${CHAT_API}/messages/${messageId}`,
+    { content },
+    { headers: getAuthHeaders() },
+  );
+  return response.data;
+}
+
+export async function getMessageHistory(messageId: number) {
+  const response = await axios.get<{ oldContent: string; editedAt: string }[]>(
+    `${CHAT_API}/messages/${messageId}/history`,
+    { headers: getAuthHeaders() },
+  );
   return response.data;
 }
 

@@ -422,3 +422,15 @@
     right: -30px;
   }
 }
+
+.chat-edited-label {
+  cursor: pointer;
+  font-size: 11px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  transition: all 0.2s ease;
+}
+.chat-edited-label:hover {
+  text-decoration-thickness: 2px;
+  font-weight: 600;
+}
