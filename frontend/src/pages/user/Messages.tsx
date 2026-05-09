@@ -14,7 +14,8 @@ import {
 } from "../../services/chatService";
 import "../../styles/user/Messages.css";
 import { useAuth } from "../../context/AuthContext";
-import { Navigation, ImagePlus } from "lucide-react";
+import { Navigation, ImagePlus, Smile } from "lucide-react";
+import EmojiPicker from "emoji-picker-react";
 
 export default function Messages() {
   const navigate = useNavigate();
@@ -33,6 +34,8 @@ export default function Messages() {
   const websocketClientRef = useRef<Client | null>(null);
   const selectedConversationIdRef = useRef<number | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const selectedConversation = useMemo(
     () =>
@@ -317,6 +320,11 @@ export default function Messages() {
       console.error(error);
       window.alert("Không thể gửi ảnh");
     }
+  };
+  
+  // Xử lý gửi emoji
+  const handleEmojiClick = (emojiObject: any) => {
+    setDraft((prev) => prev + emojiObject.emoji);
   };
 
   // Nếu là text thì in text,
@@ -622,9 +630,7 @@ export default function Messages() {
                   </button>
 
                   {/* Nút gửi ảnh */}
-                  <label
-                    className="chat-input-image"
-                  >
+                  <label className="chat-input-image">
                     <ImagePlus size={22} />
 
                     <input
@@ -634,6 +640,23 @@ export default function Messages() {
                       onChange={handleSendImage}
                     />
                   </label>
+
+                  {/* Nút gửi emoji */}
+                  <div className="emoji-container">
+                    <button
+                      type="button"
+                      className="chat-input-icon"
+                      onClick={() => setShowEmojiPicker((prev) => !prev)}
+                    >
+                      <Smile size={22} />
+                    </button>
+
+                    {showEmojiPicker && (
+                      <div className="emoji-picker-wrapper">
+                        <EmojiPicker onEmojiClick={handleEmojiClick} />
+                      </div>
+                    )}
+                  </div>
                   <button type="submit">Gửi</button>
                 </form>
               </>
