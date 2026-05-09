@@ -14,7 +14,7 @@ import {
 } from "../../services/chatService";
 import "../../styles/user/Messages.css";
 import { useAuth } from "../../context/AuthContext";
-import { Navigation, ImagePlus, Smile } from "lucide-react";
+import { Navigation, ImagePlus, Smile, Search } from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 
 export default function Messages() {
@@ -30,6 +30,8 @@ export default function Messages() {
   const [draft, setDraft] = useState("");
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchMessageQuery, setSearchMessageQuery] = useState("");
 
   const websocketClientRef = useRef<Client | null>(null);
   const selectedConversationIdRef = useRef<number | null>(null);
@@ -43,6 +45,23 @@ export default function Messages() {
       null,
     [conversations, selectedConversationId],
   );
+
+  const filteredConversations = useMemo(() => {
+    if (!searchQuery.trim()) return conversations;
+    const lowerQuery = searchQuery.toLowerCase();
+    return conversations.filter(
+      (c) =>
+        c.partnerName?.toLowerCase().includes(lowerQuery) ||
+        c.lastMessage?.toLowerCase().includes(lowerQuery) ||
+        c.listingTitle?.toLowerCase().includes(lowerQuery)
+    );
+  }, [conversations, searchQuery]);
+
+  const filteredMessages = useMemo(() => {
+    if (!searchMessageQuery.trim()) return messages;
+    const lowerQuery = searchMessageQuery.toLowerCase();
+    return messages.filter((m) => m.content.toLowerCase().includes(lowerQuery));
+  }, [messages, searchMessageQuery]);
 
   const loadConversations = async () => {
     try {
@@ -163,6 +182,7 @@ export default function Messages() {
   }, [isLoggedIn]);
 
   useEffect(() => {
+    setSearchMessageQuery("");
     if (!selectedConversationId) {
       setMessages([]);
       return;
@@ -408,6 +428,27 @@ export default function Messages() {
         </div>
       );
     }
+
+    // Nếu đang tìm kiếm tin nhắn, tiến hành highlight từ khóa
+    if (searchMessageQuery.trim()) {
+      // Hàm escape các ký tự đặc biệt trong regex để tránh lỗi (vd: user gõ dấu "?", "*", "[")
+      const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const parts = content.split(new RegExp(`(${escapeRegExp(searchMessageQuery)})`, 'gi'));
+      return (
+        <span>
+          {parts.map((part, i) =>
+            part.toLowerCase() === searchMessageQuery.toLowerCase() ? (
+              <mark key={i} style={{ backgroundColor: '#fef08a', color: 'inherit', padding: '0 2px', borderRadius: '3px' }}>
+                {part}
+              </mark>
+            ) : (
+              <span key={i}>{part}</span>
+            )
+          )}
+        </span>
+      );
+    }
+
     return content;
   };
   // xong chức năng gủi vị trí
@@ -421,16 +462,42 @@ export default function Messages() {
           <aside className="chat-sidebar">
             <div className="chat-sidebar-title">Tin nhắn</div>
 
+            {/* Thanh tìm kiếm hội thoại */}
+            <div className="chat-sidebar-search" style={{ padding: "0 16px 12px 16px" }}>
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <Search size={18} style={{ position: "absolute", left: "12px", color: "#6B7280" }} />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm cuộc trò chuyện..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px 8px 36px",
+                    borderRadius: "20px",
+                    border: "1px solid #E5E7EB",
+                    backgroundColor: "#F9FAFB",
+                    outline: "none",
+                    fontSize: "14px"
+                  }}
+                />
+              </div>
+            </div>
+
             {isLoadingConversations && (
               <div className="chat-empty">Đang tải hội thoại...</div>
             )}
 
-            {!isLoadingConversations && conversations.length === 0 && (
+            {!isLoadingConversations && filteredConversations.length === 0 && searchQuery && (
+              <div className="chat-empty">Không tìm thấy kết quả.</div>
+            )}
+
+            {!isLoadingConversations && conversations.length === 0 && !searchQuery && (
               <div className="chat-empty">Bạn chưa có hội thoại nào.</div>
             )}
 
             {!isLoadingConversations &&
-              conversations.map((conversation) => {
+              filteredConversations.map((conversation) => {
                 const isActive =
                   conversation.conversationId === selectedConversationId;
 
@@ -523,17 +590,38 @@ export default function Messages() {
                     </div>
                   </div>
 
-                  {selectedConversation.listingId && (
-                    <button
-                      type="button"
-                      className="chat-open-product-btn"
-                      onClick={() =>
-                        navigate(`/product/${selectedConversation.listingId}`)
-                      }
-                    >
-                      Xem sản phẩm
-                    </button>
-                  )}
+                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    {/* Thanh tìm kiếm tin nhắn trong hội thoại */}
+                    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                      <Search size={18} style={{ position: "absolute", left: "10px", color: "#6B7280" }} />
+                      <input
+                        type="text"
+                        placeholder="Tìm trong đoạn chat..."
+                        value={searchMessageQuery}
+                        onChange={(e) => setSearchMessageQuery(e.target.value)}
+                        style={{
+                          padding: "6px 12px 6px 34px",
+                          borderRadius: "20px",
+                          border: "1px solid #E5E7EB",
+                          outline: "none",
+                          fontSize: "14px",
+                          width: "200px"
+                        }}
+                      />
+                    </div>
+
+                    {selectedConversation.listingId && (
+                      <button
+                        type="button"
+                        className="chat-open-product-btn"
+                        onClick={() =>
+                          navigate(`/product/${selectedConversation.listingId}`)
+                        }
+                      >
+                        Xem sản phẩm
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="chat-listing-card">
@@ -562,14 +650,20 @@ export default function Messages() {
                     <div className="chat-empty">Đang tải tin nhắn...</div>
                   )}
 
-                  {!isLoadingMessages && messages.length === 0 && (
+                  {!isLoadingMessages && filteredMessages.length === 0 && searchMessageQuery && (
+                    <div className="chat-empty">
+                      Không tìm thấy tin nhắn nào khớp với "{searchMessageQuery}".
+                    </div>
+                  )}
+
+                  {!isLoadingMessages && messages.length === 0 && !searchMessageQuery && (
                     <div className="chat-empty">
                       Bắt đầu cuộc trò chuyện ngay nhé.
                     </div>
                   )}
 
                   {!isLoadingMessages &&
-                    messages.map((message) => (
+                    filteredMessages.map((message) => (
                       <div
                         key={message.id}
                         className={`chat-bubble-row ${message.isMine ? "mine" : "theirs"}`}
