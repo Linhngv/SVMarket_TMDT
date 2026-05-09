@@ -88,7 +88,7 @@ public class ChatService {
     @Transactional
     public List<ChatMessageResponse> getConversationMessages(String email, Integer conversationId) {
         User currentUser = getUserByEmail(email);
-        Conversation conversation = getConversationAndValidateMember(conversationId, currentUser.getId());
+        getConversationAndValidateMember(conversationId, currentUser.getId());
 
         markConversationAsRead(email, conversationId);
 
