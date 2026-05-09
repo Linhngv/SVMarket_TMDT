@@ -1,6 +1,8 @@
 package com.example.svmarket.controller;
 
+import com.example.svmarket.dto.SellerDashboardResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +17,7 @@ import com.example.svmarket.util.JwtUtil;
 import com.example.svmarket.entity.User;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/user")
@@ -85,11 +88,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}/seller-profile")
-    public ResponseEntity<?> getSellerProfile(@PathVariable Integer id) {
+    public ResponseEntity<?> getSellerProfile(@RequestHeader("Authorization") String bearerToken, @PathVariable Integer id) {
         try {
             return ResponseEntity.ok(userService.getSellerProfile(id));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 }

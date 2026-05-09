@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.svmarket.entity.Listing;
 import com.example.svmarket.entity.ListingStatus;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -85,4 +86,13 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
 
     @Query("SELECT c.name as categoryName, COUNT(l.id) as postCount FROM Listing l JOIN l.category c WHERE l.createdAt > :date GROUP BY c.name")
     List<Map<String, Object>> countPostsByCategoryAfter(@Param("date") LocalDateTime date);
+
+
+    @Modifying
+    @Query("""
+        UPDATE Listing l
+        SET l.viewCount = l.viewCount + 1
+        WHERE l.id = :listingId
+    """)
+    void increaseViewCount(@Param("listingId") Integer listingId);
 }

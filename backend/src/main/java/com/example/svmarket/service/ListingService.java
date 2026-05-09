@@ -719,4 +719,30 @@ public class ListingService {
             return b.getCreatedAt().compareTo(a.getCreatedAt());
         };
     }
+
+
+    // Tính lượt xem của người dùng khi click vào xem chi tiết bài đăng
+    @Transactional
+    public void increaseView(Integer listingId, String email) {
+
+        Listing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng"));
+
+        // Chính người đăng thì không tính lượt xem
+        if (email != null
+                && listing.getSeller() != null
+                && email.equals(listing.getSeller().getEmail())) {
+            return;
+        }
+
+        Integer currentViews = listing.getViewCount();
+
+        listing.setViewCount(
+                (currentViews == null ? 0 : currentViews) + 1
+        );
+
+        listingRepository.save(listing);
+    }
+
+
 }
