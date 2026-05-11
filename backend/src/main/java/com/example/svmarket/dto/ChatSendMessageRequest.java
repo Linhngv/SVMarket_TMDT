@@ -13,4 +13,6 @@ public class ChatSendMessageRequest {
 
     @NotBlank(message = "Nội dung tin nhắn không được để trống")
     private String content;
+    // ID tin nhắn được reply
+    private Integer replyToMessageId;
 }

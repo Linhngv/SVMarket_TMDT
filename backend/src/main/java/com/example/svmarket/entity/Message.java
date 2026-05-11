@@ -30,6 +30,11 @@ public class Message {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    // Tin nhắn được trả lời
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reply_to_message_id")
+    private Message replyToMessage;
+
     @Column(name = "is_read")
     @Builder.Default
     private Boolean isRead = false;

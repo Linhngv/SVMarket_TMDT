@@ -109,6 +109,21 @@ public class ChatService {
         Conversation conversation = getConversationAndValidateMember(request.getConversationId(), sender.getId());
 
         String content = request.getContent() != null ? request.getContent().trim() : "";
+
+        // Lấy tin nhắn được reply nếu có
+        Message replyMessage = null;
+
+        if (request.getReplyToMessageId() != null) {
+
+            replyMessage = messageRepository
+                    .findById(request.getReplyToMessageId())
+                    .orElseThrow(() ->
+                            new ResponseStatusException(
+                                    HttpStatus.NOT_FOUND,
+                                    "Không tìm thấy tin nhắn reply"
+                            ));
+        }
+
         if (content.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nội dung tin nhắn không được để trống");
         }
@@ -118,6 +133,7 @@ public class ChatService {
                         .conversation(conversation)
                         .sender(sender)
                         .content(content)
+                        .replyToMessage(replyMessage)
                         .isRead(false)
                         .build());
 
@@ -300,6 +316,25 @@ public class ChatService {
                 .createdAt(message.getCreatedAt())
                 .isEdited(message.getIsEdited())
                 .lastEditedAt(message.getLastEditedAt())
+                .replyMessageId(
+                        message.getReplyToMessage() != null
+                                ? message.getReplyToMessage().getId()
+                                : null
+                )
+
+                .replyMessageContent(
+                        message.getReplyToMessage() != null
+                                ? message.getReplyToMessage().getContent()
+                                : null
+                )
+
+                .replySenderName(
+                        message.getReplyToMessage() != null
+                                ? message.getReplyToMessage()
+                                .getSender()
+                                .getFullName()
+                                : null
+                )
                 .build();
     }
 
