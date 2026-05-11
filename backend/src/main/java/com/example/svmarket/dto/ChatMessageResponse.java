@@ -25,4 +25,9 @@ public class ChatMessageResponse {
     private Boolean isEdited;
     private LocalDateTime lastEditedAt;
     private String type;
+
+    // Thông tin reply
+    private Integer replyMessageId;
+    private String replyMessageContent;
+    private String replySenderName;
 }

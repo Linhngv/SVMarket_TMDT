@@ -16,7 +16,14 @@ import {
 } from "../../services/chatService";
 import "../../styles/user/Messages.css";
 import { useAuth } from "../../context/AuthContext";
-import { Navigation, ImagePlus, Smile, Search, Edit } from "lucide-react";
+import {
+  Navigation,
+  ImagePlus,
+  Smile,
+  Search,
+  Edit,
+  Reply,
+} from "lucide-react";
 import EmojiPicker from "emoji-picker-react";
 
 export default function Messages() {
@@ -31,7 +38,9 @@ export default function Messages() {
   >(null);
   const [editingMessageId, setEditingMessageId] = useState<number | null>(null);
   const [editingMessageDraft, setEditingMessageDraft] = useState("");
-  const [expandedHistory, setExpandedHistory] = useState<Record<number, { oldContent: string; editedAt: string }[]>>({});
+  const [expandedHistory, setExpandedHistory] = useState<
+    Record<number, { oldContent: string; editedAt: string }[]>
+  >({});
   const [draft, setDraft] = useState("");
   const [isLoadingConversations, setIsLoadingConversations] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
@@ -43,6 +52,7 @@ export default function Messages() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [replyMessage, setReplyMessage] = useState<ChatMessage | null>(null);
 
   const selectedConversation = useMemo(
     () =>
@@ -58,7 +68,7 @@ export default function Messages() {
       (c) =>
         c.partnerName?.toLowerCase().includes(lowerQuery) ||
         c.lastMessage?.toLowerCase().includes(lowerQuery) ||
-        c.listingTitle?.toLowerCase().includes(lowerQuery)
+        c.listingTitle?.toLowerCase().includes(lowerQuery),
     );
   }, [conversations, searchQuery]);
 
@@ -168,17 +178,22 @@ export default function Messages() {
         });
 
         // Handle edited messages (assuming WebSocket also sends MESSAGE_EDITED)
-        if ((incomingMessage as any).type === "MESSAGE_EDITED" && incomingMessage.conversationId === selectedConversationIdRef.current) {
-          setMessages((prev) => prev.map((msg) =>
-            msg.id === incomingMessage.id
-              ? {
-                  ...msg,
-                  content: incomingMessage.content,
-                  isEdited: true,
-                  lastEditedAt: (incomingMessage as any).lastEditedAt,
-                }
-              : msg
-          ));
+        if (
+          (incomingMessage as any).type === "MESSAGE_EDITED" &&
+          incomingMessage.conversationId === selectedConversationIdRef.current
+        ) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === incomingMessage.id
+                ? {
+                    ...msg,
+                    content: incomingMessage.content,
+                    isEdited: true,
+                    lastEditedAt: (incomingMessage as any).lastEditedAt,
+                  }
+                : msg,
+            ),
+          );
         }
 
         if (!incomingMessage.isMine) {
@@ -307,8 +322,16 @@ export default function Messages() {
       return;
     }
 
-    publishChatMessage(client, selectedConversationId, draft.trim());
+    publishChatMessage(
+      client,
+      selectedConversationId,
+      draft.trim(),
+      replyMessage?.id,
+    );
     setDraft("");
+
+    // Clear reply sau khi gửi
+    setReplyMessage(null);
   };
 
   const startEditing = (message: ChatMessage) => {
@@ -337,7 +360,10 @@ export default function Messages() {
 
     try {
       // Gọi API cập nhật tin nhắn
-      const updatedMsg = await updateChatMessage(editingMessageId, editingMessageDraft.trim());
+      const updatedMsg = await updateChatMessage(
+        editingMessageId,
+        editingMessageDraft.trim(),
+      );
       setEditingMessageId(null);
       setEditingMessageDraft("");
     } catch (error) {
@@ -414,7 +440,7 @@ export default function Messages() {
       window.alert("Không thể gửi ảnh");
     }
   };
-  
+
   // Xử lý gửi emoji
   const handleEmojiClick = (emojiObject: any) => {
     setDraft((prev) => prev + emojiObject.emoji);
@@ -505,18 +531,29 @@ export default function Messages() {
     // Nếu đang tìm kiếm tin nhắn, tiến hành highlight từ khóa
     if (searchMessageQuery.trim()) {
       // Hàm escape các ký tự đặc biệt trong regex để tránh lỗi (vd: user gõ dấu "?", "*", "[")
-      const escapeRegExp = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const parts = content.split(new RegExp(`(${escapeRegExp(searchMessageQuery)})`, 'gi'));
+      const escapeRegExp = (str: string) =>
+        str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const parts = content.split(
+        new RegExp(`(${escapeRegExp(searchMessageQuery)})`, "gi"),
+      );
       return (
         <span>
           {parts.map((part, i) =>
             part.toLowerCase() === searchMessageQuery.toLowerCase() ? (
-              <mark key={i} style={{ backgroundColor: '#fef08a', color: 'inherit', padding: '0 2px', borderRadius: '3px' }}>
+              <mark
+                key={i}
+                style={{
+                  backgroundColor: "#fef08a",
+                  color: "inherit",
+                  padding: "0 2px",
+                  borderRadius: "3px",
+                }}
+              >
                 {part}
               </mark>
             ) : (
               <span key={i}>{part}</span>
-            )
+            ),
           )}
         </span>
       );
@@ -536,9 +573,25 @@ export default function Messages() {
             <div className="chat-sidebar-title">Tin nhắn</div>
 
             {/* Thanh tìm kiếm hội thoại */}
-            <div className="chat-sidebar-search" style={{ padding: "0 16px 12px 16px" }}>
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                <Search size={18} style={{ position: "absolute", left: "12px", color: "#6B7280" }} />
+            <div
+              className="chat-sidebar-search"
+              style={{ padding: "0 16px 12px 16px" }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Search
+                  size={18}
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    color: "#6B7280",
+                  }}
+                />
                 <input
                   type="text"
                   placeholder="Tìm kiếm cuộc trò chuyện..."
@@ -551,7 +604,7 @@ export default function Messages() {
                     border: "1px solid #E5E7EB",
                     backgroundColor: "#F9FAFB",
                     outline: "none",
-                    fontSize: "14px"
+                    fontSize: "14px",
                   }}
                 />
               </div>
@@ -561,13 +614,17 @@ export default function Messages() {
               <div className="chat-empty">Đang tải hội thoại...</div>
             )}
 
-            {!isLoadingConversations && filteredConversations.length === 0 && searchQuery && (
-              <div className="chat-empty">Không tìm thấy kết quả.</div>
-            )}
+            {!isLoadingConversations &&
+              filteredConversations.length === 0 &&
+              searchQuery && (
+                <div className="chat-empty">Không tìm thấy kết quả.</div>
+              )}
 
-            {!isLoadingConversations && conversations.length === 0 && !searchQuery && (
-              <div className="chat-empty">Bạn chưa có hội thoại nào.</div>
-            )}
+            {!isLoadingConversations &&
+              conversations.length === 0 &&
+              !searchQuery && (
+                <div className="chat-empty">Bạn chưa có hội thoại nào.</div>
+              )}
 
             {!isLoadingConversations &&
               filteredConversations.map((conversation) => {
@@ -663,10 +720,29 @@ export default function Messages() {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "12px",
+                      alignItems: "center",
+                    }}
+                  >
                     {/* Thanh tìm kiếm tin nhắn trong hội thoại */}
-                    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                      <Search size={18} style={{ position: "absolute", left: "10px", color: "#6B7280" }} />
+                    <div
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Search
+                        size={18}
+                        style={{
+                          position: "absolute",
+                          left: "10px",
+                          color: "#6B7280",
+                        }}
+                      />
                       <input
                         type="text"
                         placeholder="Tìm trong đoạn chat..."
@@ -678,7 +754,7 @@ export default function Messages() {
                           border: "1px solid #E5E7EB",
                           outline: "none",
                           fontSize: "14px",
-                          width: "200px"
+                          width: "200px",
                         }}
                       />
                     </div>
@@ -723,17 +799,22 @@ export default function Messages() {
                     <div className="chat-empty">Đang tải tin nhắn...</div>
                   )}
 
-                  {!isLoadingMessages && filteredMessages.length === 0 && searchMessageQuery && (
-                    <div className="chat-empty">
-                      Không tìm thấy tin nhắn nào khớp với "{searchMessageQuery}".
-                    </div>
-                  )}
+                  {!isLoadingMessages &&
+                    filteredMessages.length === 0 &&
+                    searchMessageQuery && (
+                      <div className="chat-empty">
+                        Không tìm thấy tin nhắn nào khớp với "
+                        {searchMessageQuery}".
+                      </div>
+                    )}
 
-                  {!isLoadingMessages && messages.length === 0 && !searchMessageQuery && (
-                    <div className="chat-empty">
-                      Bắt đầu cuộc trò chuyện ngay nhé.
-                    </div>
-                  )}
+                  {!isLoadingMessages &&
+                    messages.length === 0 &&
+                    !searchMessageQuery && (
+                      <div className="chat-empty">
+                        Bắt đầu cuộc trò chuyện ngay nhé.
+                      </div>
+                    )}
 
                   {!isLoadingMessages &&
                     filteredMessages.map((message) => (
@@ -741,6 +822,7 @@ export default function Messages() {
                         key={message.id}
                         className={`chat-bubble-row ${message.isMine ? "mine" : "theirs"}`}
                       >
+                        {/* Nút trả lời tin nhắn */}
                         {/* Tên hiện ngoài bubble */}
                         <div className="chat-bubble-wrapper">
                           <div className="chat-bubble-name">
@@ -748,67 +830,233 @@ export default function Messages() {
                               ? "Bạn"
                               : selectedConversation.partnerName}
                           </div>
-                          
+
                           {editingMessageId === message.id ? (
-                            <div className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                              <input 
-                                type="text" 
-                                value={editingMessageDraft} 
-                                onChange={(e) => setEditingMessageDraft(e.target.value)}
+                            <div
+                              className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`}
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "8px",
+                              }}
+                            >
+                              <input
+                                type="text"
+                                value={editingMessageDraft}
+                                onChange={(e) =>
+                                  setEditingMessageDraft(e.target.value)
+                                }
                                 autoFocus
-                                style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #ccc', outline: 'none' }}
+                                style={{
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  border: "1px solid #ccc",
+                                  outline: "none",
+                                }}
                               />
-                              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                                <button onClick={cancelEditing} style={{ fontSize: '12px', padding: '2px 8px', cursor: 'pointer' }}>Hủy</button>
-                                <button onClick={saveEditedMessage} style={{ fontSize: '12px', padding: '2px 8px', cursor: 'pointer', backgroundColor: '#1B7A4A', color: 'white', border: 'none', borderRadius: '4px' }}>Lưu</button>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "8px",
+                                  justifyContent: "flex-end",
+                                }}
+                              >
+                                <button
+                                  onClick={cancelEditing}
+                                  style={{
+                                    fontSize: "12px",
+                                    padding: "2px 8px",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Hủy
+                                </button>
+                                <button
+                                  onClick={saveEditedMessage}
+                                  style={{
+                                    fontSize: "12px",
+                                    padding: "2px 8px",
+                                    cursor: "pointer",
+                                    backgroundColor: "#1B7A4A",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "4px",
+                                  }}
+                                >
+                                  Lưu
+                                </button>
                               </div>
                             </div>
                           ) : (
-                            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', flexDirection: message.isMine ? 'row-reverse' : 'row' }}>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: message.isMine ? 'flex-end' : 'flex-start' }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "flex-end",
+                                gap: "4px",
+                                flexDirection: message.isMine
+                                  ? "row-reverse"
+                                  : "row",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: "4px",
+                                  alignItems: message.isMine
+                                    ? "flex-end"
+                                    : "flex-start",
+                                }}
+                              >
                                 {/* Bong bóng lịch sử tin nhắn */}
-                                {expandedHistory[message.id] && expandedHistory[message.id].slice().reverse().map((hist, index, revArr) => (
-                                  <div key={index} className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`} style={{ opacity: 0.6, fontSize: '13px' }}>
-                                    <div className="chat-bubble-text">
-                                      {renderMessageContent(hist.oldContent)}
-                                    </div>
-                                    <div className="chat-bubble-time" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                      {formatTime(index === 0 ? message.createdAt : revArr[index - 1].editedAt)}
-                                    </div>
-                                  </div>
-                                ))}
-                              
+                                {expandedHistory[message.id] &&
+                                  expandedHistory[message.id]
+                                    .slice()
+                                    .reverse()
+                                    .map((hist, index, revArr) => (
+                                      <div
+                                        key={index}
+                                        className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`}
+                                        style={{
+                                          opacity: 0.6,
+                                          fontSize: "13px",
+                                        }}
+                                      >
+                                        <div className="chat-bubble-text">
+                                          {renderMessageContent(
+                                            hist.oldContent,
+                                          )}
+                                        </div>
+                                        <div
+                                          className="chat-bubble-time"
+                                          style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "4px",
+                                          }}
+                                        >
+                                          {formatTime(
+                                            index === 0
+                                              ? message.createdAt
+                                              : revArr[index - 1].editedAt,
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+
                                 {/* Bong bóng tin nhắn hiện tại */}
-                                <div className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`}>
+
+                                <div
+                                  className={`chat-bubble ${message.isMine ? "mine" : "theirs"}`}
+                                >
+                                  {message.replyMessageId && (
+                                    <div className="chat-replied-message">
+                                      <div className="chat-replied-name">
+                                        {message.replySenderName}
+                                      </div>
+
+                                      <div className="chat-replied-content">
+                                        {message.replyMessageContent}
+                                      </div>
+                                    </div>
+                                  )}
                                   <div className="chat-bubble-text">
                                     {renderMessageContent(message.content)}
                                   </div>
-                                  <div className="chat-bubble-time" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    {formatTime(message.isEdited && message.lastEditedAt ? message.lastEditedAt : message.createdAt)}
+                                  <div
+                                    className="chat-bubble-time"
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "4px",
+                                    }}
+                                  >
+                                    {formatTime(
+                                      message.isEdited && message.lastEditedAt
+                                        ? message.lastEditedAt
+                                        : message.createdAt,
+                                    )}
                                     {message.isEdited && (
-                                      <span 
-                                        title={expandedHistory[message.id] ? "Ẩn lịch sử" : "Xem lịch sử chỉnh sửa"} 
+                                      <span
+                                        title={
+                                          expandedHistory[message.id]
+                                            ? "Ẩn lịch sử"
+                                            : "Xem lịch sử chỉnh sửa"
+                                        }
                                         className="chat-edited-label"
-                                        style={{ cursor: 'pointer', fontSize: '11px', textDecoration: 'underline' }}
-                                        onClick={() => toggleMessageHistory(message.id)}
+                                        style={{
+                                          cursor: "pointer",
+                                          fontSize: "11px",
+                                          textDecoration: "underline",
+                                        }}
+                                        onClick={() =>
+                                          toggleMessageHistory(message.id)
+                                        }
                                       >
-                                        {expandedHistory[message.id] ? "(Ẩn chỉnh sửa)" : "(Đã chỉnh sửa)"}
+                                        {expandedHistory[message.id]
+                                          ? "(Ẩn chỉnh sửa)"
+                                          : "(Đã chỉnh sửa)"}
                                       </span>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                              
-                              {message.isMine && !(message.content.startsWith("[IMAGE]") || message.content.startsWith("[Vị trí]")) && (
-                                <button 
-                                  className="edit-message-btn" 
-                                  onClick={() => startEditing(message)}
-                                  style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.5, padding: '4px', marginBottom: '8px' }}
-                                  title="Chỉnh sửa tin nhắn"
+                              {!message.isMine && (
+                                <button
+                                  className="chat-reply-btn"
+                                  onClick={() => setReplyMessage(message)}
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    color: "#6b7280",
+                                  }}
+                                  title="Trả lời"
                                 >
-                                  <Edit size={14}/>
+                                  <Reply size={16} />
                                 </button>
                               )}
+
+                              {message.isMine &&
+                                !(
+                                  message.content.startsWith("[IMAGE]") ||
+                                  message.content.startsWith("[Vị trí]")
+                                ) && (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: "4px",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <button
+                                      className="chat-reply-btn"
+                                      onClick={() => setReplyMessage(message)}
+                                      style={{
+                                        width: "28px",
+                                        height: "28px",
+                                      }}
+                                      title="Trả lời"
+                                    >
+                                      <Reply size={14} />
+                                    </button>
+                                    <button
+                                      className="edit-message-btn"
+                                      onClick={() => startEditing(message)}
+                                      style={{
+                                        background: "none",
+                                        border: "none",
+                                        cursor: "pointer",
+                                        opacity: 0.5,
+                                        padding: "4px",
+                                        marginBottom: "8px",
+                                      }}
+                                      title="Chỉnh sửa tin nhắn"
+                                    >
+                                      <Edit size={14} />
+                                    </button>
+                                  </div>
+                                )}
                             </div>
                           )}
                         </div>
@@ -818,6 +1066,30 @@ export default function Messages() {
                   <div ref={bottomRef}></div>
                 </div>
 
+                {replyMessage && (
+                  <div className="chat-reply-preview">
+                    <div className="chat-reply-preview-left">
+                      <div className="chat-reply-line"></div>
+
+                      <div>
+                        <div className="chat-reply-name">
+                          Trả lời {replyMessage.senderName}
+                        </div>
+
+                        <div className="chat-reply-content">
+                          {replyMessage.content}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      className="chat-close-reply"
+                      onClick={() => setReplyMessage(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
                 <form className="chat-input-wrap" onSubmit={handleSendMessage}>
                   <input
                     type="text"

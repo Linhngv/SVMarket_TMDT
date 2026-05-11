@@ -33,6 +33,9 @@ export type ChatMessage = {
   isEdited?: boolean;
   lastEditedAt?: string | null;
   type?: string;
+  replyMessageId?: number | null;
+  replyMessageContent?: string | null;
+  replySenderName?: string | null;
 };
 
 function getAuthHeaders() {
@@ -101,7 +104,10 @@ export async function markConversationAsRead(conversationId: number) {
   );
 }
 
-export function createChatClient(onMessage: (message: ChatMessage) => void, onNotification?: () => void,) {
+export function createChatClient(
+  onMessage: (message: ChatMessage) => void,
+  onNotification?: () => void,
+) {
   const token = localStorage.getItem("token");
 
   const client = new Client({
@@ -120,13 +126,11 @@ export function createChatClient(onMessage: (message: ChatMessage) => void, onNo
       }
     });
 
-
     // Nhận notification realtime
     client.subscribe("/user/queue/notifications", () => {
       if (onNotification) onNotification();
     });
   };
-
 
   client.onStompError = (frame) => {
     console.error("STOMP error", frame.headers["message"], frame.body);
@@ -141,17 +145,15 @@ export function publishChatMessage(
   client: Client,
   conversationId: number,
   content: string,
+  replyToMessageId?: number | null,
 ) {
   client.publish({
     destination: "/app/chat.send",
-    body: JSON.stringify({ conversationId, content }),
+    body: JSON.stringify({ conversationId, content, replyToMessageId }),
   });
 }
 
-export async function sendChatImage(
-  conversationId: number,
-  file: File,
-) {
+export async function sendChatImage(conversationId: number, file: File) {
   const formData = new FormData();
 
   formData.append("file", file);
