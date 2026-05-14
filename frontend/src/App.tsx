@@ -35,6 +35,7 @@ import BuyerReviews from "./pages/user/BuyerReviews";
 import MyReview from "./pages/user/MyReview";
 import AdminTransactionList from "./pages/admin/TransactionManagement/AdminTransactionList";
 import AdminStudentVerification from "./pages/admin/TrustManagement/AdminStudentVerification";
+import AdminBannedKeywords from "./pages/admin/TrustManagement/AdminBannedKeywords";
 import Messages from "./pages/user/Messages";
 import AdminLogs from "./pages/admin/AdminLogs";
 
@@ -84,9 +85,9 @@ function App() {
         <Route path="/admin/status/:id" element={<AdminUserStatus />} />
         <Route path="/admin/giao-dich" element={<AdminTransactionList />} />
         <Route path="/admin/xac-thuc" element={<AdminStudentVerification />} />
+        <Route path="/admin/tu-khoa" element={<AdminBannedKeywords />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/logs" element={<AdminLogs />} />
-
 
         <Route path="*" element={<div>Trang đang được phát triển.</div>} />
       </Routes>
