@@ -1,18 +1,27 @@
 .approval-title {
-    color: #3D3D5C;
-    font-weight: 600;
-    font-size: 20px;
+  color: #3d3d5c;
+  font-weight: 600;
+  font-size: 20px;
 }
 
 .approval-author {
-    color: #6B7280;
+  color: #6b7280;
 }
 
 .approval-desc {
-    color: #3D3D5C;
-    line-height: 1.6;
+  color: #3d3d5c;
+  line-height: 1.6;
 }
 
 .approval-content {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+/* Highlight từ khóa cấm */
+.highlight-banned-keyword {
+  background-color: #fdedec;
+  color: #c0392b;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 500;
 }
