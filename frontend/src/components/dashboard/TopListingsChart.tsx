@@ -42,9 +42,12 @@ export default function TopListingsChart({ data }: { data: TopListingResponse[] 
           <g key={item.id}>
             <text x={15} y={y + 10} className="top-chart-label">{item.title}</text>
             <text x={15} y={y + 30} className="top-chart-type">{item.type}</text>
-            {/* Bar - chỉ bo góc bên phải */}
-            <path
-              d={`M ${leftSpace},${y} h ${Math.max(width - 4, 0)} a 4,4 0 0 1 4,4 v ${barHeight - 8} a 4,4 0 0 1 -4,4 h ${-Math.max(width - 4, 0)} z`}
+            {/* Bar - Hình chữ nhật vuông góc */}
+            <rect
+              x={leftSpace + 0.5}
+              y={y}
+              width={width}
+              height={barHeight}
               fill={item.type === "Gói tin" ? "#22c55e" : "#f59e0b"}
             />
             <text x={leftSpace + width + 12} y={y + 14} className="top-chart-value">

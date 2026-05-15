@@ -575,7 +575,7 @@ export default function Messages() {
             {/* Thanh tìm kiếm hội thoại */}
             <div
               className="chat-sidebar-search"
-              style={{ padding: "0 16px 12px 16px" }}
+              style={{ padding: "0 16px 12px 16px", marginTop: "12px" }}
             >
               <div
                 style={{
@@ -811,7 +811,7 @@ export default function Messages() {
                   {!isLoadingMessages &&
                     messages.length === 0 &&
                     !searchMessageQuery && (
-                      <div className="chat-empty">
+                      <div className="chat-empty" style={{ textAlign: "center", width: "100%", padding: "20px 0" }}>
                         Bắt đầu cuộc trò chuyện ngay nhé.
                       </div>
                     )}

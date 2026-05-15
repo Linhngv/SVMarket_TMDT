@@ -23,6 +23,8 @@ type ListingFormProps = {
   showStatusField?: boolean;
   showBack?: boolean;
   disablePostSource?: boolean;
+  titleWarning?: React.ReactNode;
+  descriptionWarning?: React.ReactNode;
   onBack?: () => void;
   onChange: (nextValues: ListingFormValues) => void;
   onImageChange: (files: File[]) => void;
@@ -35,9 +37,11 @@ const CONDITION_OPTIONS = [
   { value: "Moi", label: "Mới" },
 ];
 const STATUS_OPTIONS = [
+  { value: "PENDING", label: "Chờ duyệt" },
   { value: "ACTIVE", label: "Đang bán" },
   { value: "SOLD", label: "Đã bán" },
   { value: "INACTIVE", label: "Tạm ẩn" },
+  { value: "REJECTED", label: "Bị từ chối" },
 ];
 
 export default function ListingForm({
@@ -50,6 +54,8 @@ export default function ListingForm({
   showStatusField = false,
   showBack = false,
   disablePostSource = false,
+  titleWarning,
+  descriptionWarning,
   onBack,
   onChange,
   onImageChange,
@@ -76,7 +82,7 @@ export default function ListingForm({
         {showBack && (
           <button type="button" className="listing-back-btn" onClick={onBack}>
             <span>‹</span>
-            Quay lai
+            Quay lại
           </button>
         )}
 
@@ -120,12 +126,28 @@ export default function ListingForm({
 
         <div className="field-group full-width">
           <label>Tiêu đề bài đăng</label>
-          <input
-            name="title"
-            value={values.title}
-            onChange={handleInputChange}
-            placeholder="VD: Sào phơi đồ 2 tầng cũ"
-          />
+          <div style={{ position: "relative", display: "flex" }}>
+            {titleWarning && (
+              <div
+                style={{
+                  position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+                  padding: "11px 14px", fontSize: "16px", lineHeight: "1.35",
+                  pointerEvents: "none", whiteSpace: "pre", overflow: "hidden",
+                  color: "#111827", backgroundColor: "#f9fafb", borderRadius: "6px",
+                  border: "1px solid #c0392b", zIndex: 0
+                }}
+              >
+                {titleWarning}
+              </div>
+            )}
+            <input
+              name="title"
+              value={values.title}
+              onChange={handleInputChange}
+              placeholder="VD: Sào phơi đồ 2 tầng cũ"
+              style={titleWarning ? { color: "transparent", caretColor: "#111827", backgroundColor: "transparent", position: "relative", zIndex: 1 } : {}}
+            />
+          </div>
         </div>
 
         <div className="field-group">
@@ -208,13 +230,29 @@ export default function ListingForm({
 
         <div className="field-group full-width">
           <label>Mô tả chi tiết</label>
-          <textarea
-            name="description"
-            value={values.description}
-            onChange={handleInputChange}
-            rows={4}
-            placeholder="Mô tả tình trạng, lý do bán, phụ kiện kèm theo..."
-          />
+          <div style={{ position: "relative", display: "flex" }}>
+            {descriptionWarning && (
+              <div
+                style={{
+                  position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+                  padding: "11px 14px", fontSize: "16px", lineHeight: "1.35",
+                  pointerEvents: "none", whiteSpace: "pre-wrap", wordBreak: "break-word", overflow: "hidden",
+                  color: "#111827", backgroundColor: "#f9fafb", borderRadius: "6px",
+                  border: "1px solid #c0392b", zIndex: 0
+                }}
+              >
+                {descriptionWarning}
+              </div>
+            )}
+            <textarea
+              name="description"
+              value={values.description}
+              onChange={handleInputChange}
+              rows={4}
+              placeholder="Mô tả tình trạng, lý do bán, phụ kiện kèm theo..."
+              style={descriptionWarning ? { color: "transparent", caretColor: "#111827", backgroundColor: "transparent", position: "relative", zIndex: 1 } : {}}
+            />
+          </div>
         </div>
 
         <div className="field-group full-width">
@@ -223,14 +261,13 @@ export default function ListingForm({
           <div className="post-source-grid">
             {/* FREE */}
             <div
-  className={`post-card ${
-    values.postSource === "FREE" ? "active" : ""
-  } ${disablePostSource ? "disabled" : ""}`}
-  onClick={() =>
-    !disablePostSource &&
-    onChange({ ...values, postSource: "FREE" })
-  }
->
+              className={`post-card ${values.postSource === "FREE" ? "active" : ""
+                } ${disablePostSource ? "disabled" : ""}`}
+              onClick={() =>
+                !disablePostSource &&
+                onChange({ ...values, postSource: "FREE" })
+              }
+            >
               <div className="post-radio" />
               <div>
                 <strong>Đăng miễn phí</strong>
@@ -239,15 +276,14 @@ export default function ListingForm({
             </div>
 
             {/* PACKAGE */}
-           <div
-  className={`post-card ${
-    values.postSource === "PACKAGE" ? "active" : ""
-  } ${disablePostSource ? "disabled" : ""}`}
-  onClick={() =>
-    !disablePostSource &&
-    onChange({ ...values, postSource: "PACKAGE" })
-  }
->
+            <div
+              className={`post-card ${values.postSource === "PACKAGE" ? "active" : ""
+                } ${disablePostSource ? "disabled" : ""}`}
+              onClick={() =>
+                !disablePostSource &&
+                onChange({ ...values, postSource: "PACKAGE" })
+              }
+            >
               <div className="post-radio" />
               <div>
                 <strong>Đăng bằng gói</strong>

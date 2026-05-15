@@ -47,6 +47,19 @@ export default function AdminPostApproval() {
           const data = await res.json();
           console.log("Dữ liệu PENDING trả về từ API:", data);
           setPendingPosts(data);
+
+          // Tự động điền lý do từ chối nếu có từ khóa cấm
+          const initialRejectReasons: { [key: number]: string } = {};
+          data.forEach((post: PendingPost) => {
+            const hasBanned = keywordsList.some((kw: string) => {
+              const regex = new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+              return regex.test(post.title || "") || regex.test(post.description || "");
+            });
+            if (hasBanned) {
+              initialRejectReasons[post.id] = "Vi phạm từ khóa cấm";
+            }
+          });
+          setRejectReasons(initialRejectReasons);
         } else {
           console.error("Lỗi gọi API Kiểm duyệt, HTTP Status:", res.status);
           alert("Lỗi khi tải dữ liệu chờ duyệt! (Mã lỗi: " + res.status + ")");
@@ -59,6 +72,15 @@ export default function AdminPostApproval() {
     };
     fetchData();
   }, []);
+
+  // Tự động điều chỉnh chiều cao của hộp nhập lý do từ chối
+  useEffect(() => {
+    const textareas = document.querySelectorAll<HTMLTextAreaElement>(".reject-input");
+    textareas.forEach((el) => {
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    });
+  }, [pendingPosts, rejectReasons]);
 
   const handleApprove = async (id: number) => {
     try {
@@ -173,7 +195,7 @@ export default function AdminPostApproval() {
                 <div key={post.id} className="card p-4 shadow-sm mb-4">
                   {/* APPROVAL DETAILS */}
                   <div className="approval-container p-4 mb-4">
-                    <div className="approval-title mb-2">{post.title}</div>
+                    <div className="approval-title mb-2">{highlightBannedKeywords(post.title)}</div>
 
                     <div className="row mb-3">
                       <div className="col-md-6">
@@ -193,7 +215,7 @@ export default function AdminPostApproval() {
                     <div className="row approval-details mb-0">
                       <div className="col-md-6">
                         <div className="approval-desc mb-4">
-                          <h6 className="fw-medium mb-2">Giá: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(post.price || 0)}</h6>
+                          <h6 className="fw-medium mb-2">Giá: {new Intl.NumberFormat('vi-VN').format(post.price || 0)}đ</h6>
                         </div>
                         <div className="approval-desc mb-4">
                           <h6 className="fw-medium mb-2">Danh mục: {post.categoryName || 'Chưa phân loại'}</h6>
@@ -237,13 +259,14 @@ export default function AdminPostApproval() {
                   {/* REJECT REASON INPUT */}
                   <div className="mb-4">
                     <textarea
-                      rows={4}
+                      rows={1}
                       className="form-control reject-input px-4 py-3"
                       placeholder="Nhập lý do từ chối (nếu có)"
                       value={rejectReasons[post.id] || ""}
                       onChange={(e) =>
                         handleRejectReasonChange(post.id, e.target.value)
                       }
+                      style={{ fontSize: "16px", overflow: "hidden", resize: "none" }}
                     ></textarea>
                   </div>
 

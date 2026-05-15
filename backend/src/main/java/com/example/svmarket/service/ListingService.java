@@ -186,11 +186,11 @@ public class ListingService {
                         l.getPostSource() == PostSource.PACKAGE
                 )
                 .filter(l -> {
-                    SellerPackage pkg = l.getSellerPackage(); // ✅
+                    SellerPackage pkg = l.getSellerPackage();
                     return pkg != null
                             && Boolean.TRUE.equals(pkg.getPackagePlan().getIsFeatured());
                 })
-                .sorted((a, b) -> Integer.compare(getPriority(b), getPriority(a)))
+                .sorted(listingComparator())
                 .limit(4)
                 .map(this::toSummaryResponse)
                 .toList();
@@ -385,6 +385,9 @@ public class ListingService {
         listing.setConditionLevel(request.getConditionLevel());
         listing.setDescription(request.getDescription());
         listing.setStatus(parseStatus(request.getStatus()));
+
+        // Xóa lý do từ chối cũ khi người bán đã cập nhật lại bài đăng
+        listing.setRejectReason(null);
 
         List<String> imageUrls;
 

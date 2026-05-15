@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.svmarket.dto.ListingDetailResponse;
 import com.example.svmarket.dto.ListingSummaryResponse;
 import com.example.svmarket.repository.ListingRepository;
+import com.example.svmarket.repository.NotificationRepository;
 
 @Service
 @Transactional
@@ -23,6 +24,9 @@ public class AdminListingService {
 
     @Autowired
     private SellerPackageRepository sellerPackageRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     // Lấy tất cả bài đăng cho Admin (bất kể trạng thái ACTIVE, PENDING, REJECTED, v.v.)
     public List<ListingSummaryResponse> getAllListings() {
@@ -94,6 +98,16 @@ public class AdminListingService {
         listing.setStatus(ListingStatus.REJECTED);
         listing.setRejectReason(reason);
         listingRepository.save(listing);
+
+        // Gửi thông báo đến người đăng
+        Notification notification = Notification.builder()
+                .user(listing.getSeller())
+                .content("Bài đăng '" + listing.getTitle() + "' của bạn đã bị từ chối. Lý do: " + reason)
+                .type(NotificationType.SYSTEM)
+                .referenceId(listing.getId())
+                .isRead(false)
+                .build();
+        notificationRepository.save(notification);
     }
 
     // Hàm ánh xạ sang ListingDetailResponse dùng cho màn hình Kiểm duyệt

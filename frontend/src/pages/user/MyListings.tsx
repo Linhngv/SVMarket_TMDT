@@ -24,6 +24,14 @@ function getStatusBadge(status: string) {
     return { text: "Đang bán", className: "status-badge active" };
   }
 
+  if (status === "PENDING") {
+    return { text: "Chờ duyệt", className: "status-badge pending" };
+  }
+
+  if (status === "REJECTED") {
+    return { text: "Bị từ chối", className: "status-badge rejected" };
+  }
+
   return { text: "Tạm ẩn", className: "status-badge inactive" };
 }
 
@@ -184,7 +192,7 @@ export default function MyListings() {
             {pageItems.length === 0 ? (
               <tr>
                 <td colSpan={5} className="empty-row">
-                  Chua co bai dang nao
+                  Chưa có bài đăng nào. Hãy tạo một bài đăng mới ngay bây giờ!
                 </td>
               </tr>
             ) : (
@@ -192,7 +200,7 @@ export default function MyListings() {
                 const statusBadge = getStatusBadge(listing.status);
 
                 return (
-                  <tr key={listing.id}>
+                  <tr key={listing.id} style={listing.status === "REJECTED" ? { backgroundColor: "#fff0f0" } : {}}>
                     <td data-label="Hinh anh">
                       <div className="listing-thumb">
                         {listing.thumbnailUrl ? (
@@ -232,6 +240,11 @@ export default function MyListings() {
                           <span>{statusBadge.text}</span>
                           {/* <ChevronDown size={14} /> */}
                         </button>
+                        {listing.status === "REJECTED" && (listing as any).rejectReason && (
+                          <div className="text-danger mt-1" style={{ fontSize: "13px", maxWidth: "150px" }}>
+                            <strong>Lý do:</strong> {(listing as any).rejectReason}
+                          </div>
+                        )}
 
                         {/* {openStatusMenuId === listing.id ? (
                           <div className="status-menu" role="menu">
@@ -290,7 +303,7 @@ export default function MyListings() {
           disabled={currentPage === 1}
           onClick={() => setPage((previous) => Math.max(1, previous - 1))}
         >
-          Truoc
+          Trước
         </button>
 
         <span>
@@ -305,7 +318,7 @@ export default function MyListings() {
             setPage((previous) => Math.min(totalPages, previous + 1))
           }
         >
-          Ke tiep
+          Kế tiếp
         </button>
       </div>
     </section>

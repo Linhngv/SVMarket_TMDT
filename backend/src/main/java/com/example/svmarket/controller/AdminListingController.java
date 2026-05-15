@@ -45,7 +45,8 @@ public class AdminListingController {
 
     @PutMapping("/{id}/reject")
     public void rejectListing(@PathVariable Integer id, @RequestBody(required = false) java.util.Map<String, String> payload) {
-        String reason = payload != null ? payload.get("reason") : null;
+        String reasonStr = payload != null ? payload.get("reason") : null;
+        String reason = (reasonStr != null && !reasonStr.trim().isEmpty()) ? reasonStr.trim() : "Vi phạm chính sách của SVMarket";
         adminListingService.rejectListing(id, reason);
     }
 }

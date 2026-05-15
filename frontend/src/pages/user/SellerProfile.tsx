@@ -52,7 +52,12 @@ const SellerProfilePage = () => {
         const fetchProfile = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`http://localhost:8080/api/user/${id}/seller-profile`);
+                const token = localStorage.getItem("token");
+                const headers: Record<string, string> = {};
+                if (token) {
+                    headers["Authorization"] = `Bearer ${token}`;
+                }
+                const res = await fetch(`http://localhost:8080/api/user/${id}/seller-profile`, { headers });
                 if (!res.ok) throw new Error("Không thể tải thông tin người bán");
                 const data = await res.json();
                 setProfile(data);
