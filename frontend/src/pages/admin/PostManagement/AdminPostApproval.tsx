@@ -4,6 +4,7 @@ import "../../../styles/admin/AdminPostApproval.css";
 import AdminSidebar from "../../../components/admin/AdminSidebar";
 import AdminTopBar from "../../../components/admin/AdminTopBar";
 import { getBannedKeywords } from "../../../services/bannedKeywordService";
+import { User, Calendar } from "lucide-react";
 
 interface PendingPost {
   id: number;
@@ -11,6 +12,11 @@ interface PendingPost {
   sellerName: string;
   description: string;
   imageUrls: string[];
+  price: number;
+  categoryName: string;
+  conditionLevel: string;
+  deliveryAddress: string;
+  createdAt: string;
 }
 
 export default function AdminPostApproval() {
@@ -168,12 +174,47 @@ export default function AdminPostApproval() {
                   {/* APPROVAL DETAILS */}
                   <div className="approval-container p-4 mb-4">
                     <div className="approval-title mb-2">{post.title}</div>
-                    <div className="approval-author mb-3">
-                      Người đăng: {post.sellerName || "Khuyết danh"}
+
+                    <div className="row mb-3">
+                      <div className="col-md-6">
+                        <div className="approval-author mb-0 d-flex align-items-center gap-2" style={{ color: "var(--primary)", fontWeight: "600" }}>
+                          <User size={18} />
+                          <span>Người đăng: {post.sellerName || "Khuyết danh"}</span>
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="approval-author mb-0 text-muted d-flex align-items-center gap-2">
+                          <Calendar size={18} />
+                          <span>Ngày đăng: {post.createdAt ? new Date(post.createdAt).toLocaleString('vi-VN') : 'Không rõ'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="row approval-details mb-0">
+                      <div className="col-md-6">
+                        <div className="approval-desc mb-4">
+                          <h6 className="fw-medium mb-2">Giá: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(post.price || 0)}</h6>
+                        </div>
+                        <div className="approval-desc mb-4">
+                          <h6 className="fw-medium mb-2">Danh mục: {post.categoryName || 'Chưa phân loại'}</h6>
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="approval-desc mb-4">
+                          <h6 className="fw-medium mb-2">Tình trạng: {post.conditionLevel || 'Không xác định'}</h6>
+                        </div>
+                        <div className="approval-desc mb-4">
+                          <h6 className="fw-medium mb-2">Khu vực: {post.deliveryAddress || 'Toàn quốc'}</h6>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="approval-desc mb-4">
+                      <h6 className="fw-medium mb-2">Mô tả chi tiết: <span style={{ fontWeight: 'normal' }}>{highlightBannedKeywords(post.description)}</span></h6>
                     </div>
 
                     {/* POST IMAGES */}
-                    <div className="post-images d-flex gap-3 mb-4 overflow-auto">
+                    <div className="post-images d-flex gap-3 mb-1 overflow-auto">
                       {post.imageUrls && post.imageUrls.length > 0 ? (
                         post.imageUrls.map((url, idx) => (
                           <img
@@ -190,10 +231,6 @@ export default function AdminPostApproval() {
                       ) : (
                         <p className="text-muted">Không có hình ảnh</p>
                       )}
-                    </div>
-
-                    <div className="approval-desc mb-0">
-                      {highlightBannedKeywords(post.description)}
                     </div>
                   </div>
 

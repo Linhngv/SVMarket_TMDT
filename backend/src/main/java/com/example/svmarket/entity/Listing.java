@@ -55,6 +55,7 @@ public class Listing {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @Builder.Default
     private Integer viewCount = 0;
 
     @PrePersist

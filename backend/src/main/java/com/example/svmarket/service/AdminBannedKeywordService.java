@@ -74,7 +74,7 @@ public class AdminBannedKeywordService {
 
     // Xóa từ khóa cấm
     public void deleteBannedKeyword(Integer id) {
-        BannedKeyword bannedKeyword = getBannedKeywordById(id);
+        getBannedKeywordById(id);
         bannedKeywordRepository.deleteById(id);
     }
 
