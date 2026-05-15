@@ -36,7 +36,6 @@ const menuGroups: SidebarGroup[] = [
     items: [
       { id: "purchase-history", label: "Mua hàng", path: "/purchase-history" },
       { id: "sales-history", label: "Bán hàng", path: "/sales-history" },
-      { id: "messages", label: "Nhắn tin", path: "/messages" },
     ],
   },
   {
