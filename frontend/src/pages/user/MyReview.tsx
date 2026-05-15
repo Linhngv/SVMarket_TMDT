@@ -72,7 +72,12 @@ const MyReview = () => {
 
                 if (!currentUserId) throw new Error("Không tìm thấy dữ liệu ID người dùng");
 
-                const res = await fetch(`http://localhost:8080/api/user/${currentUserId}/seller-profile`);
+                const token = localStorage.getItem("token");
+                const headers: Record<string, string> = {};
+                if (token) {
+                    headers["Authorization"] = `Bearer ${token}`;
+                }
+                const res = await fetch(`http://localhost:8080/api/user/${currentUserId}/seller-profile`, { headers });
                 if (!res.ok) throw new Error("Không thể tải thông tin");
                 const data = await res.json();
                 setProfile(data);

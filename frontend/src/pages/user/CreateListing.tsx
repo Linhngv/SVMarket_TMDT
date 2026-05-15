@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import ListingForm, {
   ListingFormValues,
 } from "../../components/listing/ListingForm";
@@ -17,7 +18,7 @@ const DEFAULT_VALUES: ListingFormValues = {
   deliveryAddress: "",
   conditionLevel: "Đã qua sử dụng",
   description: "",
-  status: "ACTIVE",
+  status: "PENDING",
   postSource: "FREE",
 };
 
@@ -55,18 +56,18 @@ export default function CreateListing() {
   // Validate dữ liệu trước khi gửi API tạo bài đăng.
   const handleCreateListing = async () => {
     if (!values.title.trim()) {
-      alert("Vui lòng nhập tiêu đề bài đăng");
+      toast.error("Vui lòng nhập tiêu đề bài đăng");
       return;
     }
 
     if (!values.categoryId) {
-      alert("Vui lòng chọn danh mục");
+      toast.error("Vui lòng chọn danh mục");
       return;
     }
 
     const price = Number(values.price);
     if (Number.isNaN(price) || price <= 0) {
-      alert("Giá bán phải lớn hơn 0");
+      toast.error("Giá bán phải lớn hơn 0");
       return;
     }
 
@@ -89,26 +90,28 @@ export default function CreateListing() {
         ...values,
       });
 
-      alert("Thêm bài đăng thành công");
+      toast.success("Thêm bài đăng thành công! Bài đăng hiện đang chờ quản trị viên phê duyệt.");
       navigate("/my-listings");
     } catch (error: any) {
-      alert(error?.response?.data || "Không thể tạo bài đăng");
+      toast.error(error?.response?.data || "Không thể tạo bài đăng");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <ListingForm
-      title="Thêm bài đăng"
-      submitLabel="Thêm bài đăng"
-      categories={categories}
-      values={values}
-      imagePreviews={imagePreviews}
-      submitDisabled={isSubmitting}
-      onChange={setValues}
-      onImageChange={setImages}
-      onSubmit={handleCreateListing}
-    />
+    <>
+      <ListingForm
+        title="Thêm bài đăng"
+        submitLabel="Thêm bài đăng"
+        categories={categories}
+        values={values}
+        imagePreviews={imagePreviews}
+        submitDisabled={isSubmitting}
+        onChange={setValues}
+        onImageChange={setImages}
+        onSubmit={handleCreateListing}
+      />
+    </>
   );
 }

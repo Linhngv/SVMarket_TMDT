@@ -6,10 +6,13 @@ import com.example.svmarket.dto.TopListingResponse;
 import com.example.svmarket.entity.*;
 import com.example.svmarket.repository.ReviewRepository;
 import com.example.svmarket.repository.UserRepository;
+import com.example.svmarket.repository.SellerPackageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,11 +26,29 @@ public class DashboardService {
     @Autowired
     private ReviewRepository reviewRepository;
 
-    public SellerDashboardResponse getSellerDashboard(String email) {
+    @Autowired
+    private SellerPackageRepository sellerPackageRepository;
+
+    public SellerDashboardResponse getSellerDashboard(String email, String startDate, String endDate) {
 
         User seller = getSeller(email);
 
         List<Listing> listings = getSellerListings(seller);
+
+        // Parse ngày bắt đầu và kết thúc
+        LocalDateTime start = (startDate != null && !startDate.trim().isEmpty()) 
+                ? LocalDate.parse(startDate).atStartOfDay() : null;
+        LocalDateTime end = (endDate != null && !endDate.trim().isEmpty()) 
+                ? LocalDate.parse(endDate).atTime(23, 59, 59) : null;
+
+        // Lọc danh sách bài đăng theo khoảng thời gian
+        if (start != null || end != null) {
+            listings = listings.stream()
+                    .filter(l -> l.getCreatedAt() != null &&
+                            (start == null || !l.getCreatedAt().isBefore(start)) &&
+                            (end == null || !l.getCreatedAt().isAfter(end)))
+                    .collect(Collectors.toList());
+        }
 
         int activeListingCount =
                 countListingsByStatus(
@@ -56,6 +77,15 @@ public class DashboardService {
                 reviewRepository
                         .findByRevieweeIdOrderByCreatedAtDesc(
                                 seller.getId());
+
+        // Lọc danh sách đánh giá theo khoảng thời gian
+        if (start != null || end != null) {
+            reviews = reviews.stream()
+                    .filter(r -> r.getCreatedAt() != null &&
+                            (start == null || !r.getCreatedAt().isBefore(start)) &&
+                            (end == null || !r.getCreatedAt().isAfter(end)))
+                    .collect(Collectors.toList());
+        }
 
         double averageRating =
                 calculateAverageRating(reviews);
@@ -188,5 +218,29 @@ public class DashboardService {
                             .build();
                 })
                 .toList();
+    }
+
+    // Tính tổng tiền đã chi cho các gói tin
+    public long calculateTotalSpentOnPackages(String email, String startDate, String endDate) {
+        User seller = getSeller(email);
+
+        LocalDateTime start = (startDate != null && !startDate.trim().isEmpty()) 
+                ? LocalDate.parse(startDate).atStartOfDay() : null;
+        LocalDateTime end = (endDate != null && !endDate.trim().isEmpty()) 
+                ? LocalDate.parse(endDate).atTime(23, 59, 59) : null;
+
+        List<SellerPackage> packages = sellerPackageRepository.findBySellerId(seller.getId());
+
+        if (start != null || end != null) {
+            packages = packages.stream()
+                    .filter(p -> p.getStartDate() != null &&
+                            (start == null || !p.getStartDate().isBefore(start)) &&
+                            (end == null || !p.getStartDate().isAfter(end)))
+                    .collect(Collectors.toList());
+        }
+
+        return packages.stream()
+                .mapToLong(p -> p.getPackagePlan().getPrice().longValue())
+                .sum();
     }
 }

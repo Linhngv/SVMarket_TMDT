@@ -197,6 +197,9 @@ export default function Header({
       );
       navigate(`/messages?conversationId=${note.referenceId}`);
       setShowNotifications(false);
+    } else if (note.type === "SYSTEM" && note.content.toLowerCase().includes("từ chối")) {
+      navigate("/my-listings");
+      setShowNotifications(false);
     }
   };
 
@@ -286,17 +289,6 @@ export default function Header({
       }
     };
   }, []);
-
-  // Click avatar nho de vao trang quan ly bai dang.
-  const handleAvatarClick = () => {
-    if (!resolvedIsLoggedIn) {
-      navigate("/login");
-      return;
-    }
-
-    setOpen(false);
-    navigate("/profile");
-  };
 
   // Click nut Dang tin de vao trang tao bai dang.
   const handleCreateListingClick = () => {
@@ -487,13 +479,15 @@ export default function Header({
 
           {/* AVATAR */}
           <div className="avatar-wrapper position-relative" ref={ref}>
-            <div className="avatar d-flex align-items-center gap-1">
+            <div 
+              className="avatar d-flex align-items-center gap-1"
+              onClick={() => setOpen((prev) => !prev)}
+              style={{ cursor: "pointer" }}
+            >
               {resolvedIsLoggedIn ? (
                 <img
                   src={avatar}
                   alt="avatar"
-                  onClick={handleAvatarClick}
-                  style={{ cursor: "pointer" }}
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
                       "/images/avatar_default.jpg";
@@ -506,7 +500,6 @@ export default function Header({
               <ChevronDown
                 size={16}
                 className={`arrow-icon ${open ? "rotate" : ""}`}
-                onClick={() => setOpen((prev) => !prev)}
               />
             </div>
 

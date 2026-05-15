@@ -119,7 +119,7 @@ export default function PackageChart({ data }: { data: PackageBar[] }) {
               y={PAD_T + chartH - normalHeight}
               width={32}
               height={normalHeight}
-              fill="#e7f0ea"
+              fill="#a3c4ae"
               rx={4}
             />
 
