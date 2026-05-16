@@ -299,11 +299,11 @@ export default function AdminPackage() {
                                 />
                                 <button className="btn btn-outline-secondary d-flex align-items-center gap-2" onClick={() => fileImportRef.current?.click()}>
                                     <Upload size={18} />
-                                    Import
+                                    Nhập Excel
                                 </button>
                                 <button className="btn btn-outline-secondary d-flex align-items-center gap-2" onClick={handleExport}>
                                     <Download size={18} />
-                                    Export
+                                    Xuất Excel
                                 </button>
                                 <button className="btn d-flex align-items-center gap-2 btn-add-package" onClick={handleOpenAdd}>
                                     <Plus size={18} />

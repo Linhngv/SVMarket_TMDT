@@ -25,5 +25,6 @@ public interface PackagePlanRepository extends JpaRepository<PackagePlan, Intege
             @Param("maxPost") Integer maxPost,
             Pageable pageable
     );
+    
 
 }

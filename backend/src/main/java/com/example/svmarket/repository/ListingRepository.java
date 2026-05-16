@@ -81,11 +81,16 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
             @Param("sortBy") String sortBy);
 
     List<Listing> findBySellerIdAndPostSource(Integer sellerId, PostSource postSource);
-    // Thống kê số lượng bài đăng theo danh mục sau một thời điểm  7 ngày, 30 ngày, 1 năm
+    // Thống kê số lượng bài đăng theo danh mục sau một thời điểm  7 ngày, 30 ngày, 1 năm, ngày/tháng/năm cụ thể
     long countByCreatedAtAfter(LocalDateTime date);
+
+    long countByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 
     @Query("SELECT c.name as categoryName, COUNT(l.id) as postCount FROM Listing l JOIN l.category c WHERE l.createdAt > :date GROUP BY c.name")
     List<Map<String, Object>> countPostsByCategoryAfter(@Param("date") LocalDateTime date);
+
+    @Query("SELECT c.name as categoryName, COUNT(l.id) as postCount FROM Listing l JOIN l.category c WHERE l.createdAt BETWEEN :startDate AND :endDate GROUP BY c.name")
+    List<Map<String, Object>> countPostsByCategoryBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
 
     @Modifying
