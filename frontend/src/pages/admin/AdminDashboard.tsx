@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import AdminSidebar from "../../components/admin/AdminSidebar";
 import AdminTopBar from "../../components/admin/AdminTopBar";
-import { Users, FileText, CreditCard, AlertTriangle, Check, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Users, FileText, CreditCard, AlertTriangle, Check, ArrowUpRight, ChevronDown, Filter, RotateCcw } from "lucide-react";
 import { FaSackDollar } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminDashboard() {
-    const [period, setPeriod] = useState("30 ngày qua");
+    const [period, setPeriod] = useState("30 ngày");
     const [openPeriodDropdown, setOpenPeriodDropdown] = useState(false);
     const periodRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    
+    const [startDate, setStartDate] = useState<string>("");
+    const [endDate, setEndDate] = useState<string>("");
 
     // State lưu trữ dữ liệu thống kê từ API (có giá trị mặc định)
     const [dashboardData, setDashboardData] = useState({
@@ -20,6 +23,7 @@ export default function AdminDashboard() {
         totalRevenue: 0,
         userGrowth: [0, 0, 0, 0, 0, 0, 0],
         postsByCategory: [] as { label: string, val: number }[],
+        packageStats: [] as { name: string, count: number }[],
         transactionRate: {
             success: 70,
             refund: 20,
@@ -28,31 +32,54 @@ export default function AdminDashboard() {
         recentActivities: [
             { text: "0 người dùng mới đăng ký", type: "user" },
             { text: "0 bài đăng được duyệt", type: "post" },
-            { text: "2 khiếu nại mới", type: "report" },
             { text: "0 giao dịch thành công", type: "transaction" },
         ]
     });
 
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            setLoading(true);
-            try {
-                const token = localStorage.getItem("token");
-                const res = await fetch(`http://localhost:8080/api/admin/dashboard?period=${encodeURIComponent(period)}`, {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {}
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setDashboardData(prev => ({ ...prev, ...data }));
-                }
-            } catch (error) {
-                console.error("Lỗi lấy dữ liệu dashboard:", error);
-            } finally {
-                setLoading(false);
+    const loadDashboardData = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("token");
+            let url = `http://localhost:8080/api/admin/dashboard?period=${encodeURIComponent(period)}`;
+            if (startDate && endDate) {
+                url += `&startDate=${startDate}&endDate=${endDate}`;
             }
-        };
-        fetchDashboardData();
+            const res = await fetch(url, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setDashboardData(prev => ({ ...prev, ...data }));
+            }
+        } catch (error) {
+            console.error("Lỗi lấy dữ liệu dashboard:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadDashboardData();
     }, [period]);
+
+    const handleFilter = () => {
+        if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+            alert("Ngày bắt đầu không được lớn hơn ngày kết thúc!");
+            return;
+        }
+        if (!startDate || !endDate) {
+            alert("Vui lòng chọn đầy đủ từ ngày và đến ngày!");
+            return;
+        }
+        loadDashboardData();
+    };
+
+    const handleClearFilter = () => {
+        setStartDate("");
+        setEndDate("");
+        setPeriod("30 ngày");
+        setTimeout(() => loadDashboardData(), 0);
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -103,52 +130,86 @@ export default function AdminDashboard() {
                     {/* DÒNG 1: Tiêu đề & Lọc thời gian */}
                     <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                         <h3 className="page-title m-0 fw-bold" style={{ color: "#111827" }}>Thống kê hoạt động</h3>
-                        <div 
-                            className="d-flex align-items-center gap-2 bg-white px-3 py-2 rounded shadow-sm border position-relative" 
-                            style={{ minWidth: "230px", cursor: "pointer" }}
-                            ref={periodRef}
-                            onClick={() => setOpenPeriodDropdown(!openPeriodDropdown)}
-                        >
-                            <span className="text-muted fw-medium text-nowrap" style={{ fontSize: "14px" }}>Khoảng thời gian:</span>
-                            <div className="w-100 d-flex justify-content-between align-items-center" style={{ color: "#6B7280", fontSize: "14px", fontWeight: "500" }}>
-                                <span>{period}</span>
-                                <ChevronDown size={16} />
+                        <div className="d-flex align-items-center gap-3 flex-wrap">
+                            {/* Date Pickers */}
+                            <div className="d-flex align-items-center gap-2">
+                                <label htmlFor="startDate" className="fw-medium text-muted mb-0" style={{ fontSize: "14px" }}>Từ:</label>
+                                <input 
+                                    type="date" 
+                                    id="startDate" 
+                                    className="form-control form-control-sm border"
+                                    value={startDate} 
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    style={{ fontSize: "14px", height: "36px" }}
+                                />
                             </div>
-                            
-                            {openPeriodDropdown && (
-                                <div 
-                                    className="position-absolute bg-white border rounded shadow-sm w-100 overflow-hidden" 
-                                    style={{ top: "calc(100% + 5px)", left: 0, zIndex: 100 }}
-                                >
-                                    {["7 ngày", "30 ngày", "1 năm"].map((opt) => (
-                                        <div 
-                                            key={opt}
-                                            className="px-3 py-2"
-                                            style={{ 
-                                                fontSize: "14px", 
-                                                color: period === opt ? "#1B7A4A" : "#6B7280",
-                                                backgroundColor: period === opt ? "#e8f5ee" : "transparent",
-                                                transition: "all 0.2s"
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = "#e8f5ee";
-                                                e.currentTarget.style.color = "#1B7A4A";
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = period === opt ? "#e8f5ee" : "transparent";
-                                                e.currentTarget.style.color = period === opt ? "#1B7A4A" : "#6B7280";
-                                            }}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setPeriod(opt);
-                                                setOpenPeriodDropdown(false);
-                                            }}
-                                        >
-                                            {opt}
-                                        </div>
-                                    ))}
+                            <div className="d-flex align-items-center gap-2">
+                                <label htmlFor="endDate" className="fw-medium text-muted mb-0" style={{ fontSize: "14px" }}>Đến:</label>
+                                <input 
+                                    type="date" 
+                                    id="endDate" 
+                                    className="form-control form-control-sm border"
+                                    value={endDate} 
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    style={{ fontSize: "14px", height: "36px" }}
+                                />
+                            </div>
+                            <button className="btn btn-sm text-white d-flex align-items-center gap-1" style={{ backgroundColor: "#1B7A4A", height: "36px" }} onClick={handleFilter}>
+                                <Filter size={14} /> Lọc
+                            </button>
+                            <button className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" style={{ height: "36px" }} onClick={handleClearFilter}>
+                                <RotateCcw size={14} /> Bỏ lọc
+                            </button>
+
+                            {/* Dropdown Period */}
+                            <div 
+                                className="d-flex align-items-center gap-2 bg-white px-3 rounded shadow-sm border position-relative" 
+                                style={{ minWidth: "160px", cursor: "pointer", height: "36px" }}
+                                ref={periodRef}
+                                onClick={() => setOpenPeriodDropdown(!openPeriodDropdown)}
+                            >
+                                <div className="w-100 d-flex justify-content-between align-items-center" style={{ color: "#6B7280", fontSize: "14px", fontWeight: "500" }}>
+                                    <span>{period}</span>
+                                    <ChevronDown size={16} />
                                 </div>
-                            )}
+                                
+                                {openPeriodDropdown && (
+                                    <div 
+                                        className="position-absolute bg-white border rounded shadow-sm w-100 overflow-hidden" 
+                                        style={{ top: "calc(100% + 5px)", left: 0, zIndex: 100 }}
+                                    >
+                                        {["7 ngày", "30 ngày", "1 năm"].map((opt) => (
+                                            <div 
+                                                key={opt}
+                                                className="px-3 py-2"
+                                                style={{ 
+                                                    fontSize: "14px", 
+                                                    color: period === opt ? "#1B7A4A" : "#6B7280",
+                                                    backgroundColor: period === opt ? "#e8f5ee" : "transparent",
+                                                    transition: "all 0.2s"
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.backgroundColor = "#e8f5ee";
+                                                    e.currentTarget.style.color = "#1B7A4A";
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.backgroundColor = period === opt ? "#e8f5ee" : "transparent";
+                                                    e.currentTarget.style.color = period === opt ? "#1B7A4A" : "#6B7280";
+                                                }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPeriod(opt);
+                                                    setStartDate("");
+                                                    setEndDate("");
+                                                    setOpenPeriodDropdown(false);
+                                                }}
+                                            >
+                                                {opt}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -205,12 +266,12 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
-                        {/* Doanh thu */}
+                        {/* Doanh thu gói tin*/}
                         <div className="col-md-6 col-xl-3">
                             <div className="card border-0 shadow-sm rounded-4 p-3 h-100">
                                 <div className="d-flex justify-content-between align-items-center h-100">
                                     <div>
-                                        <p className="text-muted mb-1 fw-medium" style={{ fontSize: "14px" }}>Doanh Thu</p>
+                                        <p className="text-muted mb-1 fw-medium" style={{ fontSize: "14px" }}>Doanh Thu Gói Tin</p>
                                         <h4 className="fw-bold mb-0" style={{ color: "#111827" }}>
                                             {loading ? <span className="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span> : formatCurrency(dashboardData.totalRevenue)}
                                         </h4>
@@ -328,27 +389,27 @@ export default function AdminDashboard() {
 
                     {/* DÒNG 4: Biểu đồ tỷ lệ giao dịch & Hoạt động gần đây */}
                     <div className="row g-4">
-                        {/* Biểu đồ tròn tỷ lệ giao dịch */}
+                        {/* Biểu đồ tròn thống kê gói tin */}
                         <div className="col-lg-6">
                             <div className="card border-0 shadow-sm rounded-4 p-4 h-100 d-flex flex-column">
                                 <div className="d-flex justify-content-between align-items-start mb-2">
                                     {/* Bên trái: Title */}
-                                    <h6 className="fw-bold m-0" style={{ color: "#374151" }}>Tỷ lệ giao dịch</h6>
+                                    <h6 className="fw-bold m-0" style={{ color: "#374151" }}>Thống kê gói tin</h6>
                                     
                                     {/* Bên phải: Chú thích */}
                                     <div className="d-flex flex-column gap-2 align-items-start">
-                                        <div className="d-flex align-items-center">
-                                            <span style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: '#22C55E', marginRight: '6px', borderRadius: '2px' }}></span>
-                                            <span className="text-muted" style={{ fontSize: "12px" }}>Thành công</span> 
-                                        </div>
-                                        <div className="d-flex align-items-center">
-                                            <span style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: '#F59E0B', marginRight: '6px', borderRadius: '2px' }}></span>
-                                            <span className="text-muted" style={{ fontSize: "12px" }}>Hoàn tiền</span> 
-                                        </div>
-                                        <div className="d-flex align-items-center">
-                                            <span style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: '#C0392C', marginRight: '6px', borderRadius: '2px' }}></span>
-                                            <span className="text-muted" style={{ fontSize: "12px" }}>Thất bại</span> 
-                                        </div>
+                                        {dashboardData.packageStats.map((pkg, idx) => {
+                                            const colors = ['#FF9800', '#1B7A4A', '#3B82F6'];
+                                            return (
+                                                <div key={idx} className="d-flex align-items-center">
+                                                    <span style={{ display: 'inline-block', width: '10px', height: '10px', backgroundColor: colors[idx % colors.length], marginRight: '6px', borderRadius: '2px' }}></span>
+                                                    <span className="text-muted" style={{ fontSize: "12px" }}>{pkg.name} ({pkg.count})</span> 
+                                                </div>
+                                            );
+                                        })}
+                                        {dashboardData.packageStats.length === 0 && (
+                                            <span className="text-muted" style={{ fontSize: "12px" }}>Chưa có dữ liệu</span>
+                                        )}
                                     </div>
                                 </div>
                                 
@@ -356,14 +417,32 @@ export default function AdminDashboard() {
                                 <div className="d-flex justify-content-center align-items-center flex-grow-1" style={{ marginTop: "-20px" }}>
                                     <div className="position-relative flex-shrink-0" style={{
                                         width: "280px", height: "280px", borderRadius: "50%",
-                                        background: `conic-gradient(#22C55E 0% ${dashboardData.transactionRate.success}%, #F59E0B ${dashboardData.transactionRate.success}% ${dashboardData.transactionRate.success + dashboardData.transactionRate.refund}%, #C0392C ${dashboardData.transactionRate.success + dashboardData.transactionRate.refund}% 100%)`,
+                                        background: dashboardData.packageStats.length > 0 
+                                            ? (() => {
+                                                const total = dashboardData.packageStats.reduce((sum, p) => sum + p.count, 0);
+                                                const colors = ['#FF9800', '#1B7A4A', '#3B82F6'];
+                                                let currentPct = 0;
+                                                const gradients = dashboardData.packageStats.map((pkg, idx) => {
+                                                    const pct = (pkg.count / total) * 100;
+                                                    const segment = `${colors[idx % colors.length]} ${currentPct}% ${currentPct + pct}%`;
+                                                    currentPct += pct;
+                                                    return segment;
+                                                });
+                                                return `conic-gradient(${gradients.join(", ")})`;
+                                            })()
+                                            : "#E5E7EB",
                                     }}>
-                                        {/* Success */}
-                                        {dashboardData.transactionRate.success > 0 && <span className="position-absolute text-white fw-bold" style={getPieLabelStyle(0, dashboardData.transactionRate.success)}>{dashboardData.transactionRate.success}%</span>}
-                                        {/* Refund */}
-                                        {dashboardData.transactionRate.refund > 0 && <span className="position-absolute text-white fw-bold" style={getPieLabelStyle(dashboardData.transactionRate.success, dashboardData.transactionRate.refund)}>{dashboardData.transactionRate.refund}%</span>}
-                                        {/* Failed */}
-                                        {dashboardData.transactionRate.failed > 0 && <span className="position-absolute text-white fw-bold" style={getPieLabelStyle(dashboardData.transactionRate.success + dashboardData.transactionRate.refund, dashboardData.transactionRate.failed)}>{dashboardData.transactionRate.failed}%</span>}
+                                        {dashboardData.packageStats.map((pkg, idx, arr) => {
+                                            if (pkg.count === 0) return null;
+                                            const total = arr.reduce((sum, p) => sum + p.count, 0);
+                                            const pct = (pkg.count / total) * 100;
+                                            const prevSum = arr.slice(0, idx).reduce((sum, p) => sum + (p.count / total) * 100, 0);
+                                            return (
+                                                <span key={idx} className="position-absolute text-white fw-bold" style={getPieLabelStyle(prevSum, pct)}>
+                                                    {Math.round(pct)}%
+                                                </span>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>
@@ -388,9 +467,6 @@ export default function AdminDashboard() {
                                         if (act.type === "user" || act.type === "post") {
                                             icon = <Check size={18} className="text-success"/>;
                                             bg = "bg-success bg-opacity-10";
-                                        } else if (act.type === "report") {
-                                            icon = <AlertTriangle size={18} className="text-danger"/>;
-                                            bg = "bg-danger bg-opacity-10";
                                         } else {
                                             icon = <FaSackDollar size={18} style={{ color: "#22C55E" }}/>;
                                             bg = "";
