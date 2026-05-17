@@ -39,4 +39,10 @@ public interface SellerPackageRepository extends JpaRepository<SellerPackage, In
             @Param("sellerId") Integer sellerId,
             @Param("now") LocalDateTime now);
 
+    // Tính tổng doanh thu từ việc bán gói tin trong một khoảng thời gian
+    @Query("SELECT SUM(sp.packagePlan.price) FROM SellerPackage sp WHERE sp.startDate BETWEEN :startDate AND :endDate")
+    Double sumPackageRevenueBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT sp.packagePlan.name, COUNT(sp.id) FROM SellerPackage sp WHERE sp.startDate BETWEEN :startDate AND :endDate GROUP BY sp.packagePlan.name")
+    List<Object[]> countPackagesByPlanBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }
