@@ -80,7 +80,6 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
             @Param("categoryId") Integer categoryId,
             @Param("sortBy") String sortBy);
 
-    List<Listing> findBySellerIdAndPostSource(Integer sellerId, PostSource postSource);
     // Thống kê số lượng bài đăng theo danh mục sau một thời điểm  7 ngày, 30 ngày, 1 năm
     long countByCreatedAtAfter(LocalDateTime date);
 
@@ -95,4 +94,8 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
         WHERE l.id = :listingId
     """)
     void increaseViewCount(@Param("listingId") Integer listingId);
+
+    List<Listing> findBySellerIdAndSellerPackageIsNotNull(
+            Integer sellerId
+    );
 }

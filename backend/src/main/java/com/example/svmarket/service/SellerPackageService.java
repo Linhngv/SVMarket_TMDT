@@ -32,11 +32,13 @@ public class SellerPackageService {
                         pkg.getPackagePlan().getName(),
                         pkg.getRemainingPosts(),
                         pkg.getRemainingPushes(),
-                        pkg.getPackagePlan().getPostLimit(),  // thêm
-                        pkg.getPackagePlan().getPushLimit(),  // thêm
+                        pkg.getPackagePlan().getPostLimit(),
+                        pkg.getPackagePlan().getPushLimit(),
                         pkg.getStartDate(),
                         pkg.getEndDate()
                 ))
                 .toList();
     }
+
+
 }

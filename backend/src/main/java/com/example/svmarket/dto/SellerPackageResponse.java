@@ -14,8 +14,8 @@ public class SellerPackageResponse {
     private String packageName;
     private Integer remainingPosts;
     private Integer remainingPushes;
-    private Integer postLimit;   // thêm
-    private Integer pushLimit;   // thêm
+    private Integer postLimit;
+    private Integer pushLimit;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
 }

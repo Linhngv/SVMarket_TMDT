@@ -56,8 +56,8 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
     }, []);
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
-    const unreadPostNotes = notifications.filter(
-        (n) => n.type === "SYSTEM" && !n.isRead && n.content.includes("bài đăng mới"),
+    const unreadPostNotes = notifications.filter((n) => n.type === "SYSTEM" && !n.isRead &&
+        (n.content.includes("bài đăng mới") || n.content.includes("nâng cấp hiển thị")),
     );
     const unreadVerifyNotes = notifications.filter(
         (n) => n.type === "SYSTEM" && !n.isRead && n.content.includes("duyệt định danh mới"),
@@ -81,10 +81,17 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                         }),
                     ),
                 );
-                setNotifications((prev) =>
-                    prev.map((n) => (n.type === "SYSTEM" && n.content.includes("bài đăng mới") ? { ...n, isRead: true } : n)),
-                );
-            }
+                setNotifications((prev) => prev.map((n) =>
+                    n.type === "SYSTEM" &&
+                        (
+                        n.content.includes("bài đăng mới") ||
+                        n.content.includes("nâng cấp hiển thị")
+                        )
+                        ? { ...n, isRead: true }
+                        : n
+                    ),
+                    );
+                }
         } catch (error) {
             console.error("Lỗi đánh dấu đã đọc:", error);
         }
@@ -158,7 +165,7 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
         }
 
         if (note.type === "SYSTEM") {
-            if (note.content.includes("bài đăng mới")) {
+            if (note.content.includes("bài đăng mới") || note.content.includes("nâng cấp hiển thị")) {
                 navigate("/admin/duyet-bai");
             } else if (note.content.includes("duyệt định danh mới")) {
                 navigate("/admin/xac-thuc");

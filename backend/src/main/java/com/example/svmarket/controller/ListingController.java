@@ -211,4 +211,5 @@ public class ListingController {
         listingService.increaseView(id, email);
         return ResponseEntity.ok().build();
     }
+
 }

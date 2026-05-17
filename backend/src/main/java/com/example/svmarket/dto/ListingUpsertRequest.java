@@ -30,5 +30,7 @@ public class ListingUpsertRequest {
 
     private String status;
 
-    private String postSource;
+    private Integer sellerPackageId;
+
+    private boolean wantPush;
 }

@@ -63,15 +63,9 @@ public class DashboardService {
         long totalViews =
                 calculateTotalViews(listings);
 
-        long normalViews =
-                calculateViewsBySource(
-                        listings,
-                        PostSource.FREE);
+        long normalViews = calculateViewsBySource(listings, false);
 
-        long packageViews =
-                calculateViewsBySource(
-                        listings,
-                        PostSource.PACKAGE);
+        long packageViews = calculateViewsBySource(listings, true);
 
         List<Review> reviews =
                 reviewRepository
@@ -138,9 +132,15 @@ public class DashboardService {
     }
 
     // Tính lượt xem theo loại bài đăng
-    public long calculateViewsBySource(List<Listing> listings, PostSource source) {
+//    public long calculateViewsBySource(List<Listing> listings, PostSource source) {
+//        return listings.stream()
+//                .filter(l -> l.getPostSource() == source)
+//                .mapToLong(this::getViewCount)
+//                .sum();
+//    }
+    public long calculateViewsBySource(List<Listing> listings, boolean isPackage) {
         return listings.stream()
-                .filter(l -> l.getPostSource() == source)
+                .filter(l -> isPackage ? l.getSellerPackage() != null : l.getSellerPackage() == null)
                 .mapToLong(this::getViewCount)
                 .sum();
     }
@@ -162,24 +162,14 @@ public class DashboardService {
 
     // Lấy danh sách top bài đăng nổi bật
     public List<TopListingResponse> getTopListings(List<Listing> listings) {
-
         return listings.stream()
-                .sorted((a, b) ->
-                        Integer.compare(
-                                getViewCount(b),
-                                getViewCount(a)
-                        ))
+                .sorted((a, b) -> Integer.compare(getViewCount(b), getViewCount(a)))
                 .limit(5)
                 .map(l -> TopListingResponse.builder()
                         .id(l.getId())
                         .title(l.getTitle())
                         .viewCount(getViewCount(l))
-                        .type(
-                                l.getPostSource()
-                                        == PostSource.PACKAGE
-                                        ? "Gói tin"
-                                        : "Tin thường"
-                        )
+                        .type(l.getSellerPackage() != null ? "Gói tin" : "Tin thường")
                         .build())
                 .toList();
     }
@@ -201,15 +191,9 @@ public class DashboardService {
                     List<Listing> categoryListings =
                             entry.getValue();
 
-                    long normalViews =
-                            calculateViewsBySource(
-                                    categoryListings,
-                                    PostSource.FREE);
+                    long normalViews = calculateViewsBySource(listings, false);
 
-                    long packageViews =
-                            calculateViewsBySource(
-                                    categoryListings,
-                                    PostSource.PACKAGE);
+                    long packageViews = calculateViewsBySource(listings, true);
 
                     return CategoryViewResponse.builder()
                             .categoryName(categoryName)

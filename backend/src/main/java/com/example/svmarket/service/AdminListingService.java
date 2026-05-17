@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.example.svmarket.entity.*;
 import com.example.svmarket.repository.SellerPackageRepository;
+import com.example.svmarket.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,9 @@ public class AdminListingService {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     // Lấy tất cả bài đăng cho Admin (bất kể trạng thái ACTIVE, PENDING, REJECTED, v.v.)
     public List<ListingSummaryResponse> getAllListings() {
@@ -56,39 +60,59 @@ public class AdminListingService {
     public void approveListing(Integer id) {
         Listing listing = listingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng"));
-        // tránh duyệt lại
+
         if (listing.getStatus() == ListingStatus.ACTIVE) return;
 
         listing.setStatus(ListingStatus.ACTIVE);
 
-        if (listing.getPostSource() == PostSource.PACKAGE) {
+        SellerPackage pkg = listing.getSellerPackage();
 
-            SellerPackage pkg = sellerPackageRepository
-                    .findAvailablePackage(listing.getSeller().getId(), LocalDateTime.now())
-                    .stream()
-                    .findFirst()
-                    .orElse(null);
-
-            if (pkg != null) {
-
-                // ✅ trừ lượt đăng
-                if (pkg.getRemainingPosts() <= 0) {
-                    throw new RuntimeException("Hết lượt đăng");
-                }
-
-                pkg.setRemainingPosts(pkg.getRemainingPosts() - 1);
-
-                // ✅ OPTIONAL: auto push khi duyệt
-                if (pkg.getRemainingPushes() > 0) {
-                    listing.setLastPushAt(LocalDateTime.now());
-                    pkg.setRemainingPushes(pkg.getRemainingPushes() - 1);
-                }
-
-                sellerPackageRepository.save(pkg);
+        if (pkg == null) {
+            // FREE — trừ lượt đăng miễn phí khi được duyệt
+            User seller = listing.getSeller();
+            if (seller.getFreePostsRemaining() <= 0) {
+                throw new RuntimeException("Người bán đã hết lượt đăng miễn phí");
             }
+            seller.setFreePostsRemaining(seller.getFreePostsRemaining() - 1);
+            userRepository.save(seller);
+
+        } else {
+            // PACKAGE — trừ lượt đăng và kích hoạt đẩy tin khi được duyệt
+            if (pkg.getRemainingPosts() <= 0) {
+                throw new RuntimeException("Gói đã hết lượt đăng");
+            }
+
+            if (!Boolean.TRUE.equals(listing.getPackageUpgraded())) {
+
+                pkg.setRemainingPosts(
+                        pkg.getRemainingPosts() - 1
+                );
+            }
+
+            if (pkg.getRemainingPushes() > 0) {
+                listing.setLastPushAt(LocalDateTime.now());
+                pkg.setRemainingPushes(pkg.getRemainingPushes() - 1);
+            }
+
+            if (pkg.getRemainingPosts() <= 0 && pkg.getRemainingPushes() <= 0) {
+                pkg.setStatus(PackageStatus.EXPIRED);
+            }
+
+            listing.setPackageUpgraded(false);
+            sellerPackageRepository.save(pkg);
         }
 
         listingRepository.save(listing);
+
+        // Thông báo cho người bán
+        Notification notification = Notification.builder()
+                .user(listing.getSeller())
+                .content("Bài đăng '" + listing.getTitle() + "' của bạn đã được duyệt.")
+                .type(NotificationType.SYSTEM)
+                .referenceId(listing.getId())
+                .isRead(false)
+                .build();
+        notificationRepository.save(notification);
     }
 
     // Cập nhật trạng thái thành REJECTED

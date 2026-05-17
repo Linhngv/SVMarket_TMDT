@@ -9,6 +9,8 @@ import {
   createListing,
   fetchCategoryOptions,
 } from "../../services/listingService";
+import { fetchMyPackages } from "../../services/packageService";
+import type { SellerPackage } from "../../types/SellerPackage";
 import "../../styles/user/ListingManagement.css";
 
 const DEFAULT_VALUES: ListingFormValues = {
@@ -19,7 +21,7 @@ const DEFAULT_VALUES: ListingFormValues = {
   conditionLevel: "Đã qua sử dụng",
   description: "",
   status: "PENDING",
-  postSource: "FREE",
+  sellerPackageId: "",
 };
 
 export default function CreateListing() {
@@ -28,6 +30,21 @@ export default function CreateListing() {
   const [values, setValues] = useState<ListingFormValues>(DEFAULT_VALUES);
   const [images, setImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [packages, setPackages] = useState<SellerPackage[]>([]);
+
+  useEffect(() => {
+    const loadPackages = async () => {
+      try {
+        const data = await fetchMyPackages();
+
+        setPackages(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    loadPackages();
+  }, []);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -83,14 +100,18 @@ export default function CreateListing() {
         description: values.description.trim(),
         status: values.status,
         images,
-        postSource: values.postSource,
+        sellerPackageId: values.sellerPackageId
+          ? Number(values.sellerPackageId)
+          : null,
       });
 
       console.log("POST DATA:", {
         ...values,
       });
 
-      toast.success("Thêm bài đăng thành công! Bài đăng hiện đang chờ quản trị viên phê duyệt.");
+      toast.success(
+        "Thêm bài đăng thành công! Bài đăng hiện đang chờ quản trị viên phê duyệt.",
+      );
       navigate("/my-listings");
     } catch (error: any) {
       toast.error(error?.response?.data || "Không thể tạo bài đăng");
@@ -105,6 +126,7 @@ export default function CreateListing() {
         title="Thêm bài đăng"
         submitLabel="Thêm bài đăng"
         categories={categories}
+        packages={packages}
         values={values}
         imagePreviews={imagePreviews}
         submitDisabled={isSubmitting}

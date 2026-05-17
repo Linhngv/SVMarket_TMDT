@@ -75,11 +75,11 @@ public class Listing {
     @Column(name = "last_push_at")
     private LocalDateTime lastPushAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "post_source", length = 20)
-    private PostSource postSource; // người đăng bài chọn đăng free hay gói
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_package_id")
     private SellerPackage sellerPackage;
+
+    @Column(name = "package_upgraded")
+    @Builder.Default
+    private Boolean packageUpgraded = false;
 }
