@@ -100,4 +100,8 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
         WHERE l.id = :listingId
     """)
     void increaseViewCount(@Param("listingId") Integer listingId);
+
+    List<Listing> findBySellerIdAndSellerPackageIsNotNull(
+            Integer sellerId
+    );
 }

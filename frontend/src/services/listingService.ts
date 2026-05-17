@@ -33,7 +33,8 @@ export type ListingDetail = {
   description: string;
   status: string;
   imageUrls: string[];
-  postSource: "FREE" | "PACKAGE";
+  sellerPackageId?: number | null;
+
 };
 
 export type PublicListingDetail = ListingDetail & {
@@ -52,7 +53,8 @@ export type ListingFormPayload = {
   description: string;
   status: string;
   images: File[];
-  postSource: "FREE" | "PACKAGE";
+  sellerPackageId?: number | null;
+  wantPush?: boolean;
 };
 
 function getAuthHeader() {
@@ -75,12 +77,22 @@ function buildListingFormData(payload: ListingFormPayload) {
   formData.append("conditionLevel", payload.conditionLevel);
   formData.append("description", payload.description);
   formData.append("status", payload.status);
-  formData.append("postSource", payload.postSource);
+  if (payload.sellerPackageId != null) {
+
+    formData.append(
+      "sellerPackageId",
+      String(payload.sellerPackageId)
+    );
+  }
 
   payload.images.forEach((image) => {
     formData.append("images", image);
   });
 
+  formData.append(
+    "wantPush",
+    String(payload.wantPush ?? false)
+  );
   return formData;
 }
 
@@ -200,7 +212,7 @@ export async function fetchListingsByCategory(categoryId: number): Promise<Listi
   }
 
   const response = await fetch(`${API_BASE_URL}/by-category?categoryId=${categoryId}`);
-  
+
   if (!response.ok) {
     throw new Error(`Lỗi tải danh mục: ${response.status}`);
   }
@@ -258,8 +270,9 @@ export const increaseListingView = async (listingId: number) => {
     method: "POST",
     headers: token
       ? {
-          Authorization: `Bearer ${token}`,
-        }
+        Authorization: `Bearer ${token}`,
+      }
       : {},
   });
 };
+

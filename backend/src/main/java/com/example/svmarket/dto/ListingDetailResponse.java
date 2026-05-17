@@ -31,4 +31,5 @@ public class ListingDetailResponse {
     private String sellerAvatar;
     private String postSource;
     private Boolean isVerified;
+    private Integer sellerPackageId;
 }

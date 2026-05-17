@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import ListingForm, {
-  ListingFormValues,
-} from "../../components/listing/ListingForm";
+import ListingForm, { ListingFormValues, } from "../../components/listing/ListingForm";
 import {
   CategoryOption,
   fetchCategoryOptions,
@@ -11,6 +9,8 @@ import {
   updateListing,
 } from "../../services/listingService";
 import "../../styles/user/ListingManagement.css";
+import { fetchMyPackages } from "../../services/packageService";
+import type { SellerPackage } from "../../types/SellerPackage";
 
 export default function EditListing() {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function EditListing() {
     conditionLevel: "Đã qua sử dụng",
     description: "",
     status: "PENDING",
-    postSource: "FREE",
+    sellerPackageId: "",
   });
   const [images, setImages] = useState<File[]>([]);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
@@ -33,6 +33,23 @@ export default function EditListing() {
   const [originalStatus, setOriginalStatus] = useState<string>("");
   const [rejectReason, setRejectReason] = useState<string>("");
   const [bannedKeywords, setBannedKeywords] = useState<string[]>([]);
+  const [packages, setPackages] = useState<SellerPackage[]>([]);
+  const [originalSellerPackageId, setOriginalSellerPackageId] = useState<string>("");
+  
+  // Load gói đã mua
+  useEffect(() => {
+  const loadPackages = async () => {
+    try {
+      const data = await fetchMyPackages();
+
+      setPackages(data);
+      } catch (error) {
+        console.error("Không thể tải gói", error);
+      }
+    };
+
+    loadPackages();
+  }, []);
 
   useEffect(() => {
     const listingId = Number(id);
@@ -44,9 +61,12 @@ export default function EditListing() {
 
     const fetchSellerBannedKeywords = async () => {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8080/api/seller/dashboard/banned-keywords", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch(
+        "http://localhost:8080/api/seller/dashboard/banned-keywords",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       if (!res.ok) throw new Error("Failed to fetch banned keywords");
       return res.json();
     };
@@ -56,7 +76,7 @@ export default function EditListing() {
         const [categoryData, listingData, keywordsList] = await Promise.all([
           fetchCategoryOptions(),
           fetchMyListingById(listingId),
-          fetchSellerBannedKeywords().catch(() => [])
+          fetchSellerBannedKeywords().catch(() => []),
         ]);
 
         setCategories(categoryData);
@@ -76,8 +96,15 @@ export default function EditListing() {
           conditionLevel: listingData.conditionLevel || "Đã qua sử dụng",
           description: listingData.description || "",
           status: listingData.status || "PENDING",
-          postSource: listingData.postSource,
+          sellerPackageId: listingData.sellerPackageId
+            ? String(listingData.sellerPackageId)
+            : "",
         });
+        setOriginalSellerPackageId(
+          listingData.sellerPackageId
+            ? String(listingData.sellerPackageId)
+            : "",
+        );
       } catch (error) {
         console.error("Không thể tải dữ liệu bài đăng", error);
         toast.error("Không thể tải dữ liệu bài đăng");
@@ -133,10 +160,21 @@ export default function EditListing() {
         description: values.description.trim(),
         status: values.status === "REJECTED" ? "PENDING" : values.status,
         images,
-        postSource: values.postSource,
+        sellerPackageId: values.sellerPackageId
+          ? Number(values.sellerPackageId)
+          : null,
+        wantPush: values.wantPush,
       });
 
-      toast.success("Cập nhật bài đăng thành công!");
+      const packageChanged = originalSellerPackageId !== values.sellerPackageId;
+
+      if (packageChanged && values.sellerPackageId) {
+        toast.success(
+          "Bài đăng hiện đang chờ quản trị viên phê duyệt nâng cấp hiển thị.",
+        );
+      } else {
+        toast.success("Cập nhật bài đăng thành công!");
+      }
       navigate("/my-listings");
     } catch (error: any) {
       toast.error(error?.response?.data || "Không thể cập nhật bài đăng");
@@ -165,7 +203,10 @@ export default function EditListing() {
         return parts.map((p, idx) => {
           if (regex.test(p)) {
             return (
-              <span key={idx} style={{ backgroundColor: "#ffcccc", color: "#c0392b" }}>
+              <span
+                key={idx}
+                style={{ backgroundColor: "#ffcccc", color: "#c0392b" }}
+              >
                 {p}
               </span>
             );
@@ -202,10 +243,15 @@ export default function EditListing() {
         <div className="container mt-3 px-4">
           <div className="alert alert-danger" role="alert">
             <h5 className="alert-heading">Bài đăng đã bị từ chối!</h5>
-            <p className="mb-0"><strong>Lý do:</strong> {rejectReason}</p>
+            <p className="mb-0">
+              <strong>Lý do:</strong> {rejectReason}
+            </p>
             <hr />
             <p className="mb-0 small">
-              Vui lòng chỉnh sửa lại thông tin bài đăng theo yêu cầu và nhấn <strong>Cập nhật</strong>. Bài đăng sẽ được tự động chuyển về trạng thái <strong>Chờ duyệt</strong> để quản trị viên kiểm tra lại.
+              Vui lòng chỉnh sửa lại thông tin bài đăng theo yêu cầu và nhấn{" "}
+              <strong>Cập nhật</strong>. Bài đăng sẽ được tự động chuyển về
+              trạng thái <strong>Chờ duyệt</strong> để quản trị viên kiểm tra
+              lại.
             </p>
           </div>
         </div>
@@ -214,6 +260,7 @@ export default function EditListing() {
         title="Cập nhật bài đăng"
         submitLabel="Cập nhật bài đăng"
         categories={categories}
+        packages={packages}
         values={values}
         imagePreviews={mergedImagePreviews}
         titleWarning={titleWarning}
@@ -221,11 +268,11 @@ export default function EditListing() {
         submitDisabled={isSubmitting || titleHasBanned || descHasBanned}
         showStatusField
         showBack
+          isEditMode
         onBack={() => navigate("/my-listings")}
         onChange={setValues}
         onImageChange={setImages}
         onSubmit={handleUpdateListing}
-        disablePostSource
       />
     </>
   );
