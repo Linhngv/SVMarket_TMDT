@@ -25,11 +25,14 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     // Lấy danh sách sinh viên chờ duyệt định danh
     @Query("SELECT u FROM User u WHERE (u.isVerified IS NULL OR u.isVerified = false) AND u.studentCard IS NOT NULL AND u.role = 'USER'")
     List<User> findPendingVerificationUsers();
-    // Thống kê số lượng người dùng theo khoảng thời gian sau một thời điểm  7 ngày, 30 ngày, 1 năm
+    // Thống kê số lượng người dùng theo khoảng thời gian sau một thời điểm  7 ngày, 30 ngày, 1 năm, ngày/tháng/năm cụ thể
     long countByCreatedAtAfter(LocalDateTime date);
 
     long countByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 
     @Query("SELECT u.createdAt FROM User u WHERE u.createdAt >= :startDate")
     List<LocalDateTime> findCreatedAtAfter(@Param("startDate") LocalDateTime startDate);
+
+    @Query("SELECT u.createdAt FROM User u WHERE u.createdAt BETWEEN :startDate AND :endDate")
+    List<LocalDateTime> findCreatedAtBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

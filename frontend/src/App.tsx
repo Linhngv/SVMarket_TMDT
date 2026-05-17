@@ -14,6 +14,7 @@ import ProductDetail from "./pages/product/ProductDetail";
 import PurchaseHistory from "./pages/user/PurchaseHistory";
 import SalesHistory from "./pages/user/SalesHistory";
 import MyPackages from "./pages/package-management/MyPackages";
+import UpgradePackage from "./pages/package-management/UpgradePackage";
 import SellerDashboard from "./pages/package-management/SellerDashboard";
 import Payment from "./pages/user/Payment";
 import UserAreaLayout from "./components/sidebar/user/UserAreaLayout";
@@ -83,6 +84,7 @@ function App() {
           <Route path="/my-packages" element={<MyPackages />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/dashboard" element={<SellerDashboard />} />
+           <Route path="/upgrade-package" element={<UpgradePackage />} />
         </Route>
 
         <Route path="/payment/:orderId" element={<Payment />} />
