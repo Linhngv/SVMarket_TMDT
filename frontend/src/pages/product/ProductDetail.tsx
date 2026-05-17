@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight, FaFlag, FaStar } from "react-icons/fa";
 import Header from "../../components/user/Header";
@@ -28,13 +28,16 @@ export default function ProductDetail() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [isStartingChat, setIsStartingChat] = useState(false);
+  const hasIncreasedView = useRef(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [id]);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || hasIncreasedView.current) return;
+
+    hasIncreasedView.current = true;
 
     increaseListingView(Number(id));
   }, [id]);
