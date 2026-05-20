@@ -427,17 +427,17 @@ public class ListingService {
                 .orElseThrow(() -> new BadRequestException("Bai dang khong ton tai hoac ban khong co quyen"));
     }
 
-    private ListingStatus parseStatus(String status) {
-        if (status == null || status.isBlank()) {
-            return ListingStatus.ACTIVE;
-        }
+    // private ListingStatus parseStatus(String status) {
+    //     if (status == null || status.isBlank()) {
+    //         return ListingStatus.ACTIVE;
+    //     }
 
-        try {
-            return ListingStatus.valueOf(status.trim().toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Trang thai bai dang khong hop le");
-        }
-    }
+    //     try {
+    //         return ListingStatus.valueOf(status.trim().toUpperCase(Locale.ROOT));
+    //     } catch (IllegalArgumentException ex) {
+    //         throw new BadRequestException("Trang thai bai dang khong hop le");
+    //     }
+    // }
 
     private ListingDetailResponse toDetailResponse(Listing listing, List<String> imageUrls) {
         Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());

@@ -40,6 +40,7 @@ import AdminStudentVerification from "./pages/admin/TrustManagement/AdminStudent
 import AdminBannedKeywords from "./pages/admin/TrustManagement/AdminBannedKeywords";
 import Messages from "./pages/user/Messages";
 import AdminLogs from "./pages/admin/AdminLogs";
+import Policy from "./pages/user/Policy"
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -66,6 +67,7 @@ function App() {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/about" element={<About />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/policy" element={<Policy />} />
         <Route path="/seller-profile/:id" element={<SellerProfile />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/messages" element={<Messages />} />
@@ -84,7 +86,7 @@ function App() {
           <Route path="/my-packages" element={<MyPackages />} />
           <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/dashboard" element={<SellerDashboard />} />
-           <Route path="/upgrade-package" element={<UpgradePackage />} />
+          <Route path="/upgrade-package" element={<UpgradePackage />} />
         </Route>
 
         <Route path="/payment/:orderId" element={<Payment />} />

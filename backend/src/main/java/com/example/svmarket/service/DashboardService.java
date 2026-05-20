@@ -188,8 +188,7 @@ public class DashboardService {
                     String categoryName =
                             entry.getKey();
 
-                    List<Listing> categoryListings =
-                            entry.getValue();
+                //     List<Listing> categoryListings = entry.getValue();
 
                     long normalViews = calculateViewsBySource(listings, false);
 
