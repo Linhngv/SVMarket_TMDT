@@ -33,6 +33,7 @@ export default function Footer() {
                         <a href="/faq" style={{ textDecoration: "none" }}><p>Câu hỏi thường gặp</p></a>
                         <a href="/about" style={{ textDecoration: "none" }}><p>Về chúng tôi</p></a>
                         <p>Liên hệ với chúng tôi</p>
+                        <a href="/policy" style={{ textDecoration: "none" }}><p>Chính sách của chúng tôi</p></a>
                     </div>
 
                     {/* Mạng xã hội */}

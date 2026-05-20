@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Map;
 
-import com.example.svmarket.entity.PostSource;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.svmarket.entity.Listing;
@@ -80,7 +79,7 @@ public interface ListingRepository extends JpaRepository<Listing, Integer> {
             @Param("categoryId") Integer categoryId,
             @Param("sortBy") String sortBy);
 
-    List<Listing> findBySellerIdAndPostSource(Integer sellerId, PostSource postSource);
+//     List<Listing> findBySellerIdAndPostSource(Integer sellerId, PostSource postSource);
     // Thống kê số lượng bài đăng theo danh mục sau một thời điểm  7 ngày, 30 ngày, 1 năm, ngày/tháng/năm cụ thể
     long countByCreatedAtAfter(LocalDateTime date);
 

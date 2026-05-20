@@ -894,6 +894,11 @@ body {
   margin: 6px 0;
   color: #eaeaea;
   cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.footer p:hover {
+  color: var(--secondary);
 }
 
 /* SOCIAL */
