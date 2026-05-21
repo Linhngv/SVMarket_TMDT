@@ -56,6 +56,13 @@ public class AdminListingService {
                 .toList();
     }
 
+    // Lấy chi tiết một bài đăng cho Admin
+    public ListingDetailResponse getListingById(Integer id) {
+        Listing listing = listingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng"));
+        return toDetailResponse(listing);
+    }
+
     // Cập nhật trạng thái thành ACTIVE
     public void approveListing(Integer id) {
         Listing listing = listingRepository.findById(id)
@@ -141,6 +148,11 @@ public class AdminListingService {
                 : listing.getImages().stream().map(Image::getUrl).toList();
 
         Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());
+        
+        String packageName = (listing.getSellerPackage() != null && listing.getSellerPackage().getPackagePlan() != null)
+                ? listing.getSellerPackage().getPackagePlan().getName()
+                : null;
+
         return ListingDetailResponse.builder()
                 .id(listing.getId())
                 .title(listing.getTitle())
@@ -160,6 +172,7 @@ public class AdminListingService {
                 .rejectReason(listing.getRejectReason())
                 .sellerId(listing.getSeller() != null ? listing.getSeller().getId() : null)
                 .sellerAvatar(listing.getSeller() != null ? listing.getSeller().getAvatar() : null)
+                .packageName(packageName)
                 .build();
     }
 
@@ -168,6 +181,10 @@ public class AdminListingService {
         Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());
         String thumbnail = listing.getImages() != null && !listing.getImages().isEmpty()
                 ? listing.getImages().get(0).getUrl()
+                : null;
+
+        String packageName = (listing.getSellerPackage() != null && listing.getSellerPackage().getPackagePlan() != null)
+                ? listing.getSellerPackage().getPackagePlan().getName()
                 : null;
 
         ListingSummaryResponse response = new ListingSummaryResponse();
@@ -180,6 +197,7 @@ public class AdminListingService {
         response.setStatus(listing.getStatus() != null ? listing.getStatus().name() : ListingStatus.ACTIVE.name());
         response.setThumbnailUrl(thumbnail);
         response.setCreatedAt(listing.getCreatedAt());
+        response.setPackageName(packageName);
         return response;
     }
 }

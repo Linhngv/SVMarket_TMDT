@@ -26,4 +26,5 @@ public class ListingSummaryResponse {
     private Boolean isFeatured;
     private boolean pushing;
     private Boolean isVerified;
+    private String packageName;
 }

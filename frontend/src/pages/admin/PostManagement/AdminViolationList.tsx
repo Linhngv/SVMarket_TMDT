@@ -8,6 +8,7 @@ interface RejectedPost {
     title: string;
     sellerName: string;
     rejectReason?: string;
+    packageName?: string;
 }
 
 export default function AdminViolationList() {
@@ -60,6 +61,7 @@ export default function AdminViolationList() {
                                         <th>ID</th>
                                         <th>Bài đăng</th>
                                         <th>Người đăng</th>
+                                        <th>Gói tin</th>
                                         <th>Lý do</th>
                                         <th>Hành động</th>
                                     </tr>
@@ -67,15 +69,16 @@ export default function AdminViolationList() {
 
                                 <tbody>
                                     {loading ? (
-                                        <tr><td colSpan={5} className="text-center py-4">Đang tải dữ liệu...</td></tr>
+                                        <tr><td colSpan={6} className="text-center py-4">Đang tải dữ liệu...</td></tr>
                                     ) : violations.length === 0 ? (
-                                        <tr><td colSpan={5} className="text-center py-4">Không có bài đăng vi phạm nào</td></tr>
+                                        <tr><td colSpan={6} className="text-center py-4">Không có bài đăng vi phạm nào</td></tr>
                                     ) : (
                                         violations.map((v) => (
                                             <tr key={v.id}>
                                                 <td>{v.id}</td>
                                                 <td>{v.title}</td>
                                                 <td>{v.sellerName || "Khuyết danh"}</td>
+                                                <td className="text-primary fw-medium">{v.packageName || "Miễn phí"}</td>
                                                 <td>{v.rejectReason || "Không đạt yêu cầu kiểm duyệt"}</td>
                                                 <td>
                                                     <button className="btn rounded-pill px-4" style={{ backgroundColor: "#C0392B", color: "white", border: "none", fontWeight: 500, fontSize: "14px" }}>Ẩn bài</button>

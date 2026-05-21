@@ -17,6 +17,7 @@ interface PendingPost {
   conditionLevel: string;
   deliveryAddress: string;
   createdAt: string;
+  packageName?: string;
 }
 
 export default function AdminPostApproval() {
@@ -219,6 +220,9 @@ export default function AdminPostApproval() {
                         </div>
                         <div className="approval-desc mb-4">
                           <h6 className="fw-medium mb-2">Danh mục: {post.categoryName || 'Chưa phân loại'}</h6>
+                        </div>
+                        <div className="approval-desc mb-4">
+                          <h6 className="fw-medium mb-2">Gói tin: <span className="text-primary">{post.packageName || 'Miễn phí'}</span></h6>
                         </div>
                       </div>
                       <div className="col-md-6">

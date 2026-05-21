@@ -49,4 +49,9 @@ public class AdminListingController {
         String reason = (reasonStr != null && !reasonStr.trim().isEmpty()) ? reasonStr.trim() : "Vi phạm chính sách của SVMarket";
         adminListingService.rejectListing(id, reason);
     }
+
+    @GetMapping("/{id}")
+    public ListingDetailResponse getListingById(@PathVariable Integer id) {
+        return adminListingService.getListingById(id);
+    }
 }
