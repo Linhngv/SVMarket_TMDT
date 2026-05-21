@@ -32,4 +32,5 @@ public class ListingDetailResponse {
     private String postSource;
     private Boolean isVerified;
     private Integer sellerPackageId;
+    private String packageName;
 }

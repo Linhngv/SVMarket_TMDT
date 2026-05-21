@@ -441,6 +441,10 @@ public class ListingService {
 
     private ListingDetailResponse toDetailResponse(Listing listing, List<String> imageUrls) {
         Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());
+        String packageName = (listing.getSellerPackage() != null && listing.getSellerPackage().getPackagePlan() != null)
+                ? listing.getSellerPackage().getPackagePlan().getName()
+                : null;
+
         return ListingDetailResponse.builder()
                 .id(listing.getId())
                 .title(listing.getTitle())
@@ -460,11 +464,16 @@ public class ListingService {
                                 ? listing.getSellerPackage().getId()
                                 : null
                 )
+                .packageName(packageName)
                 .build();
     }
 
     private ListingDetailResponse toPublicDetailResponse(Listing listing, List<String> imageUrls) {
         Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());
+        String packageName = (listing.getSellerPackage() != null && listing.getSellerPackage().getPackagePlan() != null)
+                ? listing.getSellerPackage().getPackagePlan().getName()
+                : null;
+
         return ListingDetailResponse.builder()
                 .id(listing.getId())
                 .title(listing.getTitle())
@@ -483,6 +492,7 @@ public class ListingService {
                 .createdAt(listing.getCreatedAt())
                 .sellerId(listing.getSeller() != null ? listing.getSeller().getId() : null)
                 .sellerAvatar(listing.getSeller() != null ? listing.getSeller().getAvatar() : null)
+                .packageName(packageName)
                 .build();
     }
 
