@@ -242,7 +242,7 @@ export default function PurchaseHistory() {
       {/* Modal chi tiết */}
       {(loadingDetail || selectedDetail) && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-box-history" onClick={(e) => e.stopPropagation()}>
             {loading ? (
               <div className="modal-loading">
                 <div className="spinner"></div>
