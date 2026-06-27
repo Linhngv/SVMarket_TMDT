@@ -397,58 +397,66 @@ export default function Header({
                     Không có thông báo nào
                   </p>
                 ) : (
-                  notifications.map((note) => (
-                    <div
-                      key={note.id}
-                      className="notification-note"
-                      style={{
-                        backgroundColor: note.isRead
-                          ? "transparent"
-                          : "var(--light-green)",
-                      }}
-                      onClick={() => handleNotificationClick(note)}
-                    >
-                      {/* Nút tròn màu xanh lá */}
+                  <div
+                    className="notification-list"
+                    style={{
+                      maxHeight: "400px",
+                      overflowY: "auto",
+                      overflowX: "hidden",
+                    }}
+                  >
+                    {notifications.map((note) => (
                       <div
-                        className="dot-green"
+                        key={note.id}
+                        className="notification-note"
                         style={{
                           backgroundColor: note.isRead
                             ? "transparent"
-                            : "var(--primary)",
+                            : "var(--light-green)",
                         }}
-                      ></div>
+                        onClick={() => handleNotificationClick(note)}
+                      >
+                        {/* Nút tròn màu xanh lá */}
+                        <div
+                          className="dot-green"
+                          style={{
+                            backgroundColor: note.isRead
+                              ? "transparent"
+                              : "var(--primary)",
+                          }}
+                        ></div>
 
-                      {/* Nội dung thông báo */}
-                      <div className="notification-content">
-                        {note.content.includes(" muốn mua ") ? (
-                          <>
-                            <strong>
-                              {note.content.substring(
-                                0,
-                                note.content.indexOf(" muốn mua "),
-                              )}
-                            </strong>{" "}
-                            muốn mua{" "}
-                            <strong>
-                              {note.content.substring(
-                                note.content.indexOf(" muốn mua ") + 10,
-                              )}
-                            </strong>
-                          </>
-                          //gửi vị trí
-                        ) : note.content.includes("[Vị trí]") ? (
-                          <>
-                            {note.content.substring(0, note.content.indexOf("[Vị trí]"))} <Navigation size={14} style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginLeft: '4px' }} /> Đã chia sẻ một vị trí 
-                          </>
-                        ) : (
-                          note.content
-                        )}
-                        <div className="notification-time">
-                          {formatTimeAgo(note.createdAt)}
+                        {/* Nội dung thông báo */}
+                        <div className="notification-content">
+                          {note.content.includes(" muốn mua ") ? (
+                            <>
+                              <strong>
+                                {note.content.substring(
+                                  0,
+                                  note.content.indexOf(" muốn mua "),
+                                )}
+                              </strong>{" "}
+                              muốn mua{" "}
+                              <strong>
+                                {note.content.substring(
+                                  note.content.indexOf(" muốn mua ") + 10,
+                                )}
+                              </strong>
+                            </>
+                          ) : note.content.includes("[Vị trí]") ? (
+                            <>
+                              {note.content.substring(0, note.content.indexOf("[Vị trí]"))} <Navigation size={14} style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginLeft: '4px' }} /> Đã chia sẻ một vị trí
+                            </>
+                          ) : (
+                            note.content
+                          )}
+                          <div className="notification-time">
+                            {formatTimeAgo(note.createdAt)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </div>
             )}

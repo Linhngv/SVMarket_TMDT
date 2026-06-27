@@ -84,14 +84,14 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                 setNotifications((prev) => prev.map((n) =>
                     n.type === "SYSTEM" &&
                         (
-                        n.content.includes("bài đăng mới") ||
-                        n.content.includes("nâng cấp hiển thị")
+                            n.content.includes("bài đăng mới") ||
+                            n.content.includes("nâng cấp hiển thị")
                         )
                         ? { ...n, isRead: true }
                         : n
-                    ),
-                    );
-                }
+                ),
+                );
+            }
         } catch (error) {
             console.error("Lỗi đánh dấu đã đọc:", error);
         }
@@ -248,7 +248,14 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                                     Không có thông báo nào
                                 </p>
                             ) : (
-                                <>
+                                <div
+                                    className="notification-list"
+                                    style={{
+                                        maxHeight: "400px",
+                                        overflowY: "auto",
+                                        overflowX: "hidden",
+                                    }}
+                                >
                                     {pendingPostCount > 0 && (
                                         <div
                                             className="notification-note"
@@ -332,7 +339,7 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                                             </div>
                                         </div>
                                     ))}
-                                </>
+                                </div>
                             )}
                         </div>
                     )}
