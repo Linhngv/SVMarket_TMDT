@@ -18,7 +18,7 @@ const DEFAULT_VALUES: ListingFormValues = {
   categoryId: "",
   price: "0",
   deliveryAddress: "",
-  conditionLevel: "Đã qua sử dụng",
+  conditionLevel: "Mới",
   description: "",
   status: "PENDING",
   sellerPackageId: "",

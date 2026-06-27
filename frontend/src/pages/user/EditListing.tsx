@@ -22,7 +22,7 @@ export default function EditListing() {
     categoryId: "",
     price: "0",
     deliveryAddress: "",
-    conditionLevel: "Đã qua sử dụng",
+    conditionLevel: "Mới",
     description: "",
     status: "PENDING",
     sellerPackageId: "",
@@ -93,7 +93,7 @@ export default function EditListing() {
           categoryId: String(listingData.categoryId || ""),
           price: String(listingData.price || 0),
           deliveryAddress: listingData.deliveryAddress || "",
-          conditionLevel: listingData.conditionLevel || "Đã qua sử dụng",
+          conditionLevel: listingData.conditionLevel || "Mới",
           description: listingData.description || "",
           status: listingData.status || "PENDING",
           sellerPackageId: listingData.sellerPackageId

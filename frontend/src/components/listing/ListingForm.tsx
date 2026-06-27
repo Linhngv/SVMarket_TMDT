@@ -41,9 +41,9 @@ type ListingFormProps = {
 };
 
 const CONDITION_OPTIONS = [
-  { value: "Da qua su dung", label: "Đã qua sử dụng" },
-  { value: "Moi 95%", label: "Mới 95%" },
-  { value: "Moi", label: "Mới" },
+  { value: "Mới", label: "Mới" },
+  { value: "Mới 95%", label: "Mới 95%" },
+  { value: "Đã qua sử dụng", label: "Đã qua sử dụng" },
 ];
 
 const STATUS_OPTIONS = [

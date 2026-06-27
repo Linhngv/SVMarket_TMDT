@@ -95,6 +95,7 @@ export default function RecommendedProducts() {
 
     priorityLevel: listing.priorityLevel,
     pushing: listing.pushing,
+    conditionLevel: listing.conditionLevel,
   }));
 
   const handleFavoriteClick = async (
@@ -178,7 +179,7 @@ export default function RecommendedProducts() {
                 <p className="product-price">{item.price}</p>
                 <small className="product-meta">{item.university}</small>
                 <div className="product-action">
-                  <button className="product-status-btn">Đã qua sử dụng</button>
+                  <button className="product-status-btn">{item.conditionLevel}</button>
                 </div>
               </div>
             </div>
