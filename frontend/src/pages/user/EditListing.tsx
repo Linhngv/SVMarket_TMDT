@@ -158,7 +158,7 @@ export default function EditListing() {
         deliveryAddress: values.deliveryAddress.trim(),
         conditionLevel: values.conditionLevel,
         description: values.description.trim(),
-        status: values.status === "REJECTED" ? "PENDING" : values.status,
+        status: values.status,
         images,
         sellerPackageId: values.sellerPackageId
           ? Number(values.sellerPackageId)

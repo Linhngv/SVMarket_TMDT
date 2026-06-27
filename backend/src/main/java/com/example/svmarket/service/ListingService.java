@@ -376,9 +376,23 @@ public class ListingService {
         listing.setDeliveryAddress(request.getDeliveryAddress());
         listing.setConditionLevel(request.getConditionLevel());
         listing.setDescription(request.getDescription());
-        listing.setDescription(request.getDescription());
 
-        // xử lý nâng cấp đẩy tin
+        ListingStatus requestedStatus = ListingStatus.valueOf(request.getStatus());
+
+        // Nếu người dùng chỉ thay đổi trạng thái sang Tạm ẩn hoặc Đã bán thì không cần duyệt lại
+        boolean statusOnlyChange = request.getTitle().trim().equals(listing.getTitle()) &&
+                request.getCategoryId().equals(listing.getCategory().getId()) &&
+                request.getPrice().compareTo(listing.getPrice()) == 0 &&
+                request.getDescription().equals(listing.getDescription());
+
+        if (statusOnlyChange && (requestedStatus == ListingStatus.INACTIVE || requestedStatus == ListingStatus.SOLD)) {
+            listing.setStatus(requestedStatus);
+        } else {
+            // Bất kỳ thay đổi nội dung nào khác đều cần duyệt lại
+            listing.setStatus(ListingStatus.PENDING);
+        }
+
+        // Xử lý nâng cấp đẩy tin
         upgradeListingBoost(listing, seller, request);
 
         // Xóa lý do từ chối cũ khi người bán đã cập nhật lại bài đăng
