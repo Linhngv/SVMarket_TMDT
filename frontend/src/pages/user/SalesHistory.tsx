@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Eye, Pencil } from "lucide-react";
+import { Search, Eye } from "lucide-react";
 import TransactionModal from "./TransactionModal";
 import "../../styles/user/History.css";
 
@@ -10,6 +10,7 @@ interface SaleTransaction {
   product: string;
   price: number;
   status: string;
+  originalStatus: string; // Thêm để xử lý logic className
   email: string;
   requestDate: any;
   note: string;
@@ -113,12 +114,41 @@ export default function SalesHistory() {
     }
   };
 
+  // Hàm xử lý từ chối bán
+  const handleRejectTransaction = async (id: string | number) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:8080/api/orders/${id}/reject`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        alert("Đã từ chối đơn hàng!");
+        setSales((prev) =>
+          prev.map((sale) =>
+            String(sale.id) === String(id)
+              ? { ...sale, status: "CANCELLED" }
+              : sale,
+          ),
+        );
+        setSelectedTx(null);
+      } else {
+        const errorText = await res.text();
+        alert(`Có lỗi xảy ra khi từ chối đơn hàng: ${errorText}`);
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+      alert("Lỗi kết nối đến máy chủ.");
+    }
+  };
+
   // Định dạng lại các giá trị để phù hợp với hiển thị và Modal chi tiết
   const formattedSales = filtered.map((row) => ({
     ...row,
     id: String(row.id),
     price: new Intl.NumberFormat("vi-VN").format(row.price) + "đ",
     status: formatStatus(row.status),
+    originalStatus: row.status, // Giữ lại status gốc
     requestDate: formatDate(row.requestDate),
     imageUrl: row.imageUrl.startsWith("http")
       ? row.imageUrl
@@ -176,13 +206,15 @@ export default function SalesHistory() {
                 <td data-label="Trạng thái">
                   <span
                     className={`status-pill ${
-                      row.status === "Hoàn thành"
+                      row.originalStatus === "COMPLETED"
                         ? "done"
-                        : row.status === "Chờ xác nhận"
+                        : row.originalStatus === "PENDING"
                           ? "pending"
-                          : row.status === "Đã thanh toán"
+                          : row.originalStatus === "PAID"
                             ? "paid"
-                            : "shipping"
+                            : row.originalStatus === "CANCELLED"
+                              ? "rejected" // Thêm class cho trạng thái hủy
+                              : "shipping"
                     }`}
                   >
                     {row.status}
@@ -230,7 +262,7 @@ export default function SalesHistory() {
           transaction={selectedTx}
           onClose={() => setSelectedTx(null)}
           onAccept={() => handleAcceptTransaction(selectedTx.id)}
-          onReject={() => setSelectedTx(null)}
+          onReject={() => handleRejectTransaction(selectedTx.id)}
         />
       )}
     </div>

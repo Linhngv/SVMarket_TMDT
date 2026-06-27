@@ -242,7 +242,7 @@ export default function PurchaseHistory() {
       {/* Modal chi tiết */}
       {(loadingDetail || selectedDetail) && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box-history" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             {loading ? (
               <div className="modal-loading">
                 <div className="spinner"></div>
@@ -349,10 +349,11 @@ export default function PurchaseHistory() {
 
                         <button
                           className="btn-pay-online"
-                          disabled={loading}
+                          disabled={loading || selectedDetail.status !== "ACCEPTED"}
                           onClick={handlePayment}
                         >
-                          {loading ? "Đang xử lý..." : "Thanh toán"}
+                          {loading ? "Đang xử lý..." 
+                            : (selectedDetail.status !== "ACCEPTED" ? "Chờ người bán xác nhận" : "Thanh toán")}
                         </button>
                       </>
                     )}

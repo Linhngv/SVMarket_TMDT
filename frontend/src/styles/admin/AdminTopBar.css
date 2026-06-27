@@ -28,6 +28,10 @@
     transform: translateX(-50%);
 }
 
+.notification-item {
+    width: 350px;
+}
+
 .notification-item span {
     cursor: pointer;
     font-size: 12px;

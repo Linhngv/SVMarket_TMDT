@@ -187,6 +187,33 @@ public class OrderService {
         notificationRepository.save(notification);
     }
 
+    public void rejectOrder(Integer orderId, String sellerEmail) {
+        User seller = userRepository.findByEmail(sellerEmail)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
+
+        if (!order.getSeller().getId().equals(seller.getId())) {
+            throw new RuntimeException("Bạn không có quyền thao tác trên đơn hàng này");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
+
+        // Kích hoạt lại bài đăng để người khác có thể mua
+        Listing listing = order.getOrderDetails().get(0).getListing();
+        listing.setStatus(ListingStatus.ACTIVE);
+        listingRepository.save(listing);
+
+        // Tạo thông báo gửi đến người mua
+        String productTitle = listing.getTitle();
+        String content = "Người bán đã từ chối yêu cầu mua " + productTitle + " của bạn.";
+        Notification notification = Notification.builder().user(order.getBuyer()).content(content)
+                .type(NotificationType.ORDER).referenceId(order.getId()).isRead(false).build();
+        notificationRepository.save(notification);
+    }
+
     // Lấy thông tin chi tiết của đơn hàng
     public OrderDetailResponse getOrderDetail(Integer orderId) {
 

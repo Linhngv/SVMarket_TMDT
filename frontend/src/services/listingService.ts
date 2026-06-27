@@ -20,6 +20,7 @@ export type ListingSummary = {
   priorityLevel?: number;
   isFeatured?: boolean;
   pushing?: boolean;
+  conditionLevel: string;
 };
 
 export type ListingDetail = {
@@ -275,4 +276,3 @@ export const increaseListingView = async (listingId: number) => {
       : {},
   });
 };
-

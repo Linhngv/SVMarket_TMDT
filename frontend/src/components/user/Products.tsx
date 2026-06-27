@@ -1,22 +1,13 @@
 import { FaImage, FaHeart, FaRegHeart, FaAngleDown } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  fetchActiveListings,
-  ListingSummary,
-  fetchListingsByUniversity,
-  fetchListingsByCategory,
-} from "../../services/listingService";
+import { fetchActiveListings, ListingSummary } from "../../services/listingService";
 import {
   fetchMyFavoriteListingIds,
   toggleFavoriteListing,
 } from "../../services/favoriteService";
 import { useAuth } from "../../context/AuthContext";
 import type { CardItem } from "../../types/CardItem";
-
-type Props = {
-  title: string;
-};
 
 function formatRelativeTime(value?: string) {
   if (!value) {
@@ -131,6 +122,7 @@ export default function Products({
 
     priorityLevel: listing.priorityLevel,
     pushing: listing.pushing,
+    conditionLevel: listing.conditionLevel,
   }));
 
   const handleFavoriteClick = async (
@@ -268,7 +260,7 @@ export default function Products({
                 </small>
 
                 <div className="product-action">
-                  <button className="product-status-btn">Đã qua sử dụng</button>
+                  <button className="product-status-btn">{item.conditionLevel}</button>
                 </div>
               </div>
             </div>

@@ -126,6 +126,11 @@
   color: #92400e;
 }
 
+.status-pill.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 .action-btns {
   display: flex;
   gap: 6px;

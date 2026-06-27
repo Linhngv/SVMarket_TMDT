@@ -261,9 +261,9 @@ public class ListingService {
 
         // sort giá nếu user chọn
         if ("price_asc".equals(sortBy)) {
-            listings.sort(Comparator.comparing(Listing::getPrice));
+            listings.sort(Comparator.comparing(listing -> listing.getPrice()));
         } else if ("price_desc".equals(sortBy)) {
-            listings.sort(Comparator.comparing(Listing::getPrice).reversed());
+            listings.sort(Comparator.comparing((Listing listing) -> listing.getPrice()).reversed());
         }
 
         return listings.stream()
@@ -316,7 +316,7 @@ public class ListingService {
 
         return listingFavoriteRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
                 .stream()
-                .map(ListingFavorite::getListing)
+                .map(favorite -> favorite.getListing())
                 .filter(listing -> listing != null && listing.getStatus() == ListingStatus.ACTIVE)
                 .map(this::toSummaryResponse)
                 .toList();
@@ -328,9 +328,9 @@ public class ListingService {
 
         return listingFavoriteRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
                 .stream()
-                .map(ListingFavorite::getListing)
+                .map(favorite -> favorite.getListing())
                 .filter(listing -> listing != null && listing.getStatus() == ListingStatus.ACTIVE)
-                .map(Listing::getId)
+                .map(listing -> listing.getId())
                 .distinct()
                 .toList();
     }
@@ -342,7 +342,7 @@ public class ListingService {
 
         List<String> imageUrls = listing.getImages() == null
                 ? List.of()
-                : listing.getImages().stream().map(Image::getUrl).toList();
+                : listing.getImages().stream().map(image -> image.getUrl()).toList();
 
         return toPublicDetailResponse(listing, imageUrls);
     }
@@ -354,7 +354,7 @@ public class ListingService {
 
         List<String> imageUrls = listing.getImages() == null
                 ? List.of()
-                : listing.getImages().stream().map(Image::getUrl).toList();
+                : listing.getImages().stream().map(image -> image.getUrl()).toList();
 
         return toDetailResponse(listing, imageUrls);
     }
@@ -376,9 +376,23 @@ public class ListingService {
         listing.setDeliveryAddress(request.getDeliveryAddress());
         listing.setConditionLevel(request.getConditionLevel());
         listing.setDescription(request.getDescription());
-        listing.setDescription(request.getDescription());
 
-        // xử lý nâng cấp đẩy tin
+        ListingStatus requestedStatus = ListingStatus.valueOf(request.getStatus());
+
+        // Nếu người dùng chỉ thay đổi trạng thái sang Tạm ẩn hoặc Đã bán thì không cần duyệt lại
+        boolean statusOnlyChange = request.getTitle().trim().equals(listing.getTitle()) &&
+                request.getCategoryId().equals(listing.getCategory().getId()) &&
+                request.getPrice().compareTo(listing.getPrice()) == 0 &&
+                request.getDescription().equals(listing.getDescription());
+
+        if (statusOnlyChange && (requestedStatus == ListingStatus.INACTIVE || requestedStatus == ListingStatus.SOLD)) {
+            listing.setStatus(requestedStatus);
+        } else {
+            // Bất kỳ thay đổi nội dung nào khác đều cần duyệt lại
+            listing.setStatus(ListingStatus.PENDING);
+        }
+
+        // Xử lý nâng cấp đẩy tin
         upgradeListingBoost(listing, seller, request);
 
         // Xóa lý do từ chối cũ khi người bán đã cập nhật lại bài đăng
@@ -395,7 +409,7 @@ public class ListingService {
         } else {
             imageUrls = listing.getImages() == null
                     ? List.of()
-                    : listing.getImages().stream().map(Image::getUrl).toList();
+                    : listing.getImages().stream().map(image -> image.getUrl()).toList();
         }
 
         Listing updatedListing = listingRepository.save(listing);
@@ -512,6 +526,7 @@ public class ListingService {
         response.setSellerUniversity(listing.getSeller() != null ? listing.getSeller().getUniversity() : null);
         response.setSellerName(listing.getSeller() != null ? listing.getSeller().getFullName() : null);
         response.setIsVerified(isVerified);
+        response.setConditionLevel(listing.getConditionLevel());
         response.setCreatedAt(listing.getCreatedAt());
 
         if (listing.getSellerPackage() != null) {

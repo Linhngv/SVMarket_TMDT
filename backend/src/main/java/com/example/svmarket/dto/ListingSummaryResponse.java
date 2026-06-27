@@ -27,4 +27,5 @@ public class ListingSummaryResponse {
     private boolean pushing;
     private Boolean isVerified;
     private String packageName;
+    private String conditionLevel;
 }

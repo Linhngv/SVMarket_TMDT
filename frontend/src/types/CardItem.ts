@@ -1,12 +1,11 @@
 export type CardItem = {
-  key: string | number;
+  key: number;
   id?: number;
   title: string;
   price: string;
   university: string;
   image: string;
-
   priorityLevel?: number;
-  isFeatured?: boolean;
   pushing?: boolean;
+  conditionLevel?: string;
 };
