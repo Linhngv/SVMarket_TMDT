@@ -115,17 +115,7 @@ export default function AdminDashboard() {
     const postStep = Math.ceil(maxPostVal / 4); // Chia 4 mốc
 
     return (
-        <div className="admin-container d-flex">
-            {/* SIDEBAR */}
-            <AdminSidebar />
-
-            {/* MAIN */}
-            <div className="admin-main flex-grow-1" style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
-                {/* TOPBAR */}
-                <AdminTopBar breadcrumb="Trang chủ > Dashboard" />
-
-                {/* CONTENT */}
-                <div className="admin-content container-fluid mt-4 px-4 pb-4">
+        <>
                     
                     {/* DÒNG 1: Tiêu đề & Lọc thời gian */}
                     <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
@@ -488,8 +478,6 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                </div>
-            </div>
-        </div>
+        </>
     );
 }

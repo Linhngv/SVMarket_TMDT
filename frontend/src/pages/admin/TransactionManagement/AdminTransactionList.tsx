@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import AdminSidebar from "../../../components/admin/AdminSidebar";
-import AdminTopBar from "../../../components/admin/AdminTopBar";
 import "../../../styles/admin/AdminPostList.css";
 
 interface Transaction {
@@ -56,12 +54,8 @@ export default function AdminTransactionList() {
     };
 
     return (
-        <div className="admin-container d-flex">
-            <AdminSidebar />
-            <div className="admin-main flex-grow-1">
-                <AdminTopBar breadcrumb="Trang chủ > Quản lý giao dịch > Danh sách giao dịch" />
-                <div className="admin-content container-fluid mt-4">
-                    <div className="card p-4 shadow-sm border-0" style={{ borderRadius: '12px' }}>
+        <>
+            <div className="card p-4 shadow-sm border-0" style={{ borderRadius: '12px' }}>
                         <h3 className="page-title mb-4 fw-bold" style={{ color: "#1A1A2E" }}>Danh sách giao dịch</h3>
                         <div className="table-responsive">
                             <table className="table table-hover align-middle">
@@ -99,9 +93,7 @@ export default function AdminTransactionList() {
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                </div>
             </div>
-        </div>
+        </>
     );
 }

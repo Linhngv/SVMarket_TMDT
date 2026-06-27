@@ -236,10 +236,10 @@ export default function BuyerReviews() {
                         </div>
 
                         {/* Nội dung comment & Ngày đánh giá */}
-                        <div style={{ color: "#3D3D5C", fontSize: "15px", marginBottom: "8px", lineHeight: "0.5" }}>
+                        <div style={{ color: "#3D3D5C", fontSize: "15px", marginBottom: "8px", lineHeight: "1.5" }}>
                             {selectedReview.comment}
                         </div>
-                        <div style={{ color: "#6B7280", fontSize: "13px", marginTop: "-10px", borderBottom: "1px solid #E5E7EB", paddingBottom: "10px" }}>
+                        <div style={{ color: "#6B7280", fontSize: "13px", borderBottom: "1px solid #E5E7EB", paddingBottom: "16px", marginBottom: "16px" }}>
                             {new Date(selectedReview.createdAt).toLocaleDateString('vi-VN')}
                         </div>
 
@@ -357,18 +357,18 @@ export default function BuyerReviews() {
                         </div>
 
                         {/* Nội dung comment & Ngày đánh giá */}
-                        <div style={{ color: "#3D3D5C", fontSize: "15px", lineHeight: "0.5" }}>
+                        <div style={{ color: "#3D3D5C", fontSize: "15px", lineHeight: "1.5", marginBottom: "8px" }}>
                             {selectedReview.comment}
                         </div>
-                        <div style={{ color: "#6B7280", fontSize: "13px", marginBottom: "20px" }}>
+                        <div style={{ color: "#6B7280", fontSize: "13px", marginBottom: "16px", borderBottom: "1px solid #E5E7EB", paddingBottom: "16px" }}>
                             {new Date(selectedReview.createdAt).toLocaleDateString('vi-VN')}
                         </div>
 
                         {/* Phần hiển thị phản hồi của người bán */}
                         <div style={{
-                            padding: "10px",
+                            padding: "12px 16px",
                             backgroundColor: "transparent",
-                            borderLeft: "7px solid #2D9E63", marginTop: "-20px"
+                            borderLeft: "7px solid #2D9E63", marginTop: "-16px"
                         }}>
                             <div style={{ color: "#1B7A4A", marginBottom: "8px", fontSize: "15px" }}>
                                 Phản hồi của bạn:

@@ -21,6 +21,7 @@ export type ListingSummary = {
   isFeatured?: boolean;
   pushing?: boolean;
   conditionLevel: string;
+  sellerId?: number;
 };
 
 export type ListingDetail = {

@@ -28,4 +28,5 @@ public class ListingSummaryResponse {
     private Boolean isVerified;
     private String packageName;
     private String conditionLevel;
+    private Integer sellerId;
 }

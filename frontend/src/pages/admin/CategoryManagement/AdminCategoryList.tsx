@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import AdminSidebar from "../../../components/admin/AdminSidebar";
-import AdminTopBar from "../../../components/admin/AdminTopBar";
 import { Search, Plus, Edit, Trash2, Image as ImageIcon, Download, Upload, AlertTriangle } from "lucide-react";
 import "../../../styles/admin/AdminPackage.css";
 
@@ -217,12 +215,8 @@ export default function AdminCategory() {
     };
 
     return (
-        <div className="admin-container d-flex">
-            <AdminSidebar />
-            <div className="admin-main flex-grow-1">
-                <AdminTopBar breadcrumb="Trang chủ > Quản lý danh mục" />
-                <div className="admin-content container-fluid mt-4">
-                    <div className="card p-4 shadow-sm">
+        <>
+            <div className="card p-4 shadow-sm">
                         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                             <h3 className="page-title m-0">Danh sách danh mục</h3>
                             <div className="d-flex gap-2">
@@ -330,11 +324,9 @@ export default function AdminCategory() {
                                 </div>
                             </div>
                         )}
-                    </div>
-                </div>
-
-                {/* MODAL */}
-                {showModal && (
+            </div>
+            {/* MODAL */}
+            {showModal && (
                     <div className="modal d-block modal-overlay" tabIndex={-1}>
                         <div className="modal-dialog modal-dialog-centered">
                             <div className="modal-content custom-modal-content">
@@ -363,9 +355,8 @@ export default function AdminCategory() {
                         </div>
                     </div>
                 )}
-
-                {/* DELETE CONFIRMATION MODAL */}
-                {showDeleteModal && (
+            {/* DELETE CONFIRMATION MODAL */}
+            {showDeleteModal && (
                     <div className="modal d-block modal-overlay" tabIndex={-1}>
                         <div className="modal-dialog modal-dialog-centered modal-sm">
                             <div className="modal-content custom-modal-content">
@@ -381,7 +372,6 @@ export default function AdminCategory() {
                         </div>
                     </div>
                 )}
-            </div>
-        </div>
+        </>
     );
 }

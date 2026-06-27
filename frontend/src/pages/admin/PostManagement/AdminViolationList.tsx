@@ -36,19 +36,8 @@ export default function AdminViolationList() {
     }, []);
 
     return (
-        <div className="admin-container d-flex">
+        <>
 
-            {/* SIDEBAR */}
-            <AdminSidebar />
-
-            {/* MAIN */}
-            <div className="admin-main flex-grow-1">
-
-                {/* TOPBAR */}
-                <AdminTopBar breadcrumb="Trang chủ > Bài đăng > Danh sách vi phạm" />
-
-                {/* CONTENT */}
-                <div className="admin-content container-fluid mt-4">
 
                     <div className="card p-4 shadow-sm">
                         <h3 className="page-title mb-4">Danh sách vi phạm</h3>
@@ -91,8 +80,6 @@ export default function AdminViolationList() {
                         </div>
 
                     </div>
-                </div>
-            </div>
-        </div>
+        </>
     );
 }

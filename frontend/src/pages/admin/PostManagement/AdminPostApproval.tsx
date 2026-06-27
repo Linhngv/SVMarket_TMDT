@@ -167,17 +167,8 @@ export default function AdminPostApproval() {
   };
 
   return (
-    <div className="admin-container d-flex">
-      {/* SIDEBAR */}
-      <AdminSidebar />
+    <>
 
-      {/* MAIN */}
-      <div className="admin-main flex-grow-1">
-        {/* TOPBAR */}
-        <AdminTopBar breadcrumb="Trang chủ > Bài đăng > Kiểm duyệt bài đăng" />
-
-        {/* CONTENT */}
-        <div className="admin-content approval-content container-fluid mt-4">
           {loading ? (
             <div className="card p-4 shadow-sm text-center">
               Đang tải dữ liệu...
@@ -293,8 +284,6 @@ export default function AdminPostApproval() {
               ))}
             </div>
           )}
-        </div>
-      </div>
-    </div>
+    </>
   );
 }

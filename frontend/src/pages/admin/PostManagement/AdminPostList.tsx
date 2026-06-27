@@ -179,19 +179,8 @@ export default function AdminPostList() {
     const totalPages = Math.ceil(filteredPosts.length / itemsPerPage);
 
     return (
-        <div className="admin-container d-flex">
+        <>
 
-            {/* SIDEBAR */}
-            <AdminSidebar />
-
-            {/* MAIN */}
-            <div className="admin-main flex-grow-1">
-
-                {/* TOPBAR */}
-                <AdminTopBar breadcrumb="Trang chủ > Bài đăng > Danh sách bài đăng" />
-
-                {/* CONTENT */}
-                <div className="admin-content container-fluid mt-4">
 
                     <div className="card p-4 shadow-sm">
                         <h3 className="page-title mb-4">Danh sách bài đăng</h3>
@@ -284,8 +273,7 @@ export default function AdminPostList() {
                         )}
 
                     </div>
-                </div>
-            </div>
+
 
             {/* MODAL CHI TIẾT BÀI ĐĂNG */}
             {selectedPostId && (
@@ -372,6 +360,6 @@ export default function AdminPostList() {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 }

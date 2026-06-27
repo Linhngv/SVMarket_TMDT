@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/user/Header";
 import Footer from "../../components/user/Footer";
 import {
   fetchMyFavoriteListings,
   toggleFavoriteListing,
 } from "../../services/favoriteService";
+import { startConversation } from "../../services/chatService";
 import { ListingSummary } from "../../services/listingService";
 import "../../styles/user/ListingManagement.css";
+import { useAuth } from "../../context/AuthContext";
 
 const SavedListings: React.FC = () => {
+  const navigate = useNavigate();
+  const { isLoggedIn, user } = useAuth();
   const [listings, setListings] = useState<ListingSummary[]>([]);
   const [removingId, setRemovingId] = useState<number | null>(null);
+  const [startingChatId, setStartingChatId] = useState<number | null>(null);
 
   const loadListings = () => {
     fetchMyFavoriteListings()
@@ -31,6 +37,31 @@ const SavedListings: React.FC = () => {
       alert("Có lỗi khi bỏ lưu bài đăng!");
     } finally {
       setRemovingId(null);
+    }
+  };
+
+  const handleStartChat = async (listingId: number, sellerId: number | undefined) => {
+    if (!isLoggedIn) {
+      alert("Vui lòng đăng nhập để nhắn tin!");
+      navigate("/login");
+      return;
+    }
+
+    if (user && sellerId && String(user.id) === String(sellerId)) {
+      alert("Bạn không thể nhắn tin cho chính mình.");
+      return;
+    }
+
+    setStartingChatId(listingId);
+    try {
+      const conversation = await startConversation(listingId);
+      navigate(`/messages?conversationId=${conversation.conversationId}`);
+    } catch (error: any) {
+      const message =
+        error?.response?.data || "Có lỗi xảy ra khi tạo hội thoại";
+      alert(String(message));
+    } finally {
+      setStartingChatId(null);
     }
   };
 
@@ -79,7 +110,20 @@ const SavedListings: React.FC = () => {
                       </div>
                     </div>
                     <div className="saved-listing-actions">
-                      <button className="chat-btn">Chat</button>
+                      <button
+                        className="chat-btn"
+                        style={{
+                          whiteSpace: "nowrap",
+                          width: "100px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                        onClick={() => handleStartChat(listing.id, listing.sellerId)}
+                        disabled={startingChatId === listing.id}
+                      >
+                        {startingChatId === listing.id ? "Đang mở..." : "Nhắn tin"}
+                      </button>
                       <span
                         className="heart-icon heart-icon-active"
                         style={{
