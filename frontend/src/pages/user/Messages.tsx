@@ -1061,6 +1061,26 @@ export default function Messages() {
                                     </button>
                                   </div>
                                 )}
+                              {message.isMine &&
+                                (message.content.startsWith("[IMAGE]") ||
+                                  message.content.startsWith("[Vị trí]")) && (
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      gap: "4px",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <button
+                                      className="chat-reply-btn"
+                                      onClick={() => setReplyMessage(message)}
+                                      style={{ width: "28px", height: "28px" }}
+                                      title="Trả lời"
+                                    >
+                                      <Reply size={14} />
+                                    </button>
+                                  </div>
+                                )}
                             </div>
                           )}
                         </div>
@@ -1081,7 +1101,7 @@ export default function Messages() {
                         </div>
 
                         <div className="chat-reply-content">
-                          {replyMessage.content}
+                          {renderMessageContent(replyMessage.content)}
                         </div>
                       </div>
                     </div>
