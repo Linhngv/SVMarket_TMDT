@@ -82,6 +82,17 @@ public class OrderController {
         return "Đã chấp nhận đơn hàng";
     }
 
+    @PutMapping("/{id}/reject")
+    public String rejectOrder(@PathVariable Integer id, @RequestHeader(value = "Authorization", required = false) String token) {
+        if (token == null || !token.startsWith("Bearer ") || token.equals("Bearer null")) {
+            throw new RuntimeException("Vui lòng đăng nhập để thao tác");
+        }
+
+        String email = jwtUtil.extractEmail(token.replace("Bearer ", ""));
+        orderService.rejectOrder(id, email);
+        return "Đã từ chối đơn hàng";
+    }
+
     // Chi tiết đơn hàng
     @GetMapping("/{orderId}/detail")
     public ResponseEntity<?> getOrderDetail(@PathVariable Integer orderId) {
