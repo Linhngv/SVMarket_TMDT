@@ -682,7 +682,13 @@ function ProfilePopup({
           <PopupSection
             title="Dịch vụ trả phí"
             items={[
-              { label: "Lịch sử giao dịch", icon: <History size={16} /> },
+              { label: "Lịch sử giao dịch", 
+                icon: <History size={16} />,
+                onClick: () => {
+                  navigate("/purchase-history");
+                  onClose();
+                }, 
+              },
               {
                 label: "Gói đăng tin",
                 icon: <Package size={16} />,

@@ -867,6 +867,10 @@ export default function Messages() {
                                     fontSize: "12px",
                                     padding: "2px 8px",
                                     cursor: "pointer",
+                                    backgroundColor: "#c0392b",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "4px",
                                   }}
                                 >
                                   Hủy

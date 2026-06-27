@@ -35,7 +35,7 @@
   border: none;
   outline: none;
   box-shadow: none;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   background: transparent;
 }
@@ -82,7 +82,7 @@
 
 .history-table td {
   padding: 12px 16px;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   vertical-align: middle;
 }
@@ -163,7 +163,7 @@
 .page-btn {
   padding: 7px 20px;
   border-radius: 20px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -185,7 +185,7 @@
 }
 
 .page-info {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-primary);
 }
 
@@ -357,7 +357,7 @@
   z-index: 999;
 }
 
-.modal-box {
+.modal-box-history {
   background: var(--white);
   border-radius: 12px;
   padding: 24px;
@@ -402,8 +402,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border-top: 1px solid var(--border-light);
-  padding-top: 14px;
+  font-size: 15px;
 }
 
 .payment-section {
@@ -414,7 +413,7 @@
 }
 
 .modal-section-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-secondary);
   margin: 0 0 4px 0;
@@ -430,13 +429,13 @@
 }
 
 .modal-label {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   flex-shrink: 0;
 }
 
 .modal-value {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-primary);
   text-align: right;
 }
@@ -448,7 +447,7 @@
 }
 
 .payment-method-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-secondary);
 }
@@ -467,7 +466,7 @@
   border: 1px solid var(--border-light);
   border-radius: 8px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-primary);
   transition: all 0.15s;
 }
@@ -542,7 +541,7 @@
 }
 
 .success-modal p {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--dark);
 }
 
