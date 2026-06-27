@@ -65,7 +65,7 @@ export default function PurchaseHistory() {
     } catch (err) {
       console.error("Lỗi lấy chi tiết:", err);
     } finally {
-      setLoadingDetail(false); 
+      setLoadingDetail(false);
     }
   };
 
@@ -191,15 +191,14 @@ export default function PurchaseHistory() {
                 <td data-label="Ngày">{row.date}</td>
                 <td data-label="Trạng thái">
                   <span
-                    className={`status-pill ${
-                      row.status === "Hoàn thành"
+                    className={`status-pill ${row.status === "Hoàn thành"
                         ? "done"
                         : row.status === "Chờ xác nhận"
                           ? "pending"
                           : row.status === "Đã thanh toán"
                             ? "paid"
                             : "shipping"
-                    }`}
+                      }`}
                   >
                     {row.status}
                   </span>
@@ -244,35 +243,33 @@ export default function PurchaseHistory() {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             {loading ? (
-              <div className="modal-loading">
-                <div className="spinner"></div>
-              </div>
+              <div className="modal-loading">Đang tải...</div>
             ) : (
               selectedDetail && (
                 <>
                   <div className="modal-header mb-0">
-                    <h3>Chi tiết đơn hàng #{selectedDetail.orderId}</h3>
+                    <h3 style={{ fontSize: "22px", fontWeight: "700", color: "#1A1A2E" }}>Chi tiết đơn hàng #{selectedDetail.orderId}</h3>
                     <button className="modal-close" onClick={closeModal}>
                       <X size={18} />
                     </button>
                   </div>
 
                   {/* Thông tin đơn hàng */}
-                  <div className="modal-section">
+                  <div className="modal-section" style={{ paddingTop: "16px", paddingBottom: "16px", marginBottom: "16px", borderBottom: "1px solid #E5E7EB" }}>
                     <h4 className="modal-section-title">Thông tin đơn hàng</h4>
-                    <div className="modal-row">
+                    <div className="modal-row" style={{ marginBottom: "12px" }}>
                       <span className="modal-label">Người mua</span>
                       <span className="modal-value">
                         {selectedDetail.buyerName}
                       </span>
                     </div>
-                    <div className="modal-row">
+                    <div className="modal-row" style={{ marginBottom: "12px" }}>
                       <span className="modal-label">Người bán</span>
                       <span className="modal-value">
                         {selectedDetail.sellerName}
                       </span>
                     </div>
-                    <div className="modal-row">
+                    <div className="modal-row" style={{ marginBottom: "0" }}>
                       <span className="modal-label">Ngày đặt</span>
                       <span className="modal-value">
                         {formatDate(selectedDetail.createdAt)}
@@ -281,10 +278,10 @@ export default function PurchaseHistory() {
                   </div>
 
                   {/* Sản phẩm */}
-                  <div className="modal-section">
+                  <div className="modal-section" style={{ paddingBottom: "16px", marginBottom: "16px", borderBottom: "1px solid #E5E7EB" }}>
                     <h4 className="modal-section-title">Sản phẩm</h4>
                     {selectedDetail.items.map((item, idx) => (
-                      <div key={idx} className="order-item">
+                      <div key={idx} className="order-item" style={{ marginBottom: idx === selectedDetail.items.length - 1 ? 0 : "16px" }}>
                         <div className="order-item-title">
                           {item.listingTitle}
                         </div>
@@ -295,13 +292,13 @@ export default function PurchaseHistory() {
                           </span>
                         </div>
                         {item.note && (
-                          <div className="order-item-note">
+                          <div className="order-item-note" style={{ marginTop: "4px", fontSize: "13px", color: "#c0392b", fontWeight: "500" }}>
                             Ghi chú: {item.note}
                           </div>
                         )}
                       </div>
                     ))}
-                    <div className="modal-row total-row">
+                    <div className="modal-row total-row" style={{ marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #E5E7EB" }}>
                       <span className="modal-label">Tổng tiền</span>
                       <span className="price-highlight">
                         {new Intl.NumberFormat("vi-VN").format(
@@ -313,8 +310,8 @@ export default function PurchaseHistory() {
                   </div>
 
                   {/* Thanh toán */}
-                  <div className="modal-section payment-section">
-                    <p className="modal-section-title">Thanh toán</p>
+                  <div className="modal-section payment-section" style={{ paddingTop: "16px", paddingBottom: "0", marginBottom: "0" }}>
+                    <p className="modal-section-title" style={{ marginTop: "-15px" }}>Thanh toán</p>
 
                     {selectedDetail.paymentStatus === "SUCCESS" ? (
                       <div className="modal-row">
@@ -332,9 +329,8 @@ export default function PurchaseHistory() {
 
                         <div className="payment-methods">
                           <label
-                            className={`payment-option ${
-                              paymentMethod === "VNPAY" ? "selected" : ""
-                            }`}
+                            className={`payment-option ${paymentMethod === "VNPAY" ? "selected" : ""
+                              }`}
                           >
                             <input
                               type="radio"
@@ -352,7 +348,7 @@ export default function PurchaseHistory() {
                           disabled={loading || selectedDetail.status !== "ACCEPTED"}
                           onClick={handlePayment}
                         >
-                          {loading ? "Đang xử lý..." 
+                          {loading ? "Đang xử lý..."
                             : (selectedDetail.status !== "ACCEPTED" ? "Chờ người bán xác nhận" : "Thanh toán")}
                         </button>
                       </>
