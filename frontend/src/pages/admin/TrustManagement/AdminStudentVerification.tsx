@@ -1,7 +1,4 @@
 import React, { useState, useEffect } from "react";
-import AdminSidebar from "../../../components/admin/AdminSidebar";
-import AdminTopBar from "../../../components/admin/AdminTopBar";
-import Footer from "../../../components/user/Footer";
 import { X } from "lucide-react";
 import "../../../styles/admin/AdminPostList.css";
 
@@ -136,64 +133,56 @@ export default function AdminStudentVerification() {
 
     return (
         <>
-            <div className="admin-container d-flex">
-                <AdminSidebar />
-                <div className="admin-main flex-grow-1">
-                    <AdminTopBar breadcrumb="Trang chủ > Quản lý tin cậy > Duyệt định danh sinh viên" />
-                    <div className="admin-content container-fluid mt-4">
-                        <div className="card p-4 shadow-sm">
-                            <h3 className="page-title mb-4">Duyệt định danh sinh viên</h3>
-                            <div className="table-responsive">
-                                <table className="table align-middle">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Họ và tên</th>
-                                            <th>Email</th>
-                                            <th>Thẻ sinh viên</th>
-                                            <th className="text-center">Hành động</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {loading ? (
-                                            <tr><td colSpan={5} className="text-center py-4">Đang tải dữ liệu...</td></tr>
-                                        ) : users.length === 0 ? (
-                                            <tr><td colSpan={5} className="text-center py-4 text-muted">Không có yêu cầu xác thực nào đang chờ</td></tr>
-                                        ) : (
-                                            users.map((user) => (
-                                                <tr key={user.id}>
-                                                    <td className="fw-medium">#{user.id}</td>
-                                                    <td>{user.fullName}</td>
-                                                    <td>{user.email}</td>
-                                                    <td>
-                                                        <img src={getImageUrl(user.studentCard)} alt="Thẻ sinh viên" style={{ width: "100px", height: "60px", objectFit: "cover", cursor: "pointer", borderRadius: "6px", border: "1px solid #ddd" }} onClick={() => setSelectedImage(getImageUrl(user.studentCard))} title="Nhấn để phóng to" />
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <button className="btn btn-sm btn-success me-2 px-3 rounded-pill" onClick={() => confirmApprove(user.id)}>Xác thực</button>
-                                                        <button className="btn btn-sm btn-outline-danger px-3 rounded-pill" onClick={() => confirmReject(user.id)}>Từ chối</button>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+            <div className="card p-4 shadow-sm">
+                <h3 className="page-title mb-4">Duyệt định danh sinh viên</h3>
+                <div className="table-responsive">
+                    <table className="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Họ và tên</th>
+                                <th>Email</th>
+                                <th>Thẻ sinh viên</th>
+                                <th className="text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr><td colSpan={5} className="text-center py-4">Đang tải dữ liệu...</td></tr>
+                            ) : users.length === 0 ? (
+                                <tr><td colSpan={5} className="text-center py-4 text-muted">Không có yêu cầu xác thực nào đang chờ</td></tr>
+                            ) : (
+                                users.map((user) => (
+                                    <tr key={user.id}>
+                                        <td className="fw-medium">#{user.id}</td>
+                                        <td>{user.fullName}</td>
+                                        <td>{user.email}</td>
+                                        <td>
+                                            <img src={getImageUrl(user.studentCard)} alt="Thẻ sinh viên" style={{ width: "100px", height: "60px", objectFit: "cover", cursor: "pointer", borderRadius: "6px", border: "1px solid #ddd" }} onClick={() => setSelectedImage(getImageUrl(user.studentCard))} title="Nhấn để phóng to" />
+                                        </td>
+                                        <td className="text-center">
+                                            <button className="btn btn-sm btn-success me-2 px-3 rounded-pill" onClick={() => confirmApprove(user.id)}>Xác thực</button>
+                                            <button className="btn btn-sm btn-outline-danger px-3 rounded-pill" onClick={() => confirmReject(user.id)}>Từ chối</button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Modal hiển thị ảnh phóng to */}
+            {selectedImage && (
+                <div className="modal-overlay" onClick={() => setSelectedImage(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.8)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    <div style={{ position: "relative", maxWidth: "90%", maxHeight: "90%" }} onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => setSelectedImage(null)} style={{ position: "absolute", top: "-15px", right: "-15px", background: "white", border: "none", borderRadius: "50%", width: "35px", height: "35px", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer", boxShadow: "0 4px 6px rgba(0,0,0,0.3)" }}>
+                            <X size={20} />
+                        </button>
+                        <img src={selectedImage} alt="Phóng to thẻ sinh viên" style={{ maxWidth: "100%", maxHeight: "85vh", borderRadius: "8px", objectFit: "contain", backgroundColor: "white" }} />
                     </div>
                 </div>
-
-                {/* Modal hiển thị ảnh phóng to */}
-                {selectedImage && (
-                    <div className="modal-overlay" onClick={() => setSelectedImage(null)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.8)", zIndex: 9999, display: "flex", justifyContent: "center", alignItems: "center" }}>
-                        <div style={{ position: "relative", maxWidth: "90%", maxHeight: "90%" }} onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => setSelectedImage(null)} style={{ position: "absolute", top: "-15px", right: "-15px", background: "white", border: "none", borderRadius: "50%", width: "35px", height: "35px", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer", boxShadow: "0 4px 6px rgba(0,0,0,0.3)" }}>
-                                <X size={20} />
-                            </button>
-                            <img src={selectedImage} alt="Phóng to thẻ sinh viên" style={{ maxWidth: "100%", maxHeight: "85vh", borderRadius: "8px", objectFit: "contain", backgroundColor: "white" }} />
-                        </div>
-                    </div>
-                )}
-            </div>
+            )}
 
             <ConfirmationModal
                 show={showConfirmModal}
@@ -202,7 +191,6 @@ export default function AdminStudentVerification() {
                 title={modalContent.title}
                 message={modalContent.message}
             />
-            <Footer />
         </>
     );
 }

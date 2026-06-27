@@ -31,16 +31,8 @@ export default function AdminLogs() {
     }, []);
 
     return (
-        <div className="admin-container d-flex">
-            {/* SIDEBAR */}
-            <AdminSidebar />
+        <>
 
-            {/* MAIN CONTENT */}
-            <div className="admin-main flex-grow-1" style={{ backgroundColor: "#F9FAFB", minHeight: "100vh" }}>
-                {/* TOPBAR */}
-                <AdminTopBar breadcrumb="Trang chủ > Nhật ký hoạt động" />
-
-                <div className="admin-content container-fluid mt-4 px-4 pb-4">
                     <div className="card p-4 shadow-sm border-0 rounded-4">
                         <div className="d-flex justify-content-between align-items-center mb-4">
                             <h3 className="page-title m-0 fw-bold" style={{ color: "#111827" }}>Nhật ký hoạt động</h3>
@@ -75,8 +67,6 @@ export default function AdminLogs() {
                             </table>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+        </>
     );
 }

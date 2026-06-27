@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Edit, Trash2 } from "lucide-react";
-import AdminSidebar from "../../../components/admin/AdminSidebar";
-import AdminTopBar from "../../../components/admin/AdminTopBar";
 import { toast } from "react-toastify";
 import {
   getBannedKeywords,
@@ -146,28 +144,15 @@ export default function AdminBannedKeywords() {
 
   if (loading) {
     return (
-      <div className="admin-container d-flex">
-        <AdminSidebar />
-        <div className="admin-main flex-grow-1">
-          <AdminTopBar breadcrumb="Trang chủ > Quản lý tin cậy > Danh sách từ khóa cấm" />
-          <div className="admin-content container-fluid mt-4">
-            <div className="card p-4 shadow-sm border-0">
-              <p>Đang tải...</p>
-            </div>
-          </div>
-        </div>
+      <div className="card p-4 shadow-sm border-0">
+        <p>Đang tải...</p>
       </div>
     );
   }
 
   return (
-    <div className="admin-container d-flex">
-      <AdminSidebar />
-
-      <div className="admin-main flex-grow-1">
-        <AdminTopBar breadcrumb="Trang chủ > Quản lý tin cậy > Danh sách từ khóa cấm" />
-
-        <div className="admin-content container-fluid mt-4">
+    <>
+      <div className="admin-content container-fluid mt-4">
           <div className="card p-4 shadow-sm border-0">
             {/* Header với tìm kiếm và nút thêm */}
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -315,8 +300,7 @@ export default function AdminBannedKeywords() {
             )}
           </div>
         </div>
-      </div>
-
+      
       {/* Modal Thêm/Chỉnh sửa từ khóa */}
       {showModal && (
         <div className="modal d-block modal-overlay" tabIndex={-1}>
@@ -420,6 +404,6 @@ export default function AdminBannedKeywords() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

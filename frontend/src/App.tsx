@@ -22,6 +22,7 @@ import CreateListing from "./pages/user/CreateListing";
 import MyListings from "./pages/user/MyListings";
 import EditListing from "./pages/user/EditListing";
 import AdminPostList from "./pages/admin/PostManagement/AdminPostList";
+import AdminLayout from "./components/admin/AdminLayout";
 import AdminPostApproval from "./pages/admin/PostManagement/AdminPostApproval";
 import AdminViolationList from "./pages/admin/PostManagement/AdminViolationList";
 import AdminPackage from "./pages/admin/AdminPackage";
@@ -46,7 +47,9 @@ function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (!pathname.startsWith('/admin')) {
+      window.scrollTo(0, 0);
+    }
   }, [pathname]);
 
   return null;
@@ -91,19 +94,21 @@ function App() {
 
         <Route path="/payment/:orderId" element={<Payment />} />
 
-        <Route path="/admin/posts" element={<AdminPostList />} />
-        <Route path="/admin/duyet-bai" element={<AdminPostApproval />} />
-        <Route path="/admin/vi-pham" element={<AdminViolationList />} />
-
-        <Route path="/admin/packages" element={<AdminPackage />} />
-        <Route path="/admin/categories" element={<AdminCategory />} />
-        <Route path="/admin/users" element={<AdminUserList />} />
-        <Route path="/admin/status/:id" element={<AdminUserStatus />} />
-        <Route path="/admin/giao-dich" element={<AdminTransactionList />} />
-        <Route path="/admin/xac-thuc" element={<AdminStudentVerification />} />
-        <Route path="/admin/tu-khoa" element={<AdminBannedKeywords />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/logs" element={<AdminLogs />} />
+        {/* Admin Routes */}
+        <Route path="/admin/dashboard" element={<AdminLayout breadcrumb="Trang chủ > Dashboard"><AdminDashboard /></AdminLayout>} />
+        <Route path="/admin/posts" element={<AdminLayout breadcrumb="Trang chủ > Bài đăng > Danh sách bài đăng"><AdminPostList /></AdminLayout>} />
+        <Route path="/admin/duyet-bai" element={<AdminLayout breadcrumb="Trang chủ > Bài đăng > Kiểm duyệt bài đăng"><AdminPostApproval /></AdminLayout>} />
+        <Route path="/admin/vi-pham" element={<AdminLayout breadcrumb="Trang chủ > Bài đăng > Danh sách vi phạm"><AdminViolationList /></AdminLayout>} />
+        <Route path="/admin/khu-vuc" element={<AdminLayout breadcrumb="Trang chủ > Địa chỉ > Danh sách khu vực"><div>Khu vực</div></AdminLayout>} />
+        <Route path="/admin/dia-chi" element={<AdminLayout breadcrumb="Trang chủ > Địa chỉ > Danh sách địa chỉ"><div>Địa chỉ</div></AdminLayout>} />
+        <Route path="/admin/categories" element={<AdminLayout breadcrumb="Trang chủ > Danh mục > Danh sách danh mục"><AdminCategory /></AdminLayout>} />
+        <Route path="/admin/users" element={<AdminLayout breadcrumb="Trang chủ > Người dùng > Danh sách người dùng"><AdminUserList /></AdminLayout>} />
+        <Route path="/admin/status/:id" element={<AdminLayout breadcrumb="Trang chủ > Người dùng > Cập nhật trạng thái"><AdminUserStatus /></AdminLayout>} />
+        <Route path="/admin/giao-dich" element={<AdminLayout breadcrumb="Trang chủ > Giao dịch > Danh sách giao dịch"><AdminTransactionList /></AdminLayout>} />
+        <Route path="/admin/xac-thuc" element={<AdminLayout breadcrumb="Trang chủ > Tin cậy > Duyệt định danh"><AdminStudentVerification /></AdminLayout>} />
+        <Route path="/admin/tu-khoa" element={<AdminLayout breadcrumb="Trang chủ > Tin cậy > Từ khóa cấm"><AdminBannedKeywords /></AdminLayout>} />
+        <Route path="/admin/packages" element={<AdminLayout breadcrumb="Trang chủ > Gói tin > Danh sách gói tin"><AdminPackage /></AdminLayout>} />
+        <Route path="/admin/logs" element={<AdminLayout breadcrumb="Trang chủ > Nhật ký hoạt động"><AdminLogs /></AdminLayout>} />
 
         <Route path="*" element={<div>Trang đang được phát triển.</div>} />
       </Routes>
