@@ -296,27 +296,21 @@ export default function MyListings() {
         </table>
       </div>
 
-      <div className="listing-pagination">
+      <div className="pagination">
         <button
-          type="button"
-          className="outline"
-          disabled={currentPage === 1}
-          onClick={() => setPage((previous) => Math.max(1, previous - 1))}
+          className="page-btn outline"
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
         >
           Trước
         </button>
-
-        <span>
-          Trang {currentPage}/{totalPages}
+        <span className="page-info">
+          Trang {page}/{totalPages}
         </span>
-
         <button
-          type="button"
-          className="filled"
-          disabled={currentPage === totalPages}
-          onClick={() =>
-            setPage((previous) => Math.min(totalPages, previous + 1))
-          }
+          className="page-btn filled"
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages}
         >
           Kế tiếp
         </button>

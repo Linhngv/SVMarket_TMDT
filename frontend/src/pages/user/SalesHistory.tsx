@@ -197,9 +197,6 @@ export default function SalesHistory() {
                     >
                       <Eye size={16} />
                     </button>
-                    <button className="icon-btn" title="Chỉnh sửa">
-                      <Pencil size={16} />
-                    </button>
                   </div>
                 </td>
               </tr>
