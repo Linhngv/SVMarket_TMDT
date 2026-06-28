@@ -197,7 +197,10 @@ export default function Header({
       );
       navigate(`/messages?conversationId=${note.referenceId}`);
       setShowNotifications(false);
-    } else if (note.type === "SYSTEM" && note.content.toLowerCase().includes("từ chối")) {
+    } else if (
+      note.type === "SYSTEM" &&
+      (note.content.toLowerCase().includes("từ chối") || note.content.toLowerCase().includes("đã được duyệt"))
+    ) {
       navigate("/my-listings");
       setShowNotifications(false);
     }

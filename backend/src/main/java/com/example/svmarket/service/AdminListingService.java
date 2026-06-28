@@ -77,11 +77,14 @@ public class AdminListingService {
         if (pkg == null) {
             // FREE — trừ lượt đăng miễn phí khi được duyệt
             User seller = listing.getSeller();
-            if (seller.getFreePostsRemaining() <= 0) {
-                throw new RuntimeException("Người bán đã hết lượt đăng miễn phí");
+            // Chỉ trừ lượt đăng cho bài mới
+            if (Boolean.TRUE.equals(listing.getIsNewPost())) {
+                if (seller.getFreePostsRemaining() <= 0) {
+                    throw new RuntimeException("Người bán đã hết lượt đăng miễn phí");
+                }
+                seller.setFreePostsRemaining(seller.getFreePostsRemaining() - 1);
+                userRepository.save(seller);
             }
-            seller.setFreePostsRemaining(seller.getFreePostsRemaining() - 1);
-            userRepository.save(seller);
 
         } else {
             // PACKAGE — trừ lượt đăng và kích hoạt đẩy tin khi được duyệt
@@ -89,26 +92,30 @@ public class AdminListingService {
                 throw new RuntimeException("Gói đã hết lượt đăng");
             }
 
-            if (!Boolean.TRUE.equals(listing.getPackageUpgraded())) {
-
+            // Chỉ trừ lượt đăng cho bài mới, không trừ khi duyệt lại bài đã cập nhật
+            if (Boolean.TRUE.equals(listing.getIsNewPost())) {
                 pkg.setRemainingPosts(
                         pkg.getRemainingPosts() - 1
                 );
             }
 
-            if (pkg.getRemainingPushes() > 0) {
+            // Chỉ trừ lượt đẩy và kích hoạt đẩy khi bài đăng được nâng cấp gói
+            if (Boolean.TRUE.equals(listing.getPackageUpgraded()) && pkg.getRemainingPushes() > 0) {
                 listing.setLastPushAt(LocalDateTime.now());
                 pkg.setRemainingPushes(pkg.getRemainingPushes() - 1);
             }
 
-            if (pkg.getRemainingPosts() <= 0 && pkg.getRemainingPushes() <= 0) {
+            // Nếu gói hết cả lượt đăng và lượt đẩy, thì hết hạn
+            if (pkg.getRemainingPosts() <= 0 && pkg.getRemainingPushes() <= 0 && pkg.getStatus() == PackageStatus.ACTIVE) {
                 pkg.setStatus(PackageStatus.EXPIRED);
             }
 
             listing.setPackageUpgraded(false);
+
             sellerPackageRepository.save(pkg);
         }
 
+        listing.setIsNewPost(false); // Sau khi duyệt, nó không còn là bài mới nữa
         listingRepository.save(listing);
 
         // Thông báo cho người bán

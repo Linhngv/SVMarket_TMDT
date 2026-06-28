@@ -56,18 +56,20 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
     }, []);
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
+    // Chỉ gộp các thông báo "bài đăng mới"
     const unreadPostNotes = notifications.filter((n) => n.type === "SYSTEM" && !n.isRead &&
-        (n.content.includes("bài đăng mới") || n.content.includes("nâng cấp hiển thị")),
+        (n.content.includes("bài đăng mới cần kiểm duyệt")),
     );
     const unreadVerifyNotes = notifications.filter(
         (n) => n.type === "SYSTEM" && !n.isRead && n.content.includes("duyệt định danh mới"),
     );
+    // Các thông báo còn lại sẽ được hiển thị riêng lẻ
+    const displayNotifications = notifications.filter(
+        (n) => !unreadPostNotes.includes(n) && !unreadVerifyNotes.includes(n)
+    );
+
     const pendingPostCount = unreadPostNotes.length;
     const pendingVerifyCount = unreadVerifyNotes.length;
-
-    const displayNotifications = notifications.filter(
-        (n) => !(n.type === "SYSTEM" && !n.isRead),
-    );
 
     const handlePendingPostClick = async () => {
         try {
@@ -84,8 +86,7 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                 setNotifications((prev) => prev.map((n) =>
                     n.type === "SYSTEM" &&
                         (
-                            n.content.includes("bài đăng mới") ||
-                            n.content.includes("nâng cấp hiển thị")
+                            n.content.includes("bài đăng mới cần kiểm duyệt")
                         )
                         ? { ...n, isRead: true }
                         : n
@@ -165,7 +166,7 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
         }
 
         if (note.type === "SYSTEM") {
-            if (note.content.includes("bài đăng mới") || note.content.includes("nâng cấp hiển thị")) {
+            if (note.content.includes("bài đăng mới") || note.content.includes("nâng cấp gói tin") || note.content.includes("cần duyệt lại!") || note.content.includes("nâng cấp hiển thị")) {
                 navigate("/admin/duyet-bai");
             } else if (note.content.includes("duyệt định danh mới")) {
                 navigate("/admin/xac-thuc");
@@ -259,6 +260,10 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                                     {pendingPostCount > 0 && (
                                         <div
                                             className="notification-note"
+                                            style={{
+                                                backgroundColor: "var(--light-green)",
+                                                cursor: "pointer"
+                                            }}
                                             onClick={handlePendingPostClick}
                                         >
                                             <div
@@ -275,6 +280,10 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                                     {pendingVerifyCount > 0 && (
                                         <div
                                             className="notification-note"
+                                            style={{
+                                                backgroundColor: "var(--light-green)",
+                                                cursor: "pointer"
+                                            }}
                                             onClick={handlePendingVerifyClick}
                                         >
                                             <div

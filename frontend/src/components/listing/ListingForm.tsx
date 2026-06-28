@@ -228,6 +228,9 @@ export default function ListingForm({
             min={0}
             value={values.price}
             onChange={handleInputChange}
+            onWheel={(event) => {
+              event.currentTarget.blur();
+            }}
           />
         </div>
 

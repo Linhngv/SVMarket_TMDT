@@ -142,6 +142,7 @@ public class ListingService {
                 .status(ListingStatus.PENDING)
                 .stock(1)
                 .sellerPackage(pkg)
+                .isNewPost(true) // Đánh dấu đây là bài đăng mới
                 .build();
 
         // FREE
@@ -385,11 +386,30 @@ public class ListingService {
                 request.getPrice().compareTo(listing.getPrice()) == 0 &&
                 request.getDescription().equals(listing.getDescription());
 
+        boolean packageChanged = isPackageChanged(listing, request.getSellerPackageId());
+
         if (statusOnlyChange && (requestedStatus == ListingStatus.INACTIVE || requestedStatus == ListingStatus.SOLD)) {
             listing.setStatus(requestedStatus);
         } else {
-            // Bất kỳ thay đổi nội dung nào khác đều cần duyệt lại
-            listing.setStatus(ListingStatus.PENDING);
+            // Nếu có bất kỳ thay đổi nào cần duyệt, chuyển trạng thái và gửi thông báo
+            if (!statusOnlyChange || packageChanged) {
+                listing.setStatus(ListingStatus.PENDING);
+
+                String notificationContent = packageChanged
+                        ? "Bài đăng '" + listing.getTitle() + "' đang chờ duyệt nâng cấp gói tin."
+                        : "Có bài đăng '" + listing.getTitle() + "' cần duyệt lại!";
+
+                List<User> admins = userRepository.findByRole(Role.ADMIN);
+                for (User admin : admins) {
+                    Notification notification = Notification.builder()
+                            .user(admin)
+                            .content(notificationContent)
+                            .type(NotificationType.SYSTEM)
+                            .referenceId(listing.getId())
+                            .build();
+                    notificationRepository.save(notification);
+                }
+            }
         }
 
         // Xử lý nâng cấp đẩy tin
@@ -690,6 +710,17 @@ public class ListingService {
         sellerPackageRepository.save(pkg);
     }
 
+    private boolean isPackageChanged(Listing listing, Integer newPackageId) {
+        SellerPackage oldPkg = listing.getSellerPackage();
+        if (oldPkg == null && newPackageId == null) {
+            return false;
+        }
+        if (oldPkg == null || newPackageId == null) {
+            return true;
+        }
+        return !oldPkg.getId().equals(newPackageId);
+    }
+
     /**
      * Comparator dùng để sắp xếp danh sách bài đăng theo độ ưu tiên hiển thị.
      *
@@ -785,6 +816,10 @@ public class ListingService {
             return;
         }
 
+        if (newPkg.getRemainingPushes() <= 0) {
+            throw new RuntimeException("Bạn không còn lượt đẩy tin nào! Vui lòng nâng cấp gói tin để tiếp tục");
+        }
+
         listing.setSellerPackage(newPkg);
         listing.setPackageUpgraded(true);
 
@@ -794,24 +829,5 @@ public class ListingService {
 
         listing.setLastPushAt(LocalDateTime.now());
         sellerPackageRepository.save(newPkg);
-
-        // Gửi admin duyệt lại bài đăng
-        listing.setStatus(ListingStatus.PENDING);
-
-        // Thông báo cho admin
-        List<User> admins = userRepository.findByRole(Role.ADMIN);
-
-        for (User admin : admins) {
-            Notification notification =
-                    Notification.builder()
-                            .user(admin)
-                            .content("Bài đăng '" + listing.getTitle() + "' đang chờ duyệt nâng cấp hiển thị.")
-                            .type(NotificationType.SYSTEM)
-                            .referenceId(listing.getId())
-                            .isRead(false)
-                            .build();
-
-            notificationRepository.save(notification);
-        }
     }
 }
