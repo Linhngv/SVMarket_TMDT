@@ -94,7 +94,7 @@ public class ReviewService {
         String productName = listing != null ? listing.getTitle() : "Đơn hàng #" + order.getId();
         Notification notification = Notification.builder()
                 .user(order.getSeller())
-                .content(currentUser.getFullName() + " đã đánh giá " + request.getRating() + " sao cho giao dịch " + productName)
+                .content(currentUser.getFullName() + " đã đánh giá " + request.getRating() + " sao cho giao dịch '" + productName + "'")
                 .type(NotificationType.REVIEW)
                 .referenceId(order.getId())
                 .isRead(false)
@@ -151,7 +151,7 @@ public class ReviewService {
         String productName = review.getListing() != null ? review.getListing().getTitle() : "Đơn hàng #" + review.getOrder().getId();
         Notification notification = Notification.builder()
                 .user(review.getReviewer())
-                .content(currentUser.getFullName() + " đã phản hồi đánh giá của bạn về giao dịch " + productName)
+                .content(currentUser.getFullName() + " đã phản hồi đánh giá của bạn về giao dịch '" + productName + "'")
                 .type(NotificationType.REVIEW_REPLY)
                 .referenceId(review.getOrder().getId())
                 .isRead(false)
@@ -177,8 +177,8 @@ public class ReviewService {
                 .rating(review.getRating())
                 .comment(review.getComment())
                 .createdAt(review.getCreatedAt())
-                .replyContent(replyOpt.map(ReviewReply::getContent).orElse(null))
-                .replyCreatedAt(replyOpt.map(ReviewReply::getCreatedAt).orElse(null))
+                .replyContent(replyOpt.map(reply -> reply.getContent()).orElse(null))
+                .replyCreatedAt(replyOpt.map(reply -> reply.getCreatedAt()).orElse(null))
                 .build();
     }
 }

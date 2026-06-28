@@ -3,7 +3,6 @@ package com.example.svmarket.controller;
 import com.example.svmarket.dto.SellerDashboardResponse;
 import com.example.svmarket.service.DashboardService;
 import com.example.svmarket.service.AdminBannedKeywordService;
-import com.example.svmarket.entity.BannedKeyword;
 import com.example.svmarket.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +70,7 @@ public class DashboardController {
     public ResponseEntity<List<String>> getBannedKeywords() {
         List<String> keywords = adminBannedKeywordService.getAllBannedKeywords()
                 .stream()
-                .map(BannedKeyword::getKeyword)
+                .map(keyword -> keyword.getKeyword())
                 .toList();
         return ResponseEntity.ok(keywords);
     }

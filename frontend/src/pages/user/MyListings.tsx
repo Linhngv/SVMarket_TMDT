@@ -88,6 +88,10 @@ export default function MyListings() {
     loadListings();
   }, []);
 
+  useEffect(() => {
+    loadListings();
+  }, []);
+
   const filteredListings = useMemo(
     () =>
       listings.filter((listing) =>

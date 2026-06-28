@@ -143,7 +143,7 @@ public class UserService {
                 : null;
 
         List<Review> reviews = reviewRepository.findByRevieweeIdOrderByCreatedAtDesc(seller.getId());
-        double averageRating = reviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
+        double averageRating = reviews.stream().mapToInt(review -> review.getRating()).average().orElse(0.0);
 
         List<ReviewData> reviewDataList = reviews.stream().map(r -> {
             String pName = "Sản phẩm";
@@ -168,8 +168,8 @@ public class UserService {
                     .comment(r.getComment())
                     .productName(pName)
                     .createdAt(r.getCreatedAt())
-                    .replyContent(replyOpt.map(ReviewReply::getContent).orElse(null))
-                    .replyCreatedAt(replyOpt.map(ReviewReply::getCreatedAt).orElse(null))
+                    .replyContent(replyOpt.map(reply -> reply.getContent()).orElse(null))
+                    .replyCreatedAt(replyOpt.map(reply -> reply.getCreatedAt()).orElse(null))
                     .build();
         }).toList();
 

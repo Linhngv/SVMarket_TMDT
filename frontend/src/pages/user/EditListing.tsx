@@ -36,6 +36,7 @@ export default function EditListing() {
   const [packages, setPackages] = useState<SellerPackage[]>([]);
   const [originalSellerPackageId, setOriginalSellerPackageId] = useState<string>("");
   
+  const [originalValues, setOriginalValues] = useState<ListingFormValues | null>(null);
   // Load gói đã mua
   useEffect(() => {
   const loadPackages = async () => {
@@ -105,6 +106,17 @@ export default function EditListing() {
             ? String(listingData.sellerPackageId)
             : "",
         );
+        const initialValues = {
+          title: listingData.title || "",
+          categoryId: String(listingData.categoryId || ""),
+          price: String(listingData.price || 0),
+          deliveryAddress: listingData.deliveryAddress || "",
+          conditionLevel: listingData.conditionLevel || "Mới",
+          description: listingData.description || "",
+          status: listingData.status || "PENDING",
+          sellerPackageId: listingData.sellerPackageId ? String(listingData.sellerPackageId) : "",
+        };
+        setOriginalValues(initialValues);
       } catch (error) {
         console.error("Không thể tải dữ liệu bài đăng", error);
         toast.error("Không thể tải dữ liệu bài đăng");
@@ -148,6 +160,15 @@ export default function EditListing() {
       return;
     }
 
+    const packageChanged = originalSellerPackageId !== values.sellerPackageId;
+    if (packageChanged && values.sellerPackageId) {
+      const selectedPackage = packages.find(p => String(p.id) === values.sellerPackageId);
+      if (selectedPackage && selectedPackage.remainingPushes <= 0) {
+        toast.error("Bạn không còn lượt đẩy tin nào! Vui lòng nâng cấp gói tin để tiếp tục");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -166,14 +187,12 @@ export default function EditListing() {
         wantPush: values.wantPush,
       });
 
-      const packageChanged = originalSellerPackageId !== values.sellerPackageId;
-
       if (packageChanged && values.sellerPackageId) {
         toast.success(
           "Bài đăng hiện đang chờ quản trị viên phê duyệt nâng cấp hiển thị.",
         );
       } else {
-        toast.success("Cập nhật bài đăng thành công!");
+        toast.success("Cập nhật thành công! Bài đăng của bạn đã được gửi để chờ duyệt lại.");
       }
       navigate("/my-listings");
     } catch (error: any) {
@@ -236,6 +255,21 @@ export default function EditListing() {
   const descWarning = descHasBanned ? (
     <>{highlightBannedKeywords(values.description)}</>
   ) : null;
+  
+  const hasContentChanged = useMemo(() => {
+    if (!originalValues) return false; // Chưa load xong dữ liệu gốc
+    if (images.length > 0) return true; // Có thay đổi ảnh
+
+    return (
+      originalValues.title !== values.title ||
+      originalValues.categoryId !== values.categoryId ||
+      originalValues.price !== values.price ||
+      originalValues.deliveryAddress !== values.deliveryAddress ||
+      originalValues.conditionLevel !== values.conditionLevel ||
+      originalValues.description !== values.description ||
+      originalValues.sellerPackageId !== values.sellerPackageId
+    );
+  }, [originalValues, values, images]);
 
   return (
     <>
@@ -265,7 +299,7 @@ export default function EditListing() {
         imagePreviews={mergedImagePreviews}
         titleWarning={titleWarning}
         descriptionWarning={descWarning}
-        submitDisabled={isSubmitting || titleHasBanned || descHasBanned}
+        submitDisabled={isSubmitting || titleHasBanned || descHasBanned || !hasContentChanged}
         showStatusField
         showBack
           isEditMode

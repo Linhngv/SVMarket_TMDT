@@ -94,7 +94,7 @@ export default function Header({
     if (!resolvedIsLoggedIn) return;
 
     wsClientRef.current = createChatClient(
-      () => {},
+      () => { },
       () => {
         fetchNotifications();
       },
@@ -197,7 +197,10 @@ export default function Header({
       );
       navigate(`/messages?conversationId=${note.referenceId}`);
       setShowNotifications(false);
-    } else if (note.type === "SYSTEM" && note.content.toLowerCase().includes("từ chối")) {
+    } else if (
+      note.type === "SYSTEM" &&
+      (note.content.toLowerCase().includes("từ chối") || note.content.toLowerCase().includes("đã được duyệt"))
+    ) {
       navigate("/my-listings");
       setShowNotifications(false);
     }
@@ -328,6 +331,29 @@ export default function Header({
     (n) => !n.isRead && n.type === "MESSAGE",
   ).length;
 
+  const formatNotificationContent = (content: string) => {
+    // Pattern to find content within single quotes
+    const quoteRegex = /'([^']+)'/;
+    const quoteMatch = content.match(quoteRegex);
+
+    if (quoteMatch) {
+      const parts = content.split(quoteRegex);
+      return (
+        <>
+          {parts[0]}
+          <strong>{quoteMatch[1]}</strong>
+          {parts[2]}
+        </>
+      );
+    }
+
+    // Pattern for content after a colon
+    const colonRegex = /^(.*?): (.*)$/;
+    const colonMatch = content.match(colonRegex);
+
+    return colonMatch ? <>{colonMatch[1]}: <strong>{colonMatch[2]}</strong></> : <>{content}</>;
+  };
+
   return (
     <div className="header shadow-sm">
       <div className="container-fluid px-4 d-flex justify-content-between align-items-center py-2">
@@ -428,27 +454,12 @@ export default function Header({
 
                         {/* Nội dung thông báo */}
                         <div className="notification-content">
-                          {note.content.includes(" muốn mua ") ? (
-                            <>
-                              <strong>
-                                {note.content.substring(
-                                  0,
-                                  note.content.indexOf(" muốn mua "),
-                                )}
-                              </strong>{" "}
-                              muốn mua{" "}
-                              <strong>
-                                {note.content.substring(
-                                  note.content.indexOf(" muốn mua ") + 10,
-                                )}
-                              </strong>
-                            </>
-                          ) : note.content.includes("[Vị trí]") ? (
+                          {note.content.includes("[Vị trí]") ? (
                             <>
                               {note.content.substring(0, note.content.indexOf("[Vị trí]"))} <Navigation size={14} style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginLeft: '4px' }} /> Đã chia sẻ một vị trí
                             </>
                           ) : (
-                            note.content
+                            formatNotificationContent(note.content)
                           )}
                           <div className="notification-time">
                             {formatTimeAgo(note.createdAt)}
@@ -487,7 +498,7 @@ export default function Header({
 
           {/* AVATAR */}
           <div className="avatar-wrapper position-relative" ref={ref}>
-            <div 
+            <div
               className="avatar d-flex align-items-center gap-1"
               onClick={() => setOpen((prev) => !prev)}
               style={{ cursor: "pointer" }}
@@ -690,12 +701,13 @@ function ProfilePopup({
           <PopupSection
             title="Dịch vụ trả phí"
             items={[
-              { label: "Lịch sử giao dịch", 
+              {
+                label: "Lịch sử giao dịch",
                 icon: <History size={16} />,
                 onClick: () => {
                   navigate("/purchase-history");
                   onClose();
-                }, 
+                },
               },
               {
                 label: "Gói đăng tin",

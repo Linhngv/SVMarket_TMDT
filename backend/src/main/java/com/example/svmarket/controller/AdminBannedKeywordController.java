@@ -7,7 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/admin/banned-keywords")
@@ -103,10 +105,10 @@ public class AdminBannedKeywordController {
             boolean hasBanned = adminBannedKeywordService.containsBannedKeyword(text);
             List<String> foundKeywords = adminBannedKeywordService.getBannedKeywordsInText(text);
 
-            return ResponseEntity.ok(new Object() {
-                public boolean hasBannedKeyword = hasBanned;
-                public List<String> bannedKeywords = foundKeywords;
-            });
+            Map<String, Object> response = new HashMap<>();
+            response.put("hasBannedKeyword", hasBanned);
+            response.put("bannedKeywords", foundKeywords);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
