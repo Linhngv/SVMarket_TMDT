@@ -81,7 +81,7 @@ public class OrderService {
         paymentRepository.save(payment);
 
         // Tạo thông báo gửi đến người bán
-        String content = buyer.getFullName() + " muốn mua " + listing.getTitle();
+        String content = buyer.getFullName() + " muốn mua '" + listing.getTitle() + "'";
         Notification notification = Notification.builder()
                 .user(listing.getSeller())
                 .content(content)
@@ -181,7 +181,7 @@ public class OrderService {
 
         // Tạo thông báo gửi đến người mua
         String productTitle = order.getOrderDetails().get(0).getListing().getTitle();
-        String content = "Người bán đã chấp nhận yêu cầu mua " + productTitle + " của bạn. Vui lòng thanh toán.";
+        String content = "Người bán đã chấp nhận yêu cầu mua '" + productTitle + "' của bạn. Vui lòng thanh toán.";
         Notification notification = Notification.builder().user(order.getBuyer()).content(content)
                 .type(NotificationType.PAYMENT).referenceId(order.getId()).isRead(false).build();
         notificationRepository.save(notification);
@@ -208,7 +208,7 @@ public class OrderService {
 
         // Tạo thông báo gửi đến người mua
         String productTitle = listing.getTitle();
-        String content = "Người bán đã từ chối yêu cầu mua " + productTitle + " của bạn.";
+        String content = "Người bán đã từ chối yêu cầu mua '" + productTitle + "' của bạn.";
         Notification notification = Notification.builder().user(order.getBuyer()).content(content)
                 .type(NotificationType.ORDER).referenceId(order.getId()).isRead(false).build();
         notificationRepository.save(notification);

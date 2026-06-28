@@ -204,6 +204,28 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
         return `${Math.floor(diffInDays / 365)} năm trước`;
     };
 
+    const formatNotificationContent = (content: string) => {
+        const quoteRegex = /'([^']+)'/;
+        const quoteMatch = content.match(quoteRegex);
+    
+        if (quoteMatch) {
+            const parts = content.split(quoteRegex);
+            return (
+                <>
+                    {parts[0]}
+                    <strong>{quoteMatch[1]}</strong>
+                    {parts[2]}
+                </>
+            );
+        }
+    
+        // Pattern for content after a colon
+        const colonRegex = /^(.*?): (.*)$/;
+        const colonMatch = content.match(colonRegex);
+    
+        return colonMatch ? <>{colonMatch[1]}: <strong>{colonMatch[2]}</strong></> : <>{content}</>;
+    };
+
     return (
         <div
             className="admin-topbar d-flex justify-content-between align-items-center"
@@ -317,31 +339,7 @@ export default function AdminTopBar({ breadcrumb }: AdminTopBarProps) {
                                                 }}
                                             ></div>
                                             <div className="notification-content">
-                                                {note.content.startsWith(
-                                                    "Có bài đăng mới cần kiểm duyệt: ",
-                                                ) ? (
-                                                    <>
-                                                        Có bài đăng mới cần kiểm duyệt:{" "}
-                                                        <strong>
-                                                            {note.content.replace(
-                                                                "Có bài đăng mới cần kiểm duyệt: ",
-                                                                "",
-                                                            )}
-                                                        </strong>
-                                                    </>
-                                                ) : note.content.startsWith("Có yêu cầu duyệt định danh mới từ: ") ? (
-                                                    <>
-                                                        Có yêu cầu duyệt định danh mới từ:{" "}
-                                                        <strong>
-                                                            {note.content.replace(
-                                                                "Có yêu cầu duyệt định danh mới từ: ",
-                                                                "",
-                                                            )}
-                                                        </strong>
-                                                    </>
-                                                ) : (
-                                                    note.content
-                                                )}
+                                                {formatNotificationContent(note.content)}
                                                 <div className="notification-time mt-1">
                                                     {formatTimeAgo(note.createdAt)}
                                                 </div>

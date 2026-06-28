@@ -167,7 +167,7 @@ public class ListingService {
         for (User admin : admins) {
             Notification notification = Notification.builder()
                     .user(admin)
-                    .content("Có bài đăng mới cần kiểm duyệt: " + savedListing.getTitle())
+                    .content("Có bài đăng mới cần kiểm duyệt: '" + savedListing.getTitle() + "'")
                     .type(NotificationType.SYSTEM)
                     .referenceId(savedListing.getId())
                     .isRead(false)
