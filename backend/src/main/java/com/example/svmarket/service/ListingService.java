@@ -388,6 +388,15 @@ public class ListingService {
         } else {
             // Nếu có bất kỳ thay đổi nào cần duyệt, chuyển trạng thái và gửi thông báo
             if (hasContentChanged || packageChanged) {
+                SellerPackage newPkg = null;
+                if (request.getSellerPackageId() != null) {
+                    newPkg = sellerPackageRepository.findById(request.getSellerPackageId())
+                            .orElseThrow(() -> new BadRequestException("Không tìm thấy gói tin mới"));
+                    if (!newPkg.getSeller().getId().equals(seller.getId())) {
+                        throw new BadRequestException("Gói tin không hợp lệ");
+                    }
+                }
+
                 ListingUpdate updateRecord = ListingUpdate.builder()
                         .listing(listing)
                         .title(request.getTitle().trim())
@@ -396,6 +405,7 @@ public class ListingService {
                         .category(category)
                         .deliveryAddress(request.getDeliveryAddress())
                         .conditionLevel(request.getConditionLevel())
+                        .pendingSellerPackage(packageChanged ? newPkg : listing.getSellerPackage())
                         .build();
                 listingUpdateRepository.save(updateRecord);
 
@@ -426,9 +436,6 @@ public class ListingService {
                 listing.setDescription(request.getDescription());
             }
         }
-
-        // Xử lý nâng cấp đẩy tin
-        upgradeListingBoost(listing, seller, request);
 
         // Xóa lý do từ chối cũ khi người bán đã cập nhật lại bài đăng
         listing.setRejectReason(null);

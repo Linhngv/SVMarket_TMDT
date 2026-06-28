@@ -78,6 +78,11 @@ public class AdminListingService {
                     listing.setCategory(update.getCategory());
                     listing.setDeliveryAddress(update.getDeliveryAddress());
                     listing.setConditionLevel(update.getConditionLevel());
+                    
+                    // Áp dụng gói tin mới nếu có
+                    if (update.getPendingSellerPackage() != null) {
+                        listing.setSellerPackage(update.getPendingSellerPackage());
+                    }
 
                     // Đánh dấu bản cập nhật đã được xử lý
                     update.setStatus(ListingUpdateStatus.APPROVED);
@@ -191,12 +196,20 @@ public class AdminListingService {
                 ? listingUpdateRepository.findFirstByListingIdAndStatusOrderByCreatedAtDesc(listing.getId(), ListingUpdateStatus.PENDING)
                 : Optional.empty();
 
+        SellerPackage displayPackage = pendingUpdateOpt
+                .map(update -> update.getPendingSellerPackage())
+                .orElse(listing.getSellerPackage());
+
+        packageName = (displayPackage != null && displayPackage.getPackagePlan() != null)
+                ? displayPackage.getPackagePlan().getName()
+                : "Miễn phí";
+
         String title = pendingUpdateOpt.map(update -> update.getTitle()).orElse(listing.getTitle());
-        String description = pendingUpdateOpt.map(update -> update.getDescription()).orElse(listing.getDescription());
-        java.math.BigDecimal price = pendingUpdateOpt.map(update -> update.getPrice()).orElse(listing.getPrice());
         Category category = pendingUpdateOpt.map(update -> update.getCategory()).orElse(listing.getCategory());
         String deliveryAddress = pendingUpdateOpt.map(update -> update.getDeliveryAddress()).orElse(listing.getDeliveryAddress());
         String conditionLevel = pendingUpdateOpt.map(update -> update.getConditionLevel()).orElse(listing.getConditionLevel());
+        String description = pendingUpdateOpt.map(update -> update.getDescription()).orElse(listing.getDescription());
+        java.math.BigDecimal price = pendingUpdateOpt.map(update -> update.getPrice()).orElse(listing.getPrice());
 
 
         return ListingDetailResponse.builder()

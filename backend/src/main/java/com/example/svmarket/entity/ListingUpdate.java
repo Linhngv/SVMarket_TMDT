@@ -42,6 +42,10 @@ public class ListingUpdate {
     @Column(name = "condition_level", length = 100)
     private String conditionLevel;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pending_seller_package_id")
+    private SellerPackage pendingSellerPackage;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     @Builder.Default
