@@ -192,7 +192,7 @@ export default function EditListing() {
           "Bài đăng hiện đang chờ quản trị viên phê duyệt nâng cấp hiển thị.",
         );
       } else {
-        toast.success("Cập nhật bài đăng thành công! Bài đăng đã được gửi lại cho admin duyệt!");
+        toast.success("Cập nhật thành công! Bài đăng của bạn đã được gửi để chờ duyệt lại.");
       }
       navigate("/my-listings");
     } catch (error: any) {

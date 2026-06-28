@@ -114,7 +114,7 @@ public class AdminBannedKeywordService {
 
         return bannedKeywords.stream()
                 .filter(bk -> lowerText.contains(bk.getKeyword().toLowerCase()))
-                .map(BannedKeyword::getKeyword)
+                .map(bk -> bk.getKeyword())
                 .toList();
     }
 }

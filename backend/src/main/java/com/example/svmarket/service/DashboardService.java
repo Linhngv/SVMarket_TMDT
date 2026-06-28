@@ -155,7 +155,7 @@ public class DashboardService {
     // Tính điểm đánh giá trung bình
     public double calculateAverageRating(List<Review> reviews) {
         return reviews.stream()
-                .mapToInt(Review::getRating)
+                .mapToInt(review -> review.getRating())
                 .average()
                 .orElse(0.0);
     }

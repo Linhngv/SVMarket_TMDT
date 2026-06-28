@@ -86,4 +86,7 @@ public class Listing {
     @Column(name = "is_new_post", columnDefinition = "boolean default true")
     @Builder.Default
     private Boolean isNewPost = true;
+
+    @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ListingUpdate> updates;
 }

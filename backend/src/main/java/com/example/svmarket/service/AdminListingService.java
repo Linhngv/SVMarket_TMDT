@@ -1,11 +1,9 @@
 package com.example.svmarket.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
+import java.util.*;
 import com.example.svmarket.entity.*;
-import com.example.svmarket.repository.SellerPackageRepository;
-import com.example.svmarket.repository.UserRepository;
+import com.example.svmarket.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -13,8 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.svmarket.dto.ListingDetailResponse;
 import com.example.svmarket.dto.ListingSummaryResponse;
-import com.example.svmarket.repository.ListingRepository;
-import com.example.svmarket.repository.NotificationRepository;
 
 @Service
 @Transactional
@@ -22,6 +18,9 @@ public class AdminListingService {
 
     @Autowired
     private ListingRepository listingRepository;
+
+    @Autowired
+    private ListingUpdateRepository listingUpdateRepository;
 
     @Autowired
     private SellerPackageRepository sellerPackageRepository;
@@ -70,6 +69,24 @@ public class AdminListingService {
 
         if (listing.getStatus() == ListingStatus.ACTIVE) return;
 
+        // Nếu là duyệt một bản cập nhật, áp dụng các thay đổi
+        listingUpdateRepository.findFirstByListingIdAndStatusOrderByCreatedAtDesc(id, ListingUpdateStatus.PENDING)
+                .ifPresent(update -> {
+                    listing.setTitle(update.getTitle());
+                    listing.setDescription(update.getDescription());
+                    listing.setPrice(update.getPrice());
+                    listing.setCategory(update.getCategory());
+                    listing.setDeliveryAddress(update.getDeliveryAddress());
+                    listing.setConditionLevel(update.getConditionLevel());
+
+                    // Đánh dấu bản cập nhật đã được xử lý
+                    update.setStatus(ListingUpdateStatus.APPROVED);
+                    update.setProcessedAt(LocalDateTime.now());
+                    listingUpdateRepository.save(update);
+                });
+
+
+
         listing.setStatus(ListingStatus.ACTIVE);
 
         SellerPackage pkg = listing.getSellerPackage();
@@ -78,7 +95,7 @@ public class AdminListingService {
             // FREE — trừ lượt đăng miễn phí khi được duyệt
             User seller = listing.getSeller();
             // Chỉ trừ lượt đăng cho bài mới
-            if (Boolean.TRUE.equals(listing.getIsNewPost())) {
+            if (listing.getIsNewPost() == null || Boolean.TRUE.equals(listing.getIsNewPost())) {
                 if (seller.getFreePostsRemaining() <= 0) {
                     throw new RuntimeException("Người bán đã hết lượt đăng miễn phí");
                 }
@@ -93,7 +110,7 @@ public class AdminListingService {
             }
 
             // Chỉ trừ lượt đăng cho bài mới, không trừ khi duyệt lại bài đã cập nhật
-            if (Boolean.TRUE.equals(listing.getIsNewPost())) {
+            if (listing.getIsNewPost() == null || Boolean.TRUE.equals(listing.getIsNewPost())) {
                 pkg.setRemainingPosts(
                         pkg.getRemainingPosts() - 1
                 );
@@ -135,6 +152,15 @@ public class AdminListingService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài đăng"));
         listing.setStatus(ListingStatus.REJECTED);
         listing.setRejectReason(reason);
+
+        // Đánh dấu bản cập nhật đang chờ là đã bị từ chối
+        listingUpdateRepository.findFirstByListingIdAndStatusOrderByCreatedAtDesc(id, ListingUpdateStatus.PENDING)
+                .ifPresent(update -> {
+                    update.setStatus(ListingUpdateStatus.REJECTED);
+                    update.setProcessedAt(LocalDateTime.now());
+                    listingUpdateRepository.save(update);
+                });
+        
         listingRepository.save(listing);
 
         // Gửi thông báo đến người đăng
@@ -152,7 +178,7 @@ public class AdminListingService {
     private ListingDetailResponse toDetailResponse(Listing listing) {
         List<String> imageUrls = listing.getImages() == null
                 ? List.of()
-                : listing.getImages().stream().map(Image::getUrl).toList();
+                : listing.getImages().stream().map(image -> image.getUrl()).toList();
 
         Boolean isVerified = listing.getSeller() != null && Boolean.TRUE.equals(listing.getSeller().getIsVerified());
         
@@ -160,15 +186,28 @@ public class AdminListingService {
                 ? listing.getSellerPackage().getPackagePlan().getName()
                 : null;
 
+        // Nếu đang chờ duyệt, ưu tiên hiển thị nội dung đang chờ
+        Optional<ListingUpdate> pendingUpdateOpt = listing.getStatus() == ListingStatus.PENDING
+                ? listingUpdateRepository.findFirstByListingIdAndStatusOrderByCreatedAtDesc(listing.getId(), ListingUpdateStatus.PENDING)
+                : Optional.empty();
+
+        String title = pendingUpdateOpt.map(update -> update.getTitle()).orElse(listing.getTitle());
+        String description = pendingUpdateOpt.map(update -> update.getDescription()).orElse(listing.getDescription());
+        java.math.BigDecimal price = pendingUpdateOpt.map(update -> update.getPrice()).orElse(listing.getPrice());
+        Category category = pendingUpdateOpt.map(update -> update.getCategory()).orElse(listing.getCategory());
+        String deliveryAddress = pendingUpdateOpt.map(update -> update.getDeliveryAddress()).orElse(listing.getDeliveryAddress());
+        String conditionLevel = pendingUpdateOpt.map(update -> update.getConditionLevel()).orElse(listing.getConditionLevel());
+
+
         return ListingDetailResponse.builder()
                 .id(listing.getId())
-                .title(listing.getTitle())
-                .categoryId(listing.getCategory() != null ? listing.getCategory().getId() : null)
-                .categoryName(listing.getCategory() != null ? listing.getCategory().getName() : null)
-                .price(listing.getPrice())
-                .deliveryAddress(listing.getDeliveryAddress())
-                .conditionLevel(listing.getConditionLevel())
-                .description(listing.getDescription())
+                .title(title)
+                .categoryId(category != null ? category.getId() : null)
+                .categoryName(category != null ? category.getName() : null)
+                .price(price)
+                .deliveryAddress(deliveryAddress)
+                .conditionLevel(conditionLevel)
+                .description(description)
                 .status(listing.getStatus() != null ? listing.getStatus().name() : ListingStatus.ACTIVE.name())
                 .imageUrls(imageUrls)
                 .sellerName(listing.getSeller() != null ? listing.getSeller().getFullName() : null)

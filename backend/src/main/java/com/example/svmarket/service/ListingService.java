@@ -33,6 +33,8 @@ public class ListingService {
 
     @Autowired
     private ListingFavoriteRepository listingFavoriteRepository;
+    @Autowired
+    private ListingUpdateRepository listingUpdateRepository;
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -371,28 +373,33 @@ public class ListingService {
 
         Category category = getCategoryById(request.getCategoryId());
 
-        listing.setTitle(request.getTitle().trim());
-        listing.setCategory(category);
-        listing.setPrice(request.getPrice());
-        listing.setDeliveryAddress(request.getDeliveryAddress());
-        listing.setConditionLevel(request.getConditionLevel());
-        listing.setDescription(request.getDescription());
-
         ListingStatus requestedStatus = ListingStatus.valueOf(request.getStatus());
 
         // Nếu người dùng chỉ thay đổi trạng thái sang Tạm ẩn hoặc Đã bán thì không cần duyệt lại
-        boolean statusOnlyChange = request.getTitle().trim().equals(listing.getTitle()) &&
-                request.getCategoryId().equals(listing.getCategory().getId()) &&
-                request.getPrice().compareTo(listing.getPrice()) == 0 &&
-                request.getDescription().equals(listing.getDescription());
+        boolean hasContentChanged = !request.getTitle().trim().equals(listing.getTitle()) ||
+                !request.getCategoryId().equals(listing.getCategory().getId()) ||
+                request.getPrice().compareTo(listing.getPrice()) != 0 ||
+                !request.getDescription().equals(listing.getDescription());
 
         boolean packageChanged = isPackageChanged(listing, request.getSellerPackageId());
 
-        if (statusOnlyChange && (requestedStatus == ListingStatus.INACTIVE || requestedStatus == ListingStatus.SOLD)) {
+        if (!hasContentChanged && !packageChanged && (requestedStatus == ListingStatus.INACTIVE || requestedStatus == ListingStatus.SOLD)) {
             listing.setStatus(requestedStatus);
         } else {
             // Nếu có bất kỳ thay đổi nào cần duyệt, chuyển trạng thái và gửi thông báo
-            if (!statusOnlyChange || packageChanged) {
+            if (hasContentChanged || packageChanged) {
+                ListingUpdate updateRecord = ListingUpdate.builder()
+                        .listing(listing)
+                        .title(request.getTitle().trim())
+                        .description(request.getDescription())
+                        .price(request.getPrice())
+                        .category(category)
+                        .deliveryAddress(request.getDeliveryAddress())
+                        .conditionLevel(request.getConditionLevel())
+                        .build();
+                listingUpdateRepository.save(updateRecord);
+
+                listing.setIsNewPost(false); // Đây là cập nhật, không phải bài mới
                 listing.setStatus(ListingStatus.PENDING);
 
                 String notificationContent = packageChanged
@@ -409,6 +416,14 @@ public class ListingService {
                             .build();
                     notificationRepository.save(notification);
                 }
+            } else {
+                // Nếu không có thay đổi nội dung, chỉ cập nhật các trường không cần duyệt
+                listing.setTitle(request.getTitle().trim());
+                listing.setCategory(category);
+                listing.setPrice(request.getPrice());
+                listing.setDeliveryAddress(request.getDeliveryAddress());
+                listing.setConditionLevel(request.getConditionLevel());
+                listing.setDescription(request.getDescription());
             }
         }
 

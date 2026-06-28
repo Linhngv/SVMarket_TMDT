@@ -43,7 +43,7 @@ public class UniversityService {
 
                     return domain.contains(abbr);
                 })
-                .map(UniversityJson::getName)
+                .map(university -> university.getName())
                 .findFirst()
                 .orElse(null);
     }

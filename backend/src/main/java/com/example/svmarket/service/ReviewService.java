@@ -177,8 +177,8 @@ public class ReviewService {
                 .rating(review.getRating())
                 .comment(review.getComment())
                 .createdAt(review.getCreatedAt())
-                .replyContent(replyOpt.map(ReviewReply::getContent).orElse(null))
-                .replyCreatedAt(replyOpt.map(ReviewReply::getCreatedAt).orElse(null))
+                .replyContent(replyOpt.map(reply -> reply.getContent()).orElse(null))
+                .replyCreatedAt(replyOpt.map(reply -> reply.getCreatedAt()).orElse(null))
                 .build();
     }
 }
